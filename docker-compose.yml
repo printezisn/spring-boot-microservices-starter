@@ -8,14 +8,41 @@ services:
          - SPRING_DATA_MONGODB_HOST=mongodb
       depends_on:
          - mongodb
+   movie-service:
+      build: ./MovieService
+      ports:
+         - "9000:9000"
+      environment:
+         - SPRING_DATA_MONGODB_HOST=mongodb
+         - SPRING_DATA_ELASTICSEARCH_CLUSTER-NAME=docker-cluster
+         - SPRING_DATA_ELASTICSEARCH_CLUSTER-NODES=elasticsearch:9300
+      depends_on:
+         - mongodb
+         - elasticsearch
    mongodb:
       image: mongo:latest
       container_name: "mongodb"
       environment:
-        - MONGO_DATA_DIR=/data/db
-        - MONGO_LOG_DIR=/dev/null
+         - MONGO_DATA_DIR=/data/db
+         - MONGO_LOG_DIR=/dev/null
       volumes:
-        - ./data/db:/data/db
+         - ./data/db:/data/db
       ports:
-          - 27017:27017
-      command: mongod --smallfiles --logpath=/dev/null   
+         - 27017:27017
+      command: mongod --smallfiles --logpath=/dev/null 
+   elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+      container_name: "elasticsearch"
+      environment:
+         - cluster.name=docker-cluster
+         - bootstrap.memory_lock=true
+         - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+         memlock:
+            soft: -1
+            hard: -1
+      volumes:
+         - ./data/elasticsearch:/usr/share/elasticsearch/data
+      ports:
+         - 9200:9200 
+         - 9300:9300 

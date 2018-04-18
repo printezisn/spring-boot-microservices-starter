@@ -1,4 +1,4 @@
-package com.printezisn.moviestore.accountservice.global.configuration;
+package com.printezisn.moviestore.movieservice.global.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

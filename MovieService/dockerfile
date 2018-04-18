@@ -1,0 +1,13 @@
+FROM openjdk:8
+WORKDIR /usr/src/java-code
+COPY . /usr/src/java-code/
+RUN ./gradlew dependencies
+RUN ./gradlew build
+ 
+WORKDIR /usr/src/java-app
+RUN cp /usr/src/java-code/build/libs/*.jar .
+RUN ls
+RUN mv ./MovieService-0.0.1-SNAPSHOT.jar ./app.jar
+RUN ls
+EXPOSE 9000
+CMD ["java", "-jar", "app.jar"]

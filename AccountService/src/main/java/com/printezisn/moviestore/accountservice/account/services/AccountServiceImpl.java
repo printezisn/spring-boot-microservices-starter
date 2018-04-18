@@ -41,9 +41,9 @@ public class AccountServiceImpl implements AccountService {
 	public Optional<AccountDto> getAccount(final UUID id)
 		throws AccountPersistenceException {
 		
-		final Optional<Account> account = accountRepository.findById(id.toString());
-		
 		try {
+			final Optional<Account> account = accountRepository.findById(id.toString());
+		
 			return account.isPresent()
 				? Optional.of(accountMapper.accountToAccountDto(account.get()))
 				: Optional.empty();
@@ -61,14 +61,14 @@ public class AccountServiceImpl implements AccountService {
 	public Optional<AccountDto> getAccount(final String username, final String password)
 		throws AccountPersistenceException {
 		
-		final Optional<Account> account = accountRepository.findByUsername(username);
-		if(!account.isPresent()) {
-			return Optional.empty();
-		}
-		
-		final String hashedPassword = BCrypt.hashpw(password, account.get().getPasswordSalt());
-		
 		try {
+			final Optional<Account> account = accountRepository.findByUsername(username);
+			if(!account.isPresent()) {
+				return Optional.empty();
+			}
+		
+			final String hashedPassword = BCrypt.hashpw(password, account.get().getPasswordSalt());
+		
 			return account.get().getPassword().equals(hashedPassword)
 				? Optional.of(accountMapper.accountToAccountDto(account.get()))
 				: Optional.empty();

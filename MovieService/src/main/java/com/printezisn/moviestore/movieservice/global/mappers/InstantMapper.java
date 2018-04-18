@@ -1,4 +1,4 @@
-package com.printezisn.moviestore.accountservice.global.mappers;
+package com.printezisn.moviestore.movieservice.global.mappers;
 
 import java.time.Instant;
 
