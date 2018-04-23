@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
@@ -18,6 +17,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.any;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
@@ -52,7 +54,7 @@ public class AccountControllerTest {
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
 		
-		Mockito.when(messageSource.getMessage(Mockito.anyString(), Mockito.any(Object[].class), Mockito.any(Locale.class))).thenReturn("Message");
+		when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("Message");
 		
 		accountController = new AccountController(accountService, messageSource);
 		mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
@@ -64,7 +66,7 @@ public class AccountControllerTest {
 	@Test
 	public void test_getAccount_notFound() throws Exception {
 		final UUID id = UUID.randomUUID();
-		Mockito.when(accountService.getAccount(id)).thenReturn(Optional.empty());
+		when(accountService.getAccount(id)).thenReturn(Optional.empty());
 		
 		mockMvc.perform(get("/account/get/" + id))
 			.andExpect(status().isNotFound());
@@ -76,7 +78,7 @@ public class AccountControllerTest {
 	@Test
 	public void test_getAccount_found() throws Exception {
 		final AccountDto accountDto = createAccount();
-		Mockito.when(accountService.getAccount(accountDto.getId())).thenReturn(Optional.of(accountDto));
+		when(accountService.getAccount(accountDto.getId())).thenReturn(Optional.of(accountDto));
 		
 		mockMvc.perform(get("/account/get/" + accountDto.getId()))
 			.andExpect(status().isOk())
@@ -109,7 +111,7 @@ public class AccountControllerTest {
 		
 		final ObjectMapper objectMapper = new ObjectMapper();	
 		
-		Mockito.when(accountService.getAccount(TEST_USERNAME, TEST_PASSWORD)).thenReturn(Optional.empty());
+		when(accountService.getAccount(TEST_USERNAME, TEST_PASSWORD)).thenReturn(Optional.empty());
 		
 		mockMvc.perform(post("/account/auth/").content(objectMapper.writeValueAsString(authDto)).contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest());
@@ -127,7 +129,7 @@ public class AccountControllerTest {
 		final ObjectMapper objectMapper = new ObjectMapper();		
 		final AccountDto accountDto = createAccount();
 		
-		Mockito.when(accountService.getAccount(TEST_USERNAME, TEST_PASSWORD)).thenReturn(Optional.of(accountDto));
+		when(accountService.getAccount(TEST_USERNAME, TEST_PASSWORD)).thenReturn(Optional.of(accountDto));
 		
 		mockMvc.perform(post("/account/auth/").content(objectMapper.writeValueAsString(authDto)).contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
@@ -157,7 +159,7 @@ public class AccountControllerTest {
 		final AccountDto accountDto = createAccount();
 		final ObjectMapper objectMapper = new ObjectMapper();
 		
-		Mockito.when(accountService.createAccount(accountDto)).thenThrow(new AccountValidationException("Test error."));
+		when(accountService.createAccount(accountDto)).thenThrow(new AccountValidationException("Test error."));
 		
 		mockMvc.perform(post("/account/new").content(objectMapper.writeValueAsString(accountDto)).contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest());
@@ -171,7 +173,7 @@ public class AccountControllerTest {
 		final AccountDto accountDto = createAccount();
 		final ObjectMapper objectMapper = new ObjectMapper();
 		
-		Mockito.when(accountService.createAccount(accountDto)).thenReturn(accountDto);
+		when(accountService.createAccount(accountDto)).thenReturn(accountDto);
 		
 		mockMvc.perform(post("/account/new").content(objectMapper.writeValueAsString(accountDto)).contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
@@ -194,17 +196,17 @@ public class AccountControllerTest {
 	}
 	
 	/**
-	 * Tests the scenario in which the account is not updated
+	 * Tests the scenario in which the account is not found
 	 */
 	@Test
-	public void test_updateAccount_fail() throws Exception {
+	public void test_updateAccount_notFound() throws Exception {
 		final AccountDto accountDto = createAccount();
 		final ObjectMapper objectMapper = new ObjectMapper();
 		
-		Mockito.when(accountService.updateAccount(accountDto)).thenThrow(new AccountNotFoundException());
+		when(accountService.updateAccount(accountDto)).thenThrow(new AccountNotFoundException());
 		
 		mockMvc.perform(post("/account/update").content(objectMapper.writeValueAsString(accountDto)).contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isBadRequest());
+			.andExpect(status().isNotFound());
 	}
 	
 	/**
@@ -215,25 +217,12 @@ public class AccountControllerTest {
 		final AccountDto accountDto = createAccount();
 		final ObjectMapper objectMapper = new ObjectMapper();
 		
-		Mockito.when(accountService.updateAccount(accountDto)).thenReturn(accountDto);
+		when(accountService.updateAccount(accountDto)).thenReturn(accountDto);
 		
 		mockMvc.perform(post("/account/update").content(objectMapper.writeValueAsString(accountDto)).contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("result.username").value(TEST_USERNAME))
 			.andExpect(jsonPath("result.emailAddress").value(TEST_EMAIL_ADDRESS));
-	}
-	
-	/**
-	 * Tests the scenario in which the account is not found
-	 */
-	@Test
-	public void test_deleteAccount_notFound() throws Exception {
-		final UUID id = UUID.randomUUID();
-		
-		Mockito.doThrow(new AccountNotFoundException()).when(accountService).deleteAccount(id);
-		
-		mockMvc.perform(get("/account/delete/" + id))
-			.andExpect(status().isBadRequest());
 	}
 	
 	/**

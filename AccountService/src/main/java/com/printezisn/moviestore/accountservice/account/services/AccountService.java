@@ -62,8 +62,6 @@ public interface AccountService {
 	 * @param id The id of the account
 	 * @return True if the operation is successful, otherwise false
 	 * @throws AccountPersistenceException Persistence error
-	 * @throws AccountNotFoundException Exception indicating that the account was not found
 	 */
-	void deleteAccount(final UUID id)
-		throws AccountPersistenceException, AccountNotFoundException;
+	void deleteAccount(final UUID id) throws AccountPersistenceException;
 }

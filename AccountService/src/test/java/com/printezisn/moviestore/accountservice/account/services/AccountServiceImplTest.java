@@ -5,6 +5,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -13,7 +19,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.DuplicateKeyException;
@@ -54,7 +59,7 @@ public class AccountServiceImplTest {
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
 		
-		Mockito.when(messageSource.getMessage(Mockito.anyString(), Mockito.any(Object[].class), Mockito.any(Locale.class))).thenReturn("Message");
+		when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("Message");
 		
 		accountService = new AccountServiceImpl(accountRepository, accountMapper, messageSource);
 	}
@@ -70,8 +75,8 @@ public class AccountServiceImplTest {
 		
 		final AccountDto accountDto = new AccountDto();
 		
-		Mockito.when(accountRepository.findById(id.toString())).thenReturn(Optional.of(account));
-		Mockito.when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
+		when(accountRepository.findById(id.toString())).thenReturn(Optional.of(account));
+		when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
 		
 		final Optional<AccountDto> result = accountService.getAccount(id);
 		
@@ -86,7 +91,7 @@ public class AccountServiceImplTest {
 	public void test_getAccount_withId_notFound() throws AccountException {
 		final UUID id = UUID.randomUUID();
 		
-		Mockito.when(accountRepository.findById(id.toString())).thenReturn(Optional.empty());
+		when(accountRepository.findById(id.toString())).thenReturn(Optional.empty());
 		
 		final Optional<AccountDto> result = accountService.getAccount(id);
 		
@@ -105,8 +110,8 @@ public class AccountServiceImplTest {
 		
 		final AccountDto accountDto = new AccountDto();
 		
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(account));
-		Mockito.when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(account));
+		when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
 		
 		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, TEST_PASSWORD);
 		
@@ -119,7 +124,7 @@ public class AccountServiceImplTest {
 	 */
 	@Test
 	public void test_getAccount_withAuth_notFound() throws AccountException {
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
 		
 		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, TEST_PASSWORD);
 		
@@ -138,8 +143,8 @@ public class AccountServiceImplTest {
 		
 		final AccountDto accountDto = new AccountDto();
 		
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(account));
-		Mockito.when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(account));
+		when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
 		
 		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, "12345");
 		
@@ -156,7 +161,7 @@ public class AccountServiceImplTest {
 		accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
 		accountDto.setPassword(TEST_PASSWORD);
 		
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(new Account()));
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(new Account()));
 		
 		try {
 			accountService.createAccount(accountDto);
@@ -178,8 +183,8 @@ public class AccountServiceImplTest {
 		accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
 		accountDto.setPassword(TEST_PASSWORD);
 		
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
-		Mockito.when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.of(new Account()));
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.of(new Account()));
 		
 		try {
 			accountService.createAccount(accountDto);
@@ -203,13 +208,13 @@ public class AccountServiceImplTest {
 		
 		final Account account = new Account();
 		
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
-		Mockito.when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
-		Mockito.when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
+		when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
 		
 		accountService.createAccount(accountDto);
 		
-		Mockito.verify(accountRepository).save(account);
+		verify(accountRepository).save(account);
 		
 		assertNotNull(accountDto.getId());
 		assertNotNull(accountDto.getPasswordSalt());
@@ -229,10 +234,10 @@ public class AccountServiceImplTest {
 		
 		final Account account = new Account();
 		
-		Mockito.when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
-		Mockito.when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
-		Mockito.when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
-		Mockito.when(accountRepository.save(account)).thenThrow(DuplicateKeyException.class);
+		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
+		when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
+		when(accountRepository.save(account)).thenThrow(DuplicateKeyException.class);
 		
 		try {
 			accountService.createAccount(accountDto);
@@ -252,7 +257,7 @@ public class AccountServiceImplTest {
 		final AccountDto accountDto = new AccountDto();
 		accountDto.setId(UUID.randomUUID());
 		
-		Mockito.when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.empty());
+		when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.empty());
 		
 		try {
 			accountService.updateAccount(accountDto);
@@ -273,40 +278,21 @@ public class AccountServiceImplTest {
 		accountDto.setId(UUID.randomUUID());
 		accountDto.setPassword(TEST_PASSWORD);
 		
-		final Account account = Mockito.mock(Account.class);
+		final Account account = mock(Account.class);
 		
-		Mockito.when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.of(account));
-		Mockito.when(account.getPasswordSalt()).thenReturn(BCrypt.gensalt());
+		when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.of(account));
+		when(account.getPasswordSalt()).thenReturn(BCrypt.gensalt());
 		
 		accountService.updateAccount(accountDto);
 		
-		Mockito.verify(accountRepository).save(account);
-		Mockito.verify(account, Mockito.never()).setId(Mockito.anyString());
-		Mockito.verify(account, Mockito.never()).setUsername(Mockito.anyString());
-		Mockito.verify(account, Mockito.never()).setEmailAddress(Mockito.anyString());
-		Mockito.verify(account).setPassword(Mockito.anyString());
-		Mockito.verify(account).setPasswordSalt(Mockito.anyString());
-		Mockito.verify(account, Mockito.never()).setCreationTimestamp(Mockito.anyString());
-		Mockito.verify(account).setUpdateTimestamp(Mockito.anyString());
-	}
-	
-	/**
-	 * Tests the scenario in which the account is not found
-	 */
-	@Test
-	public void test_deleteAccount_accountNotFound() throws AccountException {
-		final UUID id = UUID.randomUUID();
-		
-		Mockito.when(accountRepository.findById(id.toString())).thenReturn(Optional.empty());
-		
-		try {
-			accountService.deleteAccount(id);
-			
-			fail();
-		}
-		catch(final AccountNotFoundException ex) {
-			
-		}
+		verify(accountRepository).save(account);
+		verify(account, never()).setId(anyString());
+		verify(account, never()).setUsername(anyString());
+		verify(account, never()).setEmailAddress(anyString());
+		verify(account).setPassword(anyString());
+		verify(account).setPasswordSalt(anyString());
+		verify(account, never()).setCreationTimestamp(anyString());
+		verify(account).setUpdateTimestamp(anyString());
 	}
 	
 	/**
@@ -315,12 +301,9 @@ public class AccountServiceImplTest {
 	@Test
 	public void test_deleteAccount_successfulDelete() throws AccountException {
 		final UUID id = UUID.randomUUID();
-		final Account account = new Account();
-		
-		Mockito.when(accountRepository.findById(id.toString())).thenReturn(Optional.of(account));
 		
 		accountService.deleteAccount(id);
 		
-		Mockito.verify(accountRepository).delete(account);
+		verify(accountRepository).deleteById(id.toString());
 	}
 }

@@ -147,16 +147,9 @@ public class AccountServiceImpl implements AccountService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteAccount(UUID id)
-		throws AccountPersistenceException, AccountNotFoundException {
-		
-		final Optional<Account> account = accountRepository.findById(id.toString());
-		if(!account.isPresent()) {
-			throw new AccountNotFoundException();
-		}
-		
+	public void deleteAccount(UUID id) throws AccountPersistenceException {
 		try {
-			accountRepository.delete(account.get());
+			accountRepository.deleteById(id.toString());
 		}
 		catch(final Exception ex) {
 			log.error("An error occurred: " + ex.getMessage(), ex);

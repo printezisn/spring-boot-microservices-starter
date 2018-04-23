@@ -131,9 +131,7 @@ public class AccountController extends BaseController {
 			return ResponseEntity.ok(result);
 		}
 		catch(final AccountNotFoundException ex) {
-			final Result<AccountDto> result = new Result<>(getMessage("accountNotFound"));
-			
-			return ResponseEntity.badRequest().body(result);
+			return ResponseEntity.notFound().build();
 		}
 	}
 	
@@ -148,14 +146,9 @@ public class AccountController extends BaseController {
 	public ResponseEntity<?> deleteAccount(@PathVariable("id") final UUID id)
 		throws AccountPersistenceException {
 		
-		try {
-			accountService.deleteAccount(id);
+		accountService.deleteAccount(id);
 			
-			return ResponseEntity.ok().build();
-		}
-		catch(final AccountNotFoundException ex) {
-			return ResponseEntity.badRequest().body(getMessage("accountNotFound"));
-		}
+		return ResponseEntity.ok().build();
 	}
 	
 	/**

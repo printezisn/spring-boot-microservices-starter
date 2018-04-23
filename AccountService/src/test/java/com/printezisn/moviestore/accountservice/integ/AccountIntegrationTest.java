@@ -144,7 +144,7 @@ public class AccountIntegrationTest {
 		final String updateUrl = getActionUrl("account/update");
 		final ResponseEntity<AccountResultModel> createResult = testRestTemplate.postForEntity(updateUrl, accountDto, AccountResultModel.class);
 		
-		assertEquals(HttpStatus.BAD_REQUEST, createResult.getStatusCode());
+		assertEquals(HttpStatus.NOT_FOUND, createResult.getStatusCode());
 	}
 	
 	/**
@@ -159,17 +159,6 @@ public class AccountIntegrationTest {
 		final ResponseEntity<AccountResultModel> createResult = testRestTemplate.postForEntity(updateUrl, accountDto, AccountResultModel.class);
 		
 		assertEquals(HttpStatus.OK, createResult.getStatusCode());
-	}
-	
-	/**
-	 * Tests the scenario in which the account is not found
-	 */
-	@Test
-	public void test_deleteAccount_notFound() {
-		final String deleteUrl = getActionUrl("account/delete/" + UUID.randomUUID());
-		final ResponseEntity<?> deleteResult = testRestTemplate.getForEntity(deleteUrl, String.class);
-		
-		assertEquals(HttpStatus.BAD_REQUEST, deleteResult.getStatusCode());
 	}
 	
 	/**
