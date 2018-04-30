@@ -21,7 +21,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'com.printezisn.moviestore'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 sourceCompatibility = 1.8
 
 repositories {
@@ -40,6 +40,8 @@ dependencies {
 	compile('org.mapstruct:mapstruct-jdk8:1.2.0.Final')
 	compile('io.springfox:springfox-swagger2:2.8.0')
 	compile('io.springfox:springfox-swagger-ui:2.8.0')
+	
+	compile project(':Common')
 	
 	apt('org.projectlombok:lombok:1.16.20')
 	apt('org.mapstruct:mapstruct-processor:1.2.0.Final')

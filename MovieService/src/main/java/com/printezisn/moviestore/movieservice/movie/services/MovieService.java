@@ -3,8 +3,8 @@ package com.printezisn.moviestore.movieservice.movie.services;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.printezisn.moviestore.movieservice.global.models.PagedResult;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;

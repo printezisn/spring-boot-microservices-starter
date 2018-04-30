@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * The main class of the application
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = { "com.printezisn.moviestore.movieservice", "com.printezisn.moviestore.common" })
 public class MovieServiceApplication {
 
 	/**

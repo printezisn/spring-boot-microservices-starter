@@ -2,10 +2,11 @@ package com.printezisn.moviestore.movieservice.movie.mappers;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
-import com.printezisn.moviestore.movieservice.global.mappers.InstantMapper;
-import com.printezisn.moviestore.movieservice.global.mappers.UUIDMapper;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.mappers.InstantMapper;
+import com.printezisn.moviestore.common.mappers.UUIDMapper;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
 import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
 
@@ -46,5 +47,9 @@ public interface MovieMapper {
 	 * @param searchedMovie The SearchedMovie object to convert
 	 * @return The converted MovieDto object
 	 */
+	@Mappings({
+		@Mapping(target = "creationTimestamp", ignore = true),
+		@Mapping(target = "updateTimestamp", ignore = true)
+	})
 	MovieDto searchedMovieToMovieDto(final SearchedMovie searchedMovie);
 }

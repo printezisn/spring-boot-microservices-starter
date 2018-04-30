@@ -10,13 +10,13 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
 import com.printezisn.moviestore.accountservice.account.entities.Account;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.mappers.AccountMapper;
 import com.printezisn.moviestore.accountservice.account.repositories.AccountRepository;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

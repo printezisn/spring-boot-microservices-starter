@@ -3,10 +3,10 @@ package com.printezisn.moviestore.accountservice.account.services;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
 
 /**
  * The service layer for accounts

@@ -1,0 +1,5 @@
+rootProject.name = 'MovieStore'
+
+include 'Common'
+include 'AccountService'
+include 'MovieService'

@@ -4,10 +4,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
 import com.printezisn.moviestore.accountservice.account.entities.Account;
-import com.printezisn.moviestore.accountservice.global.mappers.InstantMapper;
-import com.printezisn.moviestore.accountservice.global.mappers.UUIDMapper;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
+import com.printezisn.moviestore.common.mappers.InstantMapper;
+import com.printezisn.moviestore.common.mappers.UUIDMapper;
 
 /**
  * Mapper class for Account objects

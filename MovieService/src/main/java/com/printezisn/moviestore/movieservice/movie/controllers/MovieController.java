@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.printezisn.moviestore.movieservice.global.controllers.BaseController;
-import com.printezisn.moviestore.movieservice.global.models.PagedResult;
-import com.printezisn.moviestore.movieservice.global.models.Result;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.models.Result;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;

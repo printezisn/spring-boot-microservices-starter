@@ -24,13 +24,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
 import com.printezisn.moviestore.accountservice.account.entities.Account;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.mappers.AccountMapper;
 import com.printezisn.moviestore.accountservice.account.repositories.AccountRepository;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
 
 /**
  * Contains unit tests for the AccountServiceImpl class

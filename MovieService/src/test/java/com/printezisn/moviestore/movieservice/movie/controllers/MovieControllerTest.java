@@ -11,9 +11,9 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.printezisn.moviestore.movieservice.global.models.PagedResult;
+import com.printezisn.moviestore.common.models.PagedResult;
 import com.printezisn.moviestore.movieservice.movie.controllers.MovieController;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.services.MovieService;
 

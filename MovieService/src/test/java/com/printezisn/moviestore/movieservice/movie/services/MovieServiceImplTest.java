@@ -13,8 +13,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.printezisn.moviestore.movieservice.global.models.PagedResult;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
 import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
 import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;

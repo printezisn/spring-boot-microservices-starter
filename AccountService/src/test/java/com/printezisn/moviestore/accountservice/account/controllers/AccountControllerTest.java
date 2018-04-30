@@ -22,11 +22,11 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.any;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
-import com.printezisn.moviestore.accountservice.account.dto.AuthDto;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.services.AccountService;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
+import com.printezisn.moviestore.common.dto.account.AuthDto;
 
 /**
  * Contains unit tests for the account controller

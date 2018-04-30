@@ -16,9 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
-import com.printezisn.moviestore.accountservice.account.dto.AuthDto;
-import com.printezisn.moviestore.accountservice.integ.models.AccountResultModel;
+import com.printezisn.moviestore.common.models.account.AccountResultModel;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
+import com.printezisn.moviestore.common.dto.account.AuthDto;
 
 
 /**

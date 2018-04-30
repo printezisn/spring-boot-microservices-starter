@@ -18,9 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.printezisn.moviestore.movieservice.integ.models.MoviePagedResultModel;
-import com.printezisn.moviestore.movieservice.integ.models.MovieResultModel;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
+import com.printezisn.moviestore.common.models.movie.MovieResultModel;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 
 /**
  * Contains integration tests for the movie entity

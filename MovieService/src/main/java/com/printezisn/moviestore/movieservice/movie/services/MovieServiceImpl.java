@@ -15,8 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
-import com.printezisn.moviestore.movieservice.global.models.PagedResult;
-import com.printezisn.moviestore.movieservice.movie.dto.MovieDto;
+import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
 import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
 import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;

@@ -57,6 +57,8 @@ public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchReposit
 				.build();
 		}
 
+		elasticsearchTemplate.putMapping(SearchedMovie.class);
+		
 		return elasticsearchTemplate.query(searchQuery, searchResponse -> {
 			try {
 				final ObjectMapper objectMapper = new ObjectMapper();

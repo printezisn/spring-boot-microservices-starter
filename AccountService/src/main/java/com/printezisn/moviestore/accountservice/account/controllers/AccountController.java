@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.printezisn.moviestore.accountservice.account.dto.AccountDto;
-import com.printezisn.moviestore.accountservice.account.dto.AuthDto;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.services.AccountService;
-import com.printezisn.moviestore.accountservice.global.controllers.BaseController;
-import com.printezisn.moviestore.accountservice.global.models.Result;
+import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.dto.account.AccountDto;
+import com.printezisn.moviestore.common.dto.account.AuthDto;
+import com.printezisn.moviestore.common.models.Result;
 
 import lombok.RequiredArgsConstructor;
 
