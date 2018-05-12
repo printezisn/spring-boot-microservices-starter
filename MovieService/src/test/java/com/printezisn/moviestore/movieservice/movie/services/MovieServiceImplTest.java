@@ -204,18 +204,12 @@ public class MovieServiceImplTest {
 	 * Tests the scenario in which the movie is not found
 	 * @throws Exception
 	 */
-	@Test
+	@Test(expected = MovieNotFoundException.class)
 	public void test_getMovie_notFound() throws Exception {
 		final UUID id = UUID.randomUUID();
 		when(movieRepository.findById(id.toString())).thenReturn(Optional.empty());
 		
-		try {
-			movieService.getMovie(id);
-			fail();
-		}
-		catch(final MovieNotFoundException ex) {
-			
-		}
+		movieService.getMovie(id);
 	}
 	
 	/**
@@ -265,7 +259,7 @@ public class MovieServiceImplTest {
 	 * Tests the scenario in which the movie is not found
 	 * @throws Exception
 	 */
-	@Test
+	@Test(expected = MovieNotFoundException.class)
 	public void test_updateMovie_notFound() throws Exception {
 		final MovieDto movieDto = new MovieDto();
 		final Movie movie = new Movie();
@@ -273,13 +267,7 @@ public class MovieServiceImplTest {
 		when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(movie);
 		when(movieRepository.updateMovie(movie)).thenReturn(0L);
 		
-		try {
-			movieService.updateMovie(movieDto);
-			fail();
-		}
-		catch(final MovieNotFoundException ex) {
-			
-		}
+		movieService.updateMovie(movieDto);
 	}
 	
 	/**
@@ -321,20 +309,14 @@ public class MovieServiceImplTest {
 	 * Tests the scenario in which the movie is not found
 	 * @throws Exception
 	 */
-	@Test
+	@Test(expected = MovieNotFoundException.class)
 	public void test_likeMovie_movieNotFound() throws Exception {
 		final UUID movieId = UUID.randomUUID();
 		final UUID userId = UUID.randomUUID();
 		
 		when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
 		
-		try {
-			movieService.likeMovie(movieId, userId);
-			fail();
-		}
-		catch(final MovieNotFoundException ex) {
-			
-		}
+		movieService.likeMovie(movieId, userId);
 	}
 	
 	/**
@@ -438,20 +420,14 @@ public class MovieServiceImplTest {
 	 * Tests the scenario in which the movie is not found
 	 * @throws Exception
 	 */
-	@Test
+	@Test(expected = MovieNotFoundException.class)
 	public void test_unlikeMovie_movieNotFound() throws Exception {
 		final UUID movieId = UUID.randomUUID();
 		final UUID userId = UUID.randomUUID();
 		
 		when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
 		
-		try {
-			movieService.unlikeMovie(movieId, userId);
-			fail();
-		}
-		catch(final MovieNotFoundException ex) {
-			
-		}
+		movieService.unlikeMovie(movieId, userId);
 	}
 	
 	/**

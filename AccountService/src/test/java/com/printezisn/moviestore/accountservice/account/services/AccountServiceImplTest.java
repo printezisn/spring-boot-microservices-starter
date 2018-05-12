@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.anyString;
@@ -154,7 +153,7 @@ public class AccountServiceImplTest {
 	/**
 	 * Tests the scenario in which the username already exists
 	 */
-	@Test
+	@Test(expected = AccountValidationException.class)
 	public void test_createAccount_usernameExists() throws AccountException {
 		final AccountDto accountDto = new AccountDto();
 		accountDto.setUsername(TEST_USERNAME);
@@ -163,20 +162,13 @@ public class AccountServiceImplTest {
 		
 		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(new Account()));
 		
-		try {
-			accountService.createAccount(accountDto);
-			
-			fail();
-		}
-		catch(final AccountValidationException ex) {
-			
-		}
+		accountService.createAccount(accountDto);
 	}
 	
 	/**
 	 * Tests the scenario in which the email address already exists
 	 */
-	@Test
+	@Test(expected = AccountValidationException.class)
 	public void test_createAccount_emailAddressExists() throws AccountException {
 		final AccountDto accountDto = new AccountDto();
 		accountDto.setUsername(TEST_USERNAME);
@@ -186,14 +178,7 @@ public class AccountServiceImplTest {
 		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
 		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.of(new Account()));
 		
-		try {
-			accountService.createAccount(accountDto);
-			
-			fail();
-		}
-		catch(final AccountValidationException ex) {
-			
-		}
+		accountService.createAccount(accountDto);
 	}
 	
 	/**
@@ -225,7 +210,7 @@ public class AccountServiceImplTest {
 	/**
 	 * Tests the scenario in which the account repository throws a DuplicateKeyException
 	 */
-	@Test
+	@Test(expected = AccountValidationException.class)
 	public void test_createAccount_duplicateKeyException() throws AccountException {
 		final AccountDto accountDto = new AccountDto();
 		accountDto.setUsername(TEST_USERNAME);
@@ -239,34 +224,20 @@ public class AccountServiceImplTest {
 		when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
 		when(accountRepository.save(account)).thenThrow(DuplicateKeyException.class);
 		
-		try {
-			accountService.createAccount(accountDto);
-			
-			fail();
-		}
-		catch(final AccountValidationException ex) {
-			
-		}
+		accountService.createAccount(accountDto);
 	}
 	
 	/**
 	 * Tests the scenario in which the account is not found
 	 */
-	@Test
+	@Test(expected = AccountNotFoundException.class)
 	public void test_updateAccount_accountNotFound() throws AccountException {
 		final AccountDto accountDto = new AccountDto();
 		accountDto.setId(UUID.randomUUID());
 		
 		when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.empty());
 		
-		try {
-			accountService.updateAccount(accountDto);
-			
-			fail();
-		}
-		catch(final AccountNotFoundException ex) {
-			
-		}
+		accountService.updateAccount(accountDto);
 	}
 	
 	/**
