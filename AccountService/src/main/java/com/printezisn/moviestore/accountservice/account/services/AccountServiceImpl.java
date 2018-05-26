@@ -2,7 +2,6 @@ package com.printezisn.moviestore.accountservice.account.services;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -38,11 +37,11 @@ public class AccountServiceImpl implements AccountService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Optional<AccountDto> getAccount(final UUID id)
+	public Optional<AccountDto> getAccount(final String username)
 		throws AccountPersistenceException {
 		
 		try {
-			final Optional<Account> account = accountRepository.findById(id.toString());
+			final Optional<Account> account = accountRepository.findById(username);
 		
 			return account.isPresent()
 				? Optional.of(accountMapper.accountToAccountDto(account.get()))
@@ -62,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
 		throws AccountPersistenceException {
 		
 		try {
-			final Optional<Account> account = accountRepository.findByUsername(username);
+			final Optional<Account> account = accountRepository.findById(username);
 			if(!account.isPresent()) {
 				return Optional.empty();
 			}
@@ -87,14 +86,13 @@ public class AccountServiceImpl implements AccountService {
 		throws AccountPersistenceException, AccountValidationException {
 		
 		// The username and email address must be unique
-		if(accountRepository.findByUsername(accountDto.getUsername()).isPresent()) {
+		if(accountRepository.findById(accountDto.getUsername()).isPresent()) {
 			throw new AccountValidationException(getMessage("usernameExists"));
 		}
 		if(accountRepository.findByEmailAddress(accountDto.getEmailAddress()).isPresent()) {
 			throw new AccountValidationException(getMessage("emailAddressExists"));
 		}
 		
-		accountDto.setId(UUID.randomUUID());
 		accountDto.setPasswordSalt(BCrypt.gensalt());
 		accountDto.setPassword(BCrypt.hashpw(accountDto.getPassword(), accountDto.getPasswordSalt()));
 		accountDto.setCreationTimestamp(Instant.now());
@@ -120,10 +118,10 @@ public class AccountServiceImpl implements AccountService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AccountDto updateAccount(AccountDto accountDto)
+	public AccountDto updateAccount(final AccountDto accountDto)
 		throws AccountPersistenceException, AccountNotFoundException {
 		
-		final Account account = accountRepository.findById(accountDto.getId().toString()).orElse(null);
+		final Account account = accountRepository.findById(accountDto.getUsername()).orElse(null);
 		if(account == null) {
 			throw new AccountNotFoundException();
 		}
@@ -147,9 +145,9 @@ public class AccountServiceImpl implements AccountService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteAccount(UUID id) throws AccountPersistenceException {
+	public void deleteAccount(final String username) throws AccountPersistenceException {
 		try {
-			accountRepository.deleteById(id.toString());
+			accountRepository.deleteById(username);
 		}
 		catch(final Exception ex) {
 			log.error("An error occurred: " + ex.getMessage(), ex);

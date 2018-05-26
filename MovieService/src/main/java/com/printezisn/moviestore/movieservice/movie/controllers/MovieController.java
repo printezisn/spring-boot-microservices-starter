@@ -151,19 +151,19 @@ public class MovieController extends BaseController {
 	 * Adds a like to a movie
 	 * 
 	 * @param movieId The id of the movie to like
-	 * @param userId The id of the user who likes the movie
+	 * @param user The user who likes the movie
 	 * @return The updated movie
 	 * @throws MoviePersistenceException Exception thrown in case of persistence error
 	 * @throws MovieConditionalException Exception thrown in case of conditional update failure
 	 */
-	@GetMapping("/movie/like/{movieId}/{userId}")
+	@GetMapping("/movie/like/{movieId}/{user}")
 	public ResponseEntity<?> likeMovie(
 			@PathVariable("movieId") final UUID movieId,
-			@PathVariable("userId") final UUID userId)
+			@PathVariable("user") final String user)
 			throws MoviePersistenceException, MovieConditionalException {
 		
 		try {
-			final MovieDto result = movieService.likeMovie(movieId, userId);
+			final MovieDto result = movieService.likeMovie(movieId, user);
 			
 			return ResponseEntity.ok(result);
 		}
@@ -176,19 +176,19 @@ public class MovieController extends BaseController {
 	 * Removes a like from a movie
 	 * 
 	 * @param movieId The id of the movie to unlike
-	 * @param userId The id of the user whose like is removed from the movie
+	 * @param user The user whose like is removed from the movie
 	 * @return The updated movie
 	 * @throws MoviePersistenceException Exception thrown in case of persistence error
 	 * @throws MovieConditionalException Exception thrown in case of conditional update failure
 	 */
-	@GetMapping("/movie/unlike/{movieId}/{userId}")
+	@GetMapping("/movie/unlike/{movieId}/{user}")
 	public ResponseEntity<?> unlikeMovie(
 			@PathVariable("movieId") final UUID movieId,
-			@PathVariable("userId") final UUID userId)
+			@PathVariable("user") final String user)
 			throws MoviePersistenceException, MovieConditionalException {
 		
 		try {
-			final MovieDto result = movieService.unlikeMovie(movieId, userId);
+			final MovieDto result = movieService.unlikeMovie(movieId, user);
 			
 			return ResponseEntity.ok(result);
 		}

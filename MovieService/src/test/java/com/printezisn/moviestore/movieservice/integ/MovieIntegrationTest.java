@@ -1,7 +1,10 @@
 package com.printezisn.moviestore.movieservice.integ;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -9,24 +12,25 @@ import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 
 /**
  * Contains integration tests for the movie entity
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+@AutoConfigureMockMvc
 @TestPropertySource("classpath:application-test.properties")
 public class MovieIntegrationTest {
 
@@ -35,82 +39,77 @@ public class MovieIntegrationTest {
 	private static final double TEST_RATING = 9;
 	private static final int TEST_RELEASE_YEAR = 1988;
 	private static final int TEST_TOTAL_LIKES = 5;
-	private static final UUID TEST_CREATOR_ID = UUID.randomUUID();
-	
-	@LocalServerPort
-	private int localServerPort;
+	private static final String TEST_CREATOR = "test_creator_%s";
 	
 	@Autowired
-	private TestRestTemplate testRestTemplate;
+	private MockMvc mockMvc;
 	
 	/**
 	 * Tests if movies are searched successfully
 	 */
 	@Test
-	public void test_searchMovies_success() {
+	public void test_searchMovies_success() throws Exception {
 		final String text = "test";
-		final int pageNumber = 1;
-		final String sortField = "title";
+		final int pageNumber = 0;
+		final String sortField = "rating";
 		final boolean isAscending = true;
 		
 		createMovie();
 		
-		final String params = String.format("?text=%s&page=%d&sort=%s&asc=%s",
+		final String url = String.format("/movie/search?text=%s&page=%d&sort=%s&asc=%s",
 			text, pageNumber, sortField, isAscending);
-		final String getUrl = getActionUrl("movie/search" + params);
 		
-		final ResponseEntity<MoviePagedResultModel> result =
-			testRestTemplate.getForEntity(getUrl, MoviePagedResultModel.class);
+		final String responseString = mockMvc.perform(get(url))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
-		assertFalse(result.getBody().getEntries().isEmpty());
+		final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+		final MoviePagedResultModel result = objectMapper.readValue(responseString, MoviePagedResultModel.class);
+
+		assertFalse(result.getEntries().isEmpty());
 	}
 	
 	/**
 	 * Tests the scenario in which the movie is not found 
 	 */
 	@Test
-	public void test_getMovie_notFound() {
-		final UUID id = UUID.randomUUID();
-		final String getUrl = getActionUrl("movie/get/" + id);
-		
-		final ResponseEntity<MovieDto> result = testRestTemplate.getForEntity(getUrl, MovieDto.class);
-		
-		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+	public void test_getMovie_notFound() throws Exception {
+		mockMvc.perform(get("/movie/get/" + UUID.randomUUID()))
+			.andExpect(status().isNotFound());
 	}
 	
 	/**
 	 * Tests the scenario in which the movie is found
 	 */
 	@Test
-	public void test_getMovie_found() {
+	public void test_getMovie_found() throws Exception {
 		final MovieDto movieDto = createMovie();
-		final String getUrl = getActionUrl("movie/get/" + movieDto.getId());
-		
-		final ResponseEntity<MovieDto> result = testRestTemplate.getForEntity(getUrl, MovieDto.class);
-		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
-		assertEquals(movieDto.getId(), result.getBody().getId());
+
+		mockMvc.perform(get("/movie/get/" + movieDto.getId()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("id").value(movieDto.getId().toString()));
 	}
 	
 	/**
 	 * Tests the scenario in which there are validation errors
 	 */
 	@Test
-	public void test_createMovie_validationErrors() {
+	public void test_createMovie_validationErrors() throws Exception {
 		final MovieDto movieDto = new MovieDto();
-		final String postUrl = getActionUrl("movie/new");
+		final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 		
-		final ResponseEntity<MovieResultModel> result = testRestTemplate.postForEntity(postUrl, movieDto, MovieResultModel.class);
-		
-		assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+		final String content = objectMapper.writeValueAsString(movieDto);
+		mockMvc.perform(post("/movie/new").content(content).contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest());
 	}
 	
 	/**
 	 * Tests the scenario in which the movie is created successfully
 	 */
 	@Test
-	public void test_createMovie_success() {
+	public void test_createMovie_success() throws Exception {
 		createMovie();
 	}
 	
@@ -118,62 +117,60 @@ public class MovieIntegrationTest {
 	 * Tests the scenario in which there are validation errors
 	 */
 	@Test
-	public void test_updateMovie_validationErrors() {
+	public void test_updateMovie_validationErrors() throws Exception {
 		final MovieDto movieDto = new MovieDto();
-		final String postUrl = getActionUrl("movie/update");
+		final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 		
-		final ResponseEntity<MovieResultModel> result = testRestTemplate.postForEntity(postUrl, movieDto, MovieResultModel.class);
-		
-		assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+		final String content = objectMapper.writeValueAsString(movieDto);
+		mockMvc.perform(post("/movie/update").content(content).contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest());
 	}
 	
 	/**
 	 * Tests the scenario in which the movie is not found
 	 */
 	@Test
-	public void test_updateMovie_notFound() {
+	public void test_updateMovie_notFound() throws Exception {
 		final MovieDto movieDto = createMovie();
-		final String postUrl = getActionUrl("movie/update");
+		final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 		
 		movieDto.setId(UUID.randomUUID());
 		
-		final ResponseEntity<MovieResultModel> result = testRestTemplate.postForEntity(postUrl, movieDto, MovieResultModel.class);
-		
-		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+		final String content = objectMapper.writeValueAsString(movieDto);
+		mockMvc.perform(post("/movie/update").content(content).contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isNotFound());
 	}
 	
 	/**
 	 * Tests the scenario in which the movie is updated successfully
 	 */
 	@Test
-	public void test_updateMovie_success() {
+	public void test_updateMovie_success() throws Exception {
 		final MovieDto movieDto = createMovie();
-		final String postUrl = getActionUrl("movie/update");
+		final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 		
-		final ResponseEntity<MovieResultModel> result = testRestTemplate.postForEntity(postUrl, movieDto, MovieResultModel.class);
-		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
-		assertEquals(movieDto.getId(), result.getBody().getResult().getId());
+		final String content = objectMapper.writeValueAsString(movieDto);
+		mockMvc.perform(post("/movie/update").content(content).contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("result.id").value(movieDto.getId().toString()));
 	}
 	
 	/**
 	 * Tests the scenario in which the movie is deleted successfully
 	 */
 	@Test
-	public void test_deleteMovie_success() {
+	public void test_deleteMovie_success() throws Exception {
 		final MovieDto movieDto = createMovie();
-		final String getUrl = getActionUrl("movie/delete/" + movieDto.getId());
 		
-		final ResponseEntity<?> result = testRestTemplate.getForEntity(getUrl, Object.class);
-		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
+		mockMvc.perform(get("/movie/delete/" + movieDto.getId()))
+			.andExpect(status().isOk());
 	}
 	
 	/**
 	 * Tests if a movie like is created successfully
 	 */
 	@Test
-	public void test_likeMovie_success() {
+	public void test_likeMovie_success() throws Exception {
 		final MovieDto movieDto = createMovie();
 		likeMovie(movieDto);
 	}
@@ -182,17 +179,14 @@ public class MovieIntegrationTest {
 	 * Tests if a movie like is removed successfully
 	 */
 	@Test
-	public void test_unlikeMovie_success() {
+	public void test_unlikeMovie_success() throws Exception {
 		final MovieDto movieDto = createMovie();
 		likeMovie(movieDto);
 		
-		final String getUrl = getActionUrl(
-			String.format("movie/unlike/%s/%s", movieDto.getId(), movieDto.getCreatorId()));	
-		final ResponseEntity<MovieDto> result = testRestTemplate.getForEntity(getUrl, MovieDto.class);
-		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
-		assertEquals(movieDto.getId(), result.getBody().getId());
-		assertEquals(0, result.getBody().getTotalLikes());
+		mockMvc.perform(get(String.format("/movie/unlike/%s/%s", movieDto.getId().toString(), movieDto.getCreator())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("id").value(movieDto.getId().toString()))
+			.andExpect(jsonPath("totalLikes").value(0));
 	}
 	
 	/**
@@ -200,14 +194,11 @@ public class MovieIntegrationTest {
 	 * 
 	 * @param movieDto The movie to like
 	 */
-	private void likeMovie(final MovieDto movieDto) {
-		final String getUrl = getActionUrl(
-			String.format("movie/like/%s/%s", movieDto.getId(), movieDto.getCreatorId()));	
-		final ResponseEntity<MovieDto> result = testRestTemplate.getForEntity(getUrl, MovieDto.class);
-		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
-		assertEquals(movieDto.getId(), result.getBody().getId());
-		assertEquals(1, result.getBody().getTotalLikes());
+	private void likeMovie(final MovieDto movieDto) throws Exception {
+		mockMvc.perform(get(String.format("/movie/like/%s/%s", movieDto.getId(), movieDto.getCreator())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("id").value(movieDto.getId().toString()))
+			.andExpect(jsonPath("totalLikes").value(1));
 	}
 	
 	/**
@@ -215,7 +206,7 @@ public class MovieIntegrationTest {
 	 * 
 	 * @return The created movie
 	 */
-	private MovieDto createMovie() {
+	private MovieDto createMovie() throws Exception {
 		final String randomString = UUID.randomUUID().toString();
 		final MovieDto movieDto = new MovieDto();
 		
@@ -227,23 +218,18 @@ public class MovieIntegrationTest {
 		movieDto.setTotalLikes(TEST_TOTAL_LIKES);
 		movieDto.setCreationTimestamp(Instant.now());
 		movieDto.setUpdateTimestamp(Instant.now());
-		movieDto.setCreatorId(TEST_CREATOR_ID);
+		movieDto.setCreator(String.format(TEST_CREATOR, randomString));
 		
-		final String postUrl = getActionUrl("movie/new");
-		final ResponseEntity<MovieResultModel> result = testRestTemplate.postForEntity(postUrl, movieDto, MovieResultModel.class);
+		final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+		final String content = objectMapper.writeValueAsString(movieDto);
 		
-		assertEquals(HttpStatus.OK, result.getStatusCode());
+		final String responseString = mockMvc.perform(post("/movie/new").content(content).contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 		
-		return result.getBody().getResult();
-	}
-	
-	/**
-	 * Returns the URL to an action
-	 * 
-	 * @param action The action
-	 * @return The action URL
-	 */
-	private String getActionUrl(final String action) {
-		return String.format("http://localhost:%d/%s", localServerPort, action);
+		return objectMapper.readValue(responseString, MovieResultModel.class)
+			.getResult();
 	}
 }

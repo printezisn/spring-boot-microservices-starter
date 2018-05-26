@@ -57,5 +57,5 @@ public class SearchedMovie {
 		index = false,
 		store = true
 	)
-	private String creatorId;
+	private String creator;
 }

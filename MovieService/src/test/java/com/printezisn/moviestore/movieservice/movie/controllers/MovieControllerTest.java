@@ -42,7 +42,7 @@ public class MovieControllerTest {
 	private static final double TEST_RATING = 9;
 	private static final int TEST_RELEASE_YEAR = 1988;
 	private static final int TEST_TOTAL_LIKES = 5;
-	private static final UUID TEST_CREATOR_ID = UUID.randomUUID();
+	private static final String TEST_CREATOR = "test_creator";
 	
 	@Mock
 	private MovieService movieService;
@@ -256,10 +256,10 @@ public class MovieControllerTest {
 	@Test
 	public void test_likeMovie_notFound() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
-		final String url = String.format("/movie/like/%s/%s", movieId, userId);
+		final String user = "test_user";
+		final String url = String.format("/movie/like/%s/%s", movieId, user);
 		
-		when(movieService.likeMovie(movieId, userId)).thenThrow(new MovieNotFoundException());
+		when(movieService.likeMovie(movieId, user)).thenThrow(new MovieNotFoundException());
 		
 		mockMvc.perform(get(url)).andExpect(status().isNotFound());
 	}
@@ -272,10 +272,10 @@ public class MovieControllerTest {
 	@Test
 	public void test_likeMovie_success() throws Exception {
 		final MovieDto movieDto = createMovie();
-		final UUID userId = UUID.randomUUID();
-		final String url = String.format("/movie/like/%s/%s", movieDto.getId(), userId);
+		final String user = "test_user";
+		final String url = String.format("/movie/like/%s/%s", movieDto.getId(), user);
 		
-		when(movieService.likeMovie(movieDto.getId(), userId)).thenReturn(movieDto);
+		when(movieService.likeMovie(movieDto.getId(), user)).thenReturn(movieDto);
 		
 		final ResultActions resultActions = mockMvc.perform(get(url))
 			.andExpect(status().isOk());
@@ -290,10 +290,10 @@ public class MovieControllerTest {
 	@Test
 	public void test_unlikeMovie_notFound() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
-		final String url = String.format("/movie/unlike/%s/%s", movieId, userId);
+		final String user = "test_user";
+		final String url = String.format("/movie/unlike/%s/%s", movieId, user);
 		
-		when(movieService.unlikeMovie(movieId, userId)).thenThrow(new MovieNotFoundException());
+		when(movieService.unlikeMovie(movieId, user)).thenThrow(new MovieNotFoundException());
 		
 		mockMvc.perform(get(url)).andExpect(status().isNotFound());
 	}
@@ -306,10 +306,10 @@ public class MovieControllerTest {
 	@Test
 	public void test_unlikeMovie_success() throws Exception {
 		final MovieDto movieDto = createMovie();
-		final UUID userId = UUID.randomUUID();
-		final String url = String.format("/movie/unlike/%s/%s", movieDto.getId(), userId);
+		final String user = "test_user";
+		final String url = String.format("/movie/unlike/%s/%s", movieDto.getId(), user);
 		
-		when(movieService.unlikeMovie(movieDto.getId(), userId)).thenReturn(movieDto);
+		when(movieService.unlikeMovie(movieDto.getId(), user)).thenReturn(movieDto);
 		
 		final ResultActions resultActions = mockMvc.perform(get(url))
 			.andExpect(status().isOk());
@@ -338,7 +338,7 @@ public class MovieControllerTest {
 			.andExpect(jsonPath(getPropertyPath(parentPropertyPath, "totalLikes")).value(TEST_TOTAL_LIKES))
 			.andExpect(jsonPath(getPropertyPath(parentPropertyPath, "creationTimestamp")).exists())
 			.andExpect(jsonPath(getPropertyPath(parentPropertyPath, "updateTimestamp")).exists())
-			.andExpect(jsonPath(getPropertyPath(parentPropertyPath, "creatorId")).value(TEST_CREATOR_ID.toString()));
+			.andExpect(jsonPath(getPropertyPath(parentPropertyPath, "creator")).value(TEST_CREATOR));
 	}
 	
 	/**
@@ -370,7 +370,7 @@ public class MovieControllerTest {
 		movieDto.setTotalLikes(TEST_TOTAL_LIKES);
 		movieDto.setCreationTimestamp(Instant.now());
 		movieDto.setUpdateTimestamp(Instant.now());
-		movieDto.setCreatorId(TEST_CREATOR_ID);
+		movieDto.setCreator(TEST_CREATOR);
 		
 		return movieDto;
 	}

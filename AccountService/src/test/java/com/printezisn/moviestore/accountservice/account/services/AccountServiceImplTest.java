@@ -13,7 +13,6 @@ import static org.mockito.Mockito.never;
 
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -64,35 +63,30 @@ public class AccountServiceImplTest {
 	}
 	
 	/**
-	 * Tests the scenario in which the account is found, when an account id is provided
+	 * Tests the scenario in which the account is found, when only a username is provided
 	 */
 	@Test
-	public void test_getAccount_withId_found() throws AccountException {
-		final UUID id = UUID.randomUUID();
+	public void test_getAccount_onlyWithUsername_found() throws AccountException {
 		final Account account = new Account();
-		account.setId(id.toString());
-		
 		final AccountDto accountDto = new AccountDto();
 		
-		when(accountRepository.findById(id.toString())).thenReturn(Optional.of(account));
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.of(account));
 		when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
 		
-		final Optional<AccountDto> result = accountService.getAccount(id);
+		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME);
 		
 		assertTrue(result.isPresent());
 		assertEquals(accountDto, result.get());
 	}
 	
 	/**
-	 * Tests the scenario in which the account is not found, when an account id is provided
+	 * Tests the scenario in which the account is not found, when only a username is provided
 	 */
 	@Test
-	public void test_getAccount_withId_notFound() throws AccountException {
-		final UUID id = UUID.randomUUID();
+	public void test_getAccount_onlyWithUsername_notFound() throws AccountException {
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 		
-		when(accountRepository.findById(id.toString())).thenReturn(Optional.empty());
-		
-		final Optional<AccountDto> result = accountService.getAccount(id);
+		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME);
 		
 		assertFalse(result.isPresent());
 	}
@@ -109,7 +103,7 @@ public class AccountServiceImplTest {
 		
 		final AccountDto accountDto = new AccountDto();
 		
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(account));
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.of(account));
 		when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
 		
 		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, TEST_PASSWORD);
@@ -123,7 +117,7 @@ public class AccountServiceImplTest {
 	 */
 	@Test
 	public void test_getAccount_withAuth_notFound() throws AccountException {
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 		
 		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, TEST_PASSWORD);
 		
@@ -142,7 +136,7 @@ public class AccountServiceImplTest {
 		
 		final AccountDto accountDto = new AccountDto();
 		
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(account));
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.of(account));
 		when(accountMapper.accountToAccountDto(account)).thenReturn(accountDto);
 		
 		final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, "12345");
@@ -160,7 +154,7 @@ public class AccountServiceImplTest {
 		accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
 		accountDto.setPassword(TEST_PASSWORD);
 		
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.of(new Account()));
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.of(new Account()));
 		
 		accountService.createAccount(accountDto);
 	}
@@ -175,7 +169,7 @@ public class AccountServiceImplTest {
 		accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
 		accountDto.setPassword(TEST_PASSWORD);
 		
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.of(new Account()));
 		
 		accountService.createAccount(accountDto);
@@ -193,7 +187,7 @@ public class AccountServiceImplTest {
 		
 		final Account account = new Account();
 		
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
 		when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
 		
@@ -201,7 +195,6 @@ public class AccountServiceImplTest {
 		
 		verify(accountRepository).save(account);
 		
-		assertNotNull(accountDto.getId());
 		assertNotNull(accountDto.getPasswordSalt());
 		assertNotNull(accountDto.getCreationTimestamp());
 		assertNotNull(accountDto.getUpdateTimestamp());
@@ -219,7 +212,7 @@ public class AccountServiceImplTest {
 		
 		final Account account = new Account();
 		
-		when(accountRepository.findByUsername(TEST_USERNAME)).thenReturn(Optional.empty());
+		when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 		when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
 		when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
 		when(accountRepository.save(account)).thenThrow(DuplicateKeyException.class);
@@ -233,9 +226,8 @@ public class AccountServiceImplTest {
 	@Test(expected = AccountNotFoundException.class)
 	public void test_updateAccount_accountNotFound() throws AccountException {
 		final AccountDto accountDto = new AccountDto();
-		accountDto.setId(UUID.randomUUID());
 		
-		when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.empty());
+		when(accountRepository.findById(accountDto.getUsername())).thenReturn(Optional.empty());
 		
 		accountService.updateAccount(accountDto);
 	}
@@ -246,18 +238,16 @@ public class AccountServiceImplTest {
 	@Test
 	public void test_updateAccount_successfulSave() throws AccountException {
 		final AccountDto accountDto = new AccountDto();
-		accountDto.setId(UUID.randomUUID());
 		accountDto.setPassword(TEST_PASSWORD);
 		
 		final Account account = mock(Account.class);
 		
-		when(accountRepository.findById(accountDto.getId().toString())).thenReturn(Optional.of(account));
+		when(accountRepository.findById(accountDto.getUsername())).thenReturn(Optional.of(account));
 		when(account.getPasswordSalt()).thenReturn(BCrypt.gensalt());
 		
 		accountService.updateAccount(accountDto);
 		
 		verify(accountRepository).save(account);
-		verify(account, never()).setId(anyString());
 		verify(account, never()).setUsername(anyString());
 		verify(account, never()).setEmailAddress(anyString());
 		verify(account).setPassword(anyString());
@@ -271,10 +261,8 @@ public class AccountServiceImplTest {
 	 */
 	@Test
 	public void test_deleteAccount_successfulDelete() throws AccountException {
-		final UUID id = UUID.randomUUID();
+		accountService.deleteAccount(TEST_USERNAME);
 		
-		accountService.deleteAccount(id);
-		
-		verify(accountRepository).deleteById(id.toString());
+		verify(accountRepository).deleteById(TEST_USERNAME);
 	}
 }

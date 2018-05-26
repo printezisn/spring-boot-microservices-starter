@@ -41,6 +41,6 @@ public class MovieDto {
 	
 	private Instant updateTimestamp;
 	
-	@NotNull(message = "message.movie.error.creatorIdRequired")
-	private UUID creatorId;
+	@NotNull(message = "message.movie.error.creatorRequired")
+	private String creator;
 }

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE | Movie Store">Movie Store</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <th:block th:replace="assets :: css"></th:block>
+</head>
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" th:href="@{/}">Movie Store</a>
+            <div role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="main-menu">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </div>
+        </div>
+        <div class="navbar-menu" id="main-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" th:href="@{/}"
+                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).HOME_PAGE}
+                        ? 'is-active' : ''" th:text="#{page.home}"></a>
+                <a class="navbar-item" th:href="@{/auth/login}"
+                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).LOGIN_PAGE}
+                        ? 'is-active' : ''" th:text="#{page.login}"></a>
+                <a class="navbar-item" th:href="@{/account/register}"
+                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).REGISTER_PAGE}
+                        ? 'is-active' : ''" th:text="#{page.register}"></a>
+            </div>
+        </div>
+    </nav>
+    
+    <br />
+    
+    <th:block layout:fragment="main"></th:block>
+    <th:block th:replace="assets :: js"></th:block>
+</body>
+</html>

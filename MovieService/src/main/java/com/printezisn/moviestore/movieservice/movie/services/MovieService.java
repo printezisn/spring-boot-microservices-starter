@@ -71,25 +71,25 @@ public interface MovieService {
 	 * Adds a like to a movie
 	 * 
 	 * @param movieId The id of the movie to like
-	 * @param userId The id of the user who likes the movie
+	 * @param user The user who likes the movie
 	 * @return The updated movie
 	 * @throws MoviePersistenceException Exception thrown in case of persistence error
 	 * @throws MovieConditionalException Exception thrown in case of conditional update failure
 	 * @throws MovieNotFoundException Exception thrown if the movie is not found
 	 */
-	MovieDto likeMovie(final UUID movieId, final UUID userId)
+	MovieDto likeMovie(final UUID movieId, final String user)
 			throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException;
 	
 	/**
 	 * Removes a like from a movie
 	 * 
 	 * @param movieId The id of the movie to unlike
-	 * @param userId The id of the user who removes the like from the movie
+	 * @param user The user who removes the like from the movie
 	 * @return The updated movie
 	 * @throws MoviePersistenceException Exception thrown in case of persistence error
 	 * @throws MovieConditionalException Exception thrown in case of conditional update failure
 	 * @throws MovieNotFoundException Exception thrown if the movie is not found
 	 */
-	MovieDto unlikeMovie(final UUID movieId, final UUID userId)
+	MovieDto unlikeMovie(final UUID movieId, final String user)
 			throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException;
 }

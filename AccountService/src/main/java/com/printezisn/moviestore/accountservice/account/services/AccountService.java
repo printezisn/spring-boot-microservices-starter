@@ -1,7 +1,6 @@
 package com.printezisn.moviestore.accountservice.account.services;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersistenceException;
@@ -16,11 +15,11 @@ public interface AccountService {
 	/**
 	 * Returns an account
 	 * 
-	 * @param id The id of the account
+	 * @param username The username of the account
 	 * @return The account
 	 * @throws AccountPersistenceException Persistence error
 	 */
-	Optional<AccountDto> getAccount(final UUID id)
+	Optional<AccountDto> getAccount(final String username)
 		throws AccountPersistenceException;
 	
 	/**
@@ -59,9 +58,9 @@ public interface AccountService {
 	/**
 	 * Deletes an account
 	 * 
-	 * @param id The id of the account
+	 * @param id The username of the account
 	 * @return True if the operation is successful, otherwise false
 	 * @throws AccountPersistenceException Persistence error
 	 */
-	void deleteAccount(final UUID id) throws AccountPersistenceException;
+	void deleteAccount(final String username) throws AccountPersistenceException;
 }

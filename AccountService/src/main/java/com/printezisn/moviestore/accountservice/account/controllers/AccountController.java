@@ -1,7 +1,6 @@
 package com.printezisn.moviestore.accountservice.account.controllers;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.validation.Valid;
 
@@ -39,15 +38,15 @@ public class AccountController extends BaseController {
 	/**
 	 * Returns an account
 	 * 
-	 * @param id The id of the account
+	 * @param username The username of the account
 	 * @return The account
 	 * @throws AccountPersistenceException Persistence error
 	 */
-	@GetMapping(path = "/account/get/{id}")
-	public ResponseEntity<?> getAccount(@PathVariable("id") final UUID id)
+	@GetMapping(path = "/account/get/{username}")
+	public ResponseEntity<?> getAccount(@PathVariable("username") final String username)
 		throws AccountPersistenceException {
 		
-		final Optional<AccountDto> account = accountService.getAccount(id);
+		final Optional<AccountDto> account = accountService.getAccount(username);
 		return account.isPresent()
 			? ResponseEntity.ok(account.get())
 			: ResponseEntity.notFound().build();
@@ -138,15 +137,15 @@ public class AccountController extends BaseController {
 	/**
 	 * Deletes an account
 	 * 
-	 * @param id The id of the account
+	 * @param username The username of the account
 	 * @return The result of the operation
 	 * @throws AccountPersistenceException Persistence error
 	 */
 	@GetMapping(path = "/account/delete/{id}")
-	public ResponseEntity<?> deleteAccount(@PathVariable("id") final UUID id)
+	public ResponseEntity<?> deleteAccount(@PathVariable("id") final String username)
 		throws AccountPersistenceException {
 		
-		accountService.deleteAccount(id);
+		accountService.deleteAccount(username);
 			
 		return ResponseEntity.ok().build();
 	}

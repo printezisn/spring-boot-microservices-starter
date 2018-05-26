@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+    <title th:text="#{page.login}"></title>
+</head>
+<body>
+    <div class="box small-form" layout:fragment="main">
+        <p class="notification is-danger" th:if="${param.error}">
+            <button type="button" class="delete"></button>
+            <th:block th:text="#{message.error.loginFailed}"></th:block>
+        </p>
+        <form th:action="@{/auth/login}" method="post" class="validate-form" id="loginForm" name="loginForm">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label" for="username" th:text="#{label.login.username} + ':'"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="text" class="input" id="username" name="username"
+                                th:attr="required-field=#{message.error.usernameRequired}" />
+                            <span class="has-text-danger" id="username-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label" for="password" th:text="#{label.login.password} + ':'"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="password" class="input" id="password" name="password"
+                                th:attr="required-field=#{message.error.passwordRequired}" />
+                            <span class="has-text-danger" id="password-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal"></div>
+                <div class="field-body">
+                    <div class="field is-narrow">
+                        <div class="control">
+                            <label class="checkbox">
+                                <input type="checkbox" id="remember-me" name="rememberMe" />
+                                <th:block th:text="#{label.login.rememberMe}"></th:block>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal"></div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit" class="button is-primary" th:text="#{label.login.signIn}"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

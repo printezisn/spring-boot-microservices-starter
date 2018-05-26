@@ -2,7 +2,6 @@ package com.printezisn.moviestore.accountservice.account.controllers;
 
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -65,10 +64,9 @@ public class AccountControllerTest {
 	 */
 	@Test
 	public void test_getAccount_notFound() throws Exception {
-		final UUID id = UUID.randomUUID();
-		when(accountService.getAccount(id)).thenReturn(Optional.empty());
+		when(accountService.getAccount(TEST_USERNAME)).thenReturn(Optional.empty());
 		
-		mockMvc.perform(get("/account/get/" + id))
+		mockMvc.perform(get("/account/get/" + TEST_USERNAME))
 			.andExpect(status().isNotFound());
 	}
 	
@@ -78,9 +76,9 @@ public class AccountControllerTest {
 	@Test
 	public void test_getAccount_found() throws Exception {
 		final AccountDto accountDto = createAccount();
-		when(accountService.getAccount(accountDto.getId())).thenReturn(Optional.of(accountDto));
+		when(accountService.getAccount(accountDto.getUsername())).thenReturn(Optional.of(accountDto));
 		
-		mockMvc.perform(get("/account/get/" + accountDto.getId()))
+		mockMvc.perform(get("/account/get/" + accountDto.getUsername()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("username").value(TEST_USERNAME))
 			.andExpect(jsonPath("emailAddress").value(TEST_EMAIL_ADDRESS));
@@ -189,8 +187,6 @@ public class AccountControllerTest {
 		final AccountDto accountDto = new AccountDto();
 		final ObjectMapper objectMapper = new ObjectMapper();
 		
-		accountDto.setId(UUID.randomUUID());
-		
 		mockMvc.perform(post("/account/update").content(objectMapper.writeValueAsString(accountDto)).contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest());
 	}
@@ -232,7 +228,7 @@ public class AccountControllerTest {
 	public void test_deleteAccount_success() throws Exception {
 		final AccountDto accountDto = createAccount();
 		
-		mockMvc.perform(get("/account/delete/" + accountDto.getId()))
+		mockMvc.perform(get("/account/delete/" + accountDto.getUsername()))
 			.andExpect(status().isOk());
 	}
 	
@@ -244,7 +240,6 @@ public class AccountControllerTest {
 	private AccountDto createAccount() {
 		final AccountDto accountDto = new AccountDto();
 		
-		accountDto.setId(UUID.randomUUID());
 		accountDto.setUsername(TEST_USERNAME);
 		accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
 		accountDto.setPassword(TEST_PASSWORD);

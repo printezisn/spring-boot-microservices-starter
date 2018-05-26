@@ -192,13 +192,13 @@ public class MovieServiceImpl implements MovieService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public MovieDto likeMovie(final UUID movieId, final UUID userId)
+	public MovieDto likeMovie(final UUID movieId, final String user)
 		throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException {
 		
 		final MovieLike movieLike = new MovieLike();
-		movieLike.setId(movieId + "-" + userId);
+		movieLike.setId(movieId + "-" + user);
 		movieLike.setMovieId(movieId.toString());
-		movieLike.setUserId(userId.toString());
+		movieLike.setUser(user);
 		
 		final Optional<MovieDto> movieDto;
 		
@@ -226,11 +226,11 @@ public class MovieServiceImpl implements MovieService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public MovieDto unlikeMovie(final UUID movieId, final UUID userId)
+	public MovieDto unlikeMovie(final UUID movieId, final String user)
 		throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException {
 			
 		final Optional<MovieDto> movieDto;
-		final String id = movieId + "-" + userId;
+		final String id = movieId + "-" + user;
 		
 		try {
 			movieLikeRepository.deleteById(id);

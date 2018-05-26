@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -16,7 +17,7 @@ import com.printezisn.moviestore.common.models.Result;
  * The base class for every controller
  */
 public class BaseController {
-
+	
 	/**
 	 * Returns a result object that contains errors from the binding result
 	 * 
@@ -45,5 +46,15 @@ public class BaseController {
 		errorResult.setErrors(errors);
 		
 		return errorResult;
+	}
+	
+	/**
+	 * Sets the current page
+	 * 
+	 * @param model The page model
+	 * @param currentPage The current page
+	 */
+	protected void setCurrentPage(final Model model, final String currentPage) {
+		model.addAttribute("currentPage", currentPage);
 	}
 }

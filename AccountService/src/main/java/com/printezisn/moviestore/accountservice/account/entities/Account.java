@@ -13,9 +13,6 @@ import lombok.Data;
 @Document(collection = "accounts")
 public class Account {
 	@Id
-	private String id;
-	
-	@Indexed(unique = true)
 	private String username;
 	
 	@Indexed(unique = true)

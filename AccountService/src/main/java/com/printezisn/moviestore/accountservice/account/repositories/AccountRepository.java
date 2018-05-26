@@ -12,14 +12,6 @@ import com.printezisn.moviestore.accountservice.account.entities.Account;
  */
 @Repository
 public interface AccountRepository extends MongoRepository<Account, String> {
-
-	/**
-	 * Searches for an account based on its username
-	 * 
-	 * @param username The username of the account
-	 * @return The account
-	 */
-	Optional<Account> findByUsername(final String username);
 	
 	/**
 	 * Searches for an account based on its email address

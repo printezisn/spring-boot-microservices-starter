@@ -31,5 +31,5 @@ public class Movie {
 	
 	private String updateTimestamp;
 	
-	private String creatorId;
+	private String creator;
 }

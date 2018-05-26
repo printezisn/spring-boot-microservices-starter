@@ -1,11 +1,9 @@
 package com.printezisn.moviestore.common.dto.account;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -18,9 +16,6 @@ import lombok.Data;
  */
 @Data
 public class AccountDto {
-	
-	@NotNull(message = "message.account.error.idRequired")
-	private UUID id;
 	
 	@NotEmpty(message = "message.account.error.usernameRequired")
 	@Size(max = 50, message = "message.account.error.usernameMaxLength")

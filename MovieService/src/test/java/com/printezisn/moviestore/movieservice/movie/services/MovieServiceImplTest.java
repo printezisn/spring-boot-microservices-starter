@@ -312,11 +312,10 @@ public class MovieServiceImplTest {
 	@Test(expected = MovieNotFoundException.class)
 	public void test_likeMovie_movieNotFound() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
 		
 		when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
 		
-		movieService.likeMovie(movieId, userId);
+		movieService.likeMovie(movieId, "test_user");
 	}
 	
 	/**
@@ -326,12 +325,12 @@ public class MovieServiceImplTest {
 	@Test
 	public void test_likeMovie_success() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
+		final String user = "test_user";
 		
 		final MovieLike movieLike = new MovieLike();
-		movieLike.setId(movieId + "-" + userId);
+		movieLike.setId(movieId + "-" + user);
 		movieLike.setMovieId(movieId.toString());
-		movieLike.setUserId(userId.toString());
+		movieLike.setUser(user);
 		
 		final Movie movie = new Movie();
 		final MovieDto movieDto = new MovieDto();
@@ -343,7 +342,7 @@ public class MovieServiceImplTest {
 		when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
 		when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
 
-		final MovieDto result = movieService.likeMovie(movieId, userId);
+		final MovieDto result = movieService.likeMovie(movieId, user);
 		
 		verify(movieLikeRepository).save(movieLike);
 		verify(movieSearchRepository).save(searchedMovie);
@@ -358,12 +357,12 @@ public class MovieServiceImplTest {
 	@Test
 	public void test_likeMovie_successWithConditionalException() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
+		final String user = "test_user";
 		
 		final MovieLike movieLike = new MovieLike();
-		movieLike.setId(movieId + "-" + userId);
+		movieLike.setId(movieId + "-" + user);
 		movieLike.setMovieId(movieId.toString());
-		movieLike.setUserId(userId.toString());
+		movieLike.setUser(user);
 		
 		final Movie movie = new Movie();
 		final MovieDto movieDto = new MovieDto();
@@ -377,7 +376,7 @@ public class MovieServiceImplTest {
 		when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
 		when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
 
-		final MovieDto result = movieService.likeMovie(movieId, userId);
+		final MovieDto result = movieService.likeMovie(movieId, user);
 		
 		verify(movieLikeRepository).save(movieLike);
 		verify(movieSearchRepository).save(searchedMovie);
@@ -392,12 +391,12 @@ public class MovieServiceImplTest {
 	@Test
 	public void test_likeMovie_conditionalException() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
+		final String user = "test_user";
 		
 		final MovieLike movieLike = new MovieLike();
-		movieLike.setId(movieId + "-" + userId);
+		movieLike.setId(movieId + "-" + user);
 		movieLike.setMovieId(movieId.toString());
-		movieLike.setUserId(userId.toString());
+		movieLike.setUser(user);
 		
 		final Movie movie = new Movie();
 		
@@ -406,7 +405,7 @@ public class MovieServiceImplTest {
 		when(movieRepository.updateTotalLikes(eq(movie), anyString())).thenReturn(0L);
 		
 		try {
-			movieService.likeMovie(movieId, userId);
+			movieService.likeMovie(movieId, user);
 			fail();
 		}
 		catch(final MovieConditionalException ex) {
@@ -423,11 +422,10 @@ public class MovieServiceImplTest {
 	@Test(expected = MovieNotFoundException.class)
 	public void test_unlikeMovie_movieNotFound() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
 		
 		when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
 		
-		movieService.unlikeMovie(movieId, userId);
+		movieService.unlikeMovie(movieId, "test_user");
 	}
 	
 	/**
@@ -437,7 +435,7 @@ public class MovieServiceImplTest {
 	@Test
 	public void test_unlikeMovie_success() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
+		final String user = "test_user";
 
 		final Movie movie = new Movie();
 		final MovieDto movieDto = new MovieDto();
@@ -449,9 +447,9 @@ public class MovieServiceImplTest {
 		when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
 		when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
 
-		final MovieDto result = movieService.unlikeMovie(movieId, userId);
+		final MovieDto result = movieService.unlikeMovie(movieId, user);
 		
-		verify(movieLikeRepository).deleteById(movieId + "-" + userId);
+		verify(movieLikeRepository).deleteById(movieId + "-" + user);
 		verify(movieSearchRepository).save(searchedMovie);
 		assertEquals(movieDto, result);
 		assertEquals(TOTAL_LIKES, movie.getTotalLikes());
@@ -464,7 +462,7 @@ public class MovieServiceImplTest {
 	@Test
 	public void test_unlikeMovie_successWithConditionalException() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
+		final String user = "test_user";
 		
 		final Movie movie = new Movie();
 		final MovieDto movieDto = new MovieDto();
@@ -478,9 +476,9 @@ public class MovieServiceImplTest {
 		when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
 		when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
 
-		final MovieDto result = movieService.unlikeMovie(movieId, userId);
+		final MovieDto result = movieService.unlikeMovie(movieId, user);
 		
-		verify(movieLikeRepository).deleteById(movieId + "-" + userId);
+		verify(movieLikeRepository).deleteById(movieId + "-" + user);
 		verify(movieSearchRepository).save(searchedMovie);
 		assertEquals(movieDto, result);
 		assertEquals(TOTAL_LIKES, movie.getTotalLikes());
@@ -493,7 +491,7 @@ public class MovieServiceImplTest {
 	@Test
 	public void test_unlikeMovie_conditionalException() throws Exception {
 		final UUID movieId = UUID.randomUUID();
-		final UUID userId = UUID.randomUUID();
+		final String user = "test_user";
 
 		final Movie movie = new Movie();
 		
@@ -502,13 +500,13 @@ public class MovieServiceImplTest {
 		when(movieRepository.updateTotalLikes(eq(movie), anyString())).thenReturn(0L);
 		
 		try {
-			movieService.unlikeMovie(movieId, userId);
+			movieService.unlikeMovie(movieId, user);
 			fail();
 		}
 		catch(final MovieConditionalException ex) {
 			
 		}
 		
-		verify(movieLikeRepository).deleteById(movieId + "-" + userId);
+		verify(movieLikeRepository).deleteById(movieId + "-" + user);
 	}
 }

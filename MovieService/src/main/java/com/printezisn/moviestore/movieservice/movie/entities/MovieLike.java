@@ -15,7 +15,7 @@ public class MovieLike {
 	@Id
 	private String id;
 	
-	private String userId;
+	private String user;
 	
 	private String movieId;
 }
