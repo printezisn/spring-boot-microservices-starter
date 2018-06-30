@@ -19,11 +19,13 @@ import com.printezisn.moviestore.website.account.models.AuthenticatedUser;
 import com.printezisn.moviestore.website.configuration.properties.ServiceProperties;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The implementation of the account service
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 	
@@ -61,6 +63,11 @@ public class AccountServiceImpl implements AccountService {
 				throw new AccountNotValidatedException();
 			}
 			
+			log.error("An error occurred: " + ex.getMessage(), ex);		
+			throw new AccountAuthenticationException("User was not authenticated.", ex);
+		}
+		catch (final Exception ex) {
+			log.error("An error occurred: " + ex.getMessage(), ex);		
 			throw new AccountAuthenticationException("User was not authenticated.", ex);
 		}
 	}
@@ -82,7 +89,17 @@ public class AccountServiceImpl implements AccountService {
 				accountDto.getEmailAddress(),
 				new ArrayList<>());
 		}
+		catch(final HttpClientErrorException ex) {
+			if(ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+				log.warn("Login failed: " + username);
+				throw new UsernameNotFoundException(username);
+			}
+			
+			log.error("An error occurred: " + ex.getMessage(), ex);		
+			throw new UsernameNotFoundException(username);
+		}
 		catch(final Exception ex) {
+			log.error("An error occurred: " + ex.getMessage(), ex);
 			throw new UsernameNotFoundException(username);
 		}
 	}

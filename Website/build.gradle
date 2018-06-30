@@ -38,6 +38,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
+	compile('org.thymeleaf.extras:thymeleaf-extras-springsecurity4')
 	
 	compileOnly('org.springframework.boot:spring-boot-configuration-processor')
 	

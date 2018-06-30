@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title layout:title-pattern="$CONTENT_TITLE | Movie Store">Movie Store</title>
     <meta charset="utf-8" />
@@ -21,17 +21,30 @@
                 <a class="navbar-item" th:href="@{/}"
                     th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).HOME_PAGE}
                         ? 'is-active' : ''" th:text="#{page.home}"></a>
-                <a class="navbar-item" th:href="@{/auth/login}"
+                <a class="navbar-item" th:href="@{/auth/login}" sec:authorize="!isAuthenticated()"
                     th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).LOGIN_PAGE}
                         ? 'is-active' : ''" th:text="#{page.login}"></a>
-                <a class="navbar-item" th:href="@{/account/register}"
+                <a class="navbar-item" th:href="@{/account/register}" sec:authorize="!isAuthenticated()"
                     th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).REGISTER_PAGE}
                         ? 'is-active' : ''" th:text="#{page.register}"></a>
+                <a class="navbar-item" th:href="@{/movie/new}" sec:authorize="isAuthenticated()"
+                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).NEW_MOVIE_PAGE}
+                        ? 'is-active' : ''" th:text="#{page.newMovie}"></a>
+            </div>
+            <div class="navbar-end" sec:authorize="isAuthenticated()">
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link" href="javascript:void(0)" sec:authentication="name"></a>
+                    <div class="navbar-dropdown is-right">
+                        <a class="navbar-item" href="javascript:void(0)" th:text="#{message.logout}"
+                            onclick="document.getElementById('logout-form').submit()"></a>
+                    </div>
+                </div>              
             </div>
         </div>
     </nav>
     
     <br />
+    <form id="logout-form" style="display: none" method="post" th:action="@{/auth/logout}"></form>
     
     <th:block layout:fragment="main"></th:block>
     <th:block th:replace="assets :: js"></th:block>

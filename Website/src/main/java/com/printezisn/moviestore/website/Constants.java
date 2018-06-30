@@ -12,5 +12,6 @@ public class Constants {
 		public static final String HOME_PAGE = "home";
 		public static final String LOGIN_PAGE = "login";
 		public static final String REGISTER_PAGE = "register";
+		public static final String NEW_MOVIE_PAGE = "newmovie";
 	}
 }
