@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+    <title th:text="#{page.register}"></title>
+</head>
+<body>
+    <div class="box small-form" layout:fragment="main">
+        <div class="notification is-danger" th:if="${errors}">
+            <button type="button" class="delete"></button>
+            <ul class="error-list">
+                <li th:each="error : ${errors}" th:text="${error}"></li>
+            </ul>
+        </div>
+        <form th:action="@{/account/register}" th:object="${account}" method="post" class="validate-form" id="registerForm" name="registerForm">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label" for="username" th:text="#{label.register.username}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="text" class="input" id="username" name="username"
+                                th:field="*{username}"
+                                th:attr="required-field=#{message.error.usernameRequired}" />
+                            <span class="has-text-danger" id="username-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label" for="emailAddress" th:text="#{label.register.emailAddress}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="text" class="input" id="emailAddress" name="emailAddress"
+                                th:field="*{emailAddress}"
+                                th:attr="required-field=#{message.error.emailAddressRequired}" />
+                            <span class="has-text-danger" id="emailAddress-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label" for="password" th:text="#{label.register.password}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="password" class="input" id="password" name="password"
+                                th:attr="required-field=#{message.error.passwordRequired}" />
+                            <span class="has-text-danger" id="password-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label" for="confirmPassword" th:text="#{label.register.confirmPassword}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="password" class="input" id="confirmPassword" name="confirmPassword"
+                                th:attr="required-field=#{message.error.confirmPasswordRequired},
+                                    matches-field=password,matches-field-error=#{message.error.confirmPasswordNoMatch}" />
+                            <span class="has-text-danger" id="confirmPassword-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal"></div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit" class="button is-primary" th:text="#{label.register.submit}"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.printezisn.moviestore.common.dto.account.AccountDto;
@@ -15,6 +14,7 @@ import com.printezisn.moviestore.common.dto.account.AuthDto;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.account.exceptions.AccountAuthenticationException;
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
+import com.printezisn.moviestore.website.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.website.account.models.AuthenticatedUser;
 import com.printezisn.moviestore.website.configuration.properties.ServiceProperties;
 
@@ -31,6 +31,7 @@ public class AccountServiceImpl implements AccountService {
 	
 	private static final String GET_URL = "%s/account/get/%s";
 	private static final String AUTHENTICATE_URL = "%s/account/auth";
+	private static final String CREATE_URL = "%s/account/new";
 	
 	private final ServiceProperties serviceProperties;
 	
@@ -48,28 +49,27 @@ public class AccountServiceImpl implements AccountService {
 		authDto.setUsername(username);
 		authDto.setPassword(password);
 		
+		ResponseEntity<AccountResultModel> response;
+		
 		try {
-			final ResponseEntity<AccountResultModel> response = restTemplate.postForEntity(url, authDto, AccountResultModel.class);		
-			final AccountDto accountDto = response.getBody().getResult();
-			
-			return new AuthenticatedUser(
-				accountDto.getUsername(),
-				password,
-				accountDto.getEmailAddress(),
-				new ArrayList<>());
-		}
-		catch(final HttpClientErrorException ex) {
-			if(ex.getStatusCode() == HttpStatus.BAD_REQUEST) {
-				throw new AccountNotValidatedException();
-			}
-			
-			log.error("An error occurred: " + ex.getMessage(), ex);		
-			throw new AccountAuthenticationException("User was not authenticated.", ex);
+			response = restTemplate.postForEntity(url, authDto, AccountResultModel.class);
 		}
 		catch (final Exception ex) {
 			log.error("An error occurred: " + ex.getMessage(), ex);		
 			throw new AccountAuthenticationException("User was not authenticated.", ex);
 		}
+		
+		if(response.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+			throw new AccountNotValidatedException();
+		}
+		
+		final AccountDto accountDto = response.getBody().getResult();
+			
+		return new AuthenticatedUser(
+			accountDto.getUsername(),
+			password,
+			accountDto.getEmailAddress(),
+			new ArrayList<>());
 	}
 
 	/**
@@ -79,28 +79,44 @@ public class AccountServiceImpl implements AccountService {
 	public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
 		final String url = String.format(GET_URL, serviceProperties.getAccountServiceUrl(), username);
 		
+		ResponseEntity<AccountResultModel> response;
+		
 		try {
-			final ResponseEntity<AccountResultModel> response = restTemplate.getForEntity(url, AccountResultModel.class);		
-			final AccountDto accountDto = response.getBody().getResult();
-			
-			return new AuthenticatedUser(
-				accountDto.getUsername(),
-				accountDto.getPassword(),
-				accountDto.getEmailAddress(),
-				new ArrayList<>());
-		}
-		catch(final HttpClientErrorException ex) {
-			if(ex.getStatusCode() == HttpStatus.NOT_FOUND) {
-				log.warn("Login failed: " + username);
-				throw new UsernameNotFoundException(username);
-			}
-			
-			log.error("An error occurred: " + ex.getMessage(), ex);		
-			throw new UsernameNotFoundException(username);
+			response = restTemplate.getForEntity(url, AccountResultModel.class);
 		}
 		catch(final Exception ex) {
 			log.error("An error occurred: " + ex.getMessage(), ex);
 			throw new UsernameNotFoundException(username);
+		}
+		
+		if(response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+			throw new UsernameNotFoundException(username);
+		}
+			
+		final AccountDto accountDto = response.getBody().getResult();
+			
+		return new AuthenticatedUser(
+			accountDto.getUsername(),
+			accountDto.getPassword(),
+			accountDto.getEmailAddress(),
+			new ArrayList<>());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AccountResultModel createAccount(final AccountDto accountDto)
+			throws AccountPersistenceException {
+		
+		final String url = String.format(CREATE_URL, serviceProperties.getAccountServiceUrl());
+		
+		try {
+			return restTemplate.postForEntity(url, accountDto, AccountResultModel.class).getBody();
+		}
+		catch(final Exception ex) {
+			log.error("An error occurred: " + ex.getMessage(), ex);		
+			throw new AccountPersistenceException();
 		}
 	}
 }

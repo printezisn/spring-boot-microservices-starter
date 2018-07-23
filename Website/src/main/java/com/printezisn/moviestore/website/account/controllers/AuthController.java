@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.printezisn.moviestore.common.controllers.BaseController;
-import com.printezisn.moviestore.website.Constants;
+import com.printezisn.moviestore.website.Constants.PageConstants;
 
 /**
  * The controller class associated with authentication
@@ -21,7 +21,7 @@ public class AuthController extends BaseController {
 	 */
 	@GetMapping("/auth/login")
 	public String login(final Model model) {
-		setCurrentPage(model, Constants.PageConstants.LOGIN_PAGE);
+		setCurrentPage(model, PageConstants.LOGIN_PAGE);
 		
 		return "auth/login";
 	}

@@ -14,4 +14,11 @@ public class Constants {
 		public static final String REGISTER_PAGE = "register";
 		public static final String NEW_MOVIE_PAGE = "newmovie";
 	}
+	
+	/**
+	 * Class that contains constants for the message keys
+	 */
+	public static class MessageKeys {
+		public static final String UNEXPECTED_ERROR_MESSAGE_KEY = "message.error.unexpectedError";
+	}
 }

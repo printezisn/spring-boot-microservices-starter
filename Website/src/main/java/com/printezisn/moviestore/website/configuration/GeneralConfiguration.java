@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import com.printezisn.moviestore.website.Constants.PageConstants;
+import com.printezisn.moviestore.website.configuration.rest.DefaultResponseErrorHandler;
+
 /**
  * General bean configuration class
  */
@@ -19,6 +22,18 @@ public class GeneralConfiguration {
 	 */
 	@Bean
 	public RestTemplate restTemplate(final RestTemplateBuilder restTemplateBuilder) {
-		return restTemplateBuilder.build();
+		return restTemplateBuilder
+			.errorHandler(new DefaultResponseErrorHandler())
+			.build();
+	}
+	
+	/**
+	 * Creates a PageConstants bean
+	 * 
+	 * @return The PageConstants bean
+	 */
+	@Bean
+	public PageConstants pageConstants() {
+		return new PageConstants();
 	}
 }

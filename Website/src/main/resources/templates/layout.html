@@ -19,17 +19,13 @@
         <div class="navbar-menu" id="main-menu">
             <div class="navbar-start">
                 <a class="navbar-item" th:href="@{/}"
-                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).HOME_PAGE}
-                        ? 'is-active' : ''" th:text="#{page.home}"></a>
+                    th:classappend="${currentPage} == ${@pageConstants.HOME_PAGE} ? 'is-active' : ''" th:text="#{page.home}"></a>
                 <a class="navbar-item" th:href="@{/auth/login}" sec:authorize="!isAuthenticated()"
-                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).LOGIN_PAGE}
-                        ? 'is-active' : ''" th:text="#{page.login}"></a>
+                    th:classappend="${currentPage} == ${@pageConstants.LOGIN_PAGE} ? 'is-active' : ''" th:text="#{page.login}"></a>
                 <a class="navbar-item" th:href="@{/account/register}" sec:authorize="!isAuthenticated()"
-                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).REGISTER_PAGE}
-                        ? 'is-active' : ''" th:text="#{page.register}"></a>
+                    th:classappend="${currentPage} == ${@pageConstants.REGISTER_PAGE} ? 'is-active' : ''" th:text="#{page.register}"></a>
                 <a class="navbar-item" th:href="@{/movie/new}" sec:authorize="isAuthenticated()"
-                    th:classappend="${currentPage} == ${T(com.printezisn.moviestore.website.Constants.PageConstants).NEW_MOVIE_PAGE}
-                        ? 'is-active' : ''" th:text="#{page.newMovie}"></a>
+                    th:classappend="${currentPage} == ${@pageConstants.NEW_MOVIE_PAGE} ? 'is-active' : ''" th:text="#{page.newMovie}"></a>
             </div>
             <div class="navbar-end" sec:authorize="isAuthenticated()">
                 <div class="navbar-item has-dropdown is-hoverable">

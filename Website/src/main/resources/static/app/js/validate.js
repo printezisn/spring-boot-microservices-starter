@@ -15,6 +15,9 @@ let showError = (element, rule) => {
         case 'required':
             messageElement.innerHTML = element.getAttribute('required-field');
             break;
+        case 'matches':
+            messageElement.innerHTML = element.getAttribute('matches-field-error');
+            break;
     }    
     
     messageElement.style.display = '';
@@ -31,6 +34,9 @@ export let initValidate = () => {
             
             if(element.getAttribute('required-field')) {
                 rules.push('required');
+            }
+            if(element.getAttribute('matches-field')) {
+                rules.push('matches[' + element.getAttribute('matches-field') + ']');
             }
             
             fields.push({ name: element.name, rules: rules.join('|') });

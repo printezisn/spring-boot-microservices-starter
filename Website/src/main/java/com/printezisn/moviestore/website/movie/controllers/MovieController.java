@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.printezisn.moviestore.common.controllers.BaseController;
-import com.printezisn.moviestore.website.Constants;
+import com.printezisn.moviestore.website.Constants.PageConstants;
 
 /**
  * The controller class associated with movies
@@ -21,7 +21,7 @@ public class MovieController extends BaseController {
 	 */
 	@GetMapping("/")
 	public String index(final Model model) {
-		setCurrentPage(model, Constants.PageConstants.HOME_PAGE);
+		setCurrentPage(model, PageConstants.HOME_PAGE);
 		
 		return "movie/index";
 	}
