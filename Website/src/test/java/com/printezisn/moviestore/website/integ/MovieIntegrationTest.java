@@ -23,16 +23,16 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestPropertySource("classpath:application-test.properties")
 public class MovieIntegrationTest {
 
-	@Autowired
-	private MockMvc mockMvc;
-	
-	/**
-	 * Tests if the index page is rendered successfully
-	 */
-	@Test
-	public void test_index_success() throws Exception {
-		mockMvc.perform(get("/"))
-			.andExpect(status().isOk())
-			.andExpect(view().name("movie/index"));
-	}
+    @Autowired
+    private MockMvc mockMvc;
+
+    /**
+     * Tests if the index page is rendered successfully
+     */
+    @Test
+    public void test_index_success() throws Exception {
+        mockMvc.perform(get("/"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/index"));
+    }
 }

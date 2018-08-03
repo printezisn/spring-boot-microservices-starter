@@ -6,10 +6,10 @@ package com.printezisn.moviestore.website.account.exceptions;
 @SuppressWarnings("serial")
 public class AccountNotValidatedException extends AccountException {
 
-	/**
-	 * The constructor
-	 */
-	public AccountNotValidatedException() {
-		super();
-	}
+    /**
+     * The constructor
+     */
+    public AccountNotValidatedException() {
+        super();
+    }
 }

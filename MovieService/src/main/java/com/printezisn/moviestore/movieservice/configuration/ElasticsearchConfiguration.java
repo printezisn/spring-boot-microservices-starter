@@ -10,16 +10,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ElasticsearchConfiguration {
 
-	@Value("${elasticsearch.indexName}")
-	private String elasticSearchIndexName;
-	
-	/**
-	 * Returns the name of the index that is used in elasticsearch
-	 * 
-	 * @return The name of the index
-	 */
-	@Bean
-	public String elasticSearchIndexName() {
-		return elasticSearchIndexName;
-	}
+    @Value("${elasticsearch.indexName}")
+    private String elasticSearchIndexName;
+
+    /**
+     * Returns the name of the index that is used in elasticsearch
+     * 
+     * @return The name of the index
+     */
+    @Bean
+    public String elasticSearchIndexName() {
+        return elasticSearchIndexName;
+    }
 }

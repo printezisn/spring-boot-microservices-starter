@@ -10,6 +10,6 @@ import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
  */
 @Repository
 public interface MovieSearchRepository extends ElasticsearchRepository<SearchedMovie, String>,
-	CustomMovieSearchRepository {
+    CustomMovieSearchRepository {
 
 }

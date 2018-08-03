@@ -9,12 +9,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackages = { "com.printezisn.moviestore.website", "com.printezisn.moviestore.common" })
 public class WebsiteApplication {
 
-	/**
-	 * The main method of the application
-	 * 
-	 * @param args The command-line arguments
-	 */
-	public static void main(String[] args) {
-		SpringApplication.run(WebsiteApplication.class, args);
-	}
+    /**
+     * The main method of the application
+     * 
+     * @param args
+     *            The command-line arguments
+     */
+    public static void main(String[] args) {
+        SpringApplication.run(WebsiteApplication.class, args);
+    }
 }

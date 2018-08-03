@@ -11,6 +11,6 @@ import lombok.Data;
  */
 @Data
 public class MovieResultModel {
-	private MovieDto result;
-	private List<String> errors;
+    private MovieDto result;
+    private List<String> errors;
 }

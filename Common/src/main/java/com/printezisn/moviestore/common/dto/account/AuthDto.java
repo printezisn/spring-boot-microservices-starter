@@ -9,12 +9,12 @@ import lombok.Data;
  */
 @Data
 public class AuthDto {
-	
-	@NotEmpty(message = "message.account.error.usernameRequired")
-	private String username;
-	
-	@NotEmpty(message = "message.account.error.passwordRequired")
-	private String password;
-	
-	private boolean rememberMe;
+
+    @NotEmpty(message = "message.account.error.usernameRequired")
+    private String username;
+
+    @NotEmpty(message = "message.account.error.passwordRequired")
+    private String password;
+
+    private boolean rememberMe;
 }

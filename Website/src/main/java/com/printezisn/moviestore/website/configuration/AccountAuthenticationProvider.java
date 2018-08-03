@@ -21,32 +21,32 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AccountAuthenticationProvider implements AuthenticationProvider {
 
-	private final AccountService accountService;
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-		final String username = authentication.getName();
-		final String password = authentication.getCredentials().toString();
-		
-		try {
-			final UserDetails userDetails = accountService.authenticate(username, password);
+    private final AccountService accountService;
 
-			return new UsernamePasswordAuthenticationToken(userDetails, null, new ArrayList<>());
-		}
-		catch(final AccountNotValidatedException ex) {
-			return null;
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
+        final String username = authentication.getName();
+        final String password = authentication.getCredentials().toString();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean supports(final Class<?> authentication) {
-		return authentication.equals(UsernamePasswordAuthenticationToken.class);
-	}
+        try {
+            final UserDetails userDetails = accountService.authenticate(username, password);
+
+            return new UsernamePasswordAuthenticationToken(userDetails, null, new ArrayList<>());
+        }
+        catch (final AccountNotValidatedException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean supports(final Class<?> authentication) {
+        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+    }
 
 }

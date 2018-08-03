@@ -11,20 +11,20 @@ import org.springframework.web.client.ResponseErrorHandler;
  */
 public class DefaultResponseErrorHandler implements ResponseErrorHandler {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean hasError(final ClientHttpResponse response) throws IOException {
-		return response.getStatusCode().is5xxServerError();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasError(final ClientHttpResponse response) throws IOException {
+        return response.getStatusCode().is5xxServerError();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void handleError(final ClientHttpResponse response) throws IOException {
-		throw new HttpClientErrorException(response.getStatusCode(), response.getStatusText());
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void handleError(final ClientHttpResponse response) throws IOException {
+        throw new HttpClientErrorException(response.getStatusCode(), response.getStatusText());
+    }
 
 }

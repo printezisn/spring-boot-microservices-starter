@@ -10,7 +10,7 @@ function initNavbar() {
         el.addEventListener('click', () => {
             const targetName = el.dataset.target;
             const target = document.getElementById(targetName);
-          
+
             el.classList.toggle('is-active');
             target.classList.toggle('is-active');
         });
@@ -21,7 +21,7 @@ function initNotifications() {
     const notifications = Array.prototype.slice.call(document.querySelectorAll('.notification'));
     notifications.forEach(notification => {
         const deleteButton = notification.querySelector('.delete');
-        if(deleteButton) {
+        if (deleteButton) {
             deleteButton.addEventListener('click', () => {
                 notification.parentNode.removeChild(notification);
             });
@@ -30,7 +30,7 @@ function initNotifications() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-   initNavbar();
-   initNotifications();
-   initValidate();
+    initNavbar();
+    initNotifications();
+    initValidate();
 });

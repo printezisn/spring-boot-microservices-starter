@@ -12,12 +12,14 @@ import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
  */
 public interface CustomMovieSearchRepository {
 
-	/**
-	 * Searches for movies using full text search
-	 * 
-	 * @param text The text used as filter
-	 * @param pageable The pageable criteria
-	 * @return The movies found
-	 */
-	Page<SearchedMovie> search(final Optional<String> text, final Pageable pageable);
+    /**
+     * Searches for movies using full text search
+     * 
+     * @param text
+     *            The text used as filter
+     * @param pageable
+     *            The pageable criteria
+     * @return The movies found
+     */
+    Page<SearchedMovie> search(final Optional<String> text, final Pageable pageable);
 }

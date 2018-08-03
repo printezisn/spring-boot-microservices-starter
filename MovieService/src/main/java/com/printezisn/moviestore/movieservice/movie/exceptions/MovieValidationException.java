@@ -6,12 +6,13 @@ package com.printezisn.moviestore.movieservice.movie.exceptions;
 @SuppressWarnings("serial")
 public class MovieValidationException extends MovieException {
 
-	/**
-	 * The constructor
-	 * 
-	 * @param message The validation error message
-	 */
-	public MovieValidationException(final String message) {
-		super(message);
-	}
+    /**
+     * The constructor
+     * 
+     * @param message
+     *            The validation error message
+     */
+    public MovieValidationException(final String message) {
+        super(message);
+    }
 }

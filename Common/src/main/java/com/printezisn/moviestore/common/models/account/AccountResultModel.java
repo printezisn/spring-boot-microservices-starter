@@ -11,6 +11,6 @@ import lombok.Data;
  */
 @Data
 public class AccountResultModel {
-	private AccountDto result;
-	private List<String> errors;
+    private AccountDto result;
+    private List<String> errors;
 }

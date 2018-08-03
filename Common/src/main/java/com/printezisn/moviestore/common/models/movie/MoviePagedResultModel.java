@@ -11,9 +11,9 @@ import lombok.Data;
  */
 @Data
 public class MoviePagedResultModel {
-	private List<MovieDto> entries;
-	private int pageNumber;
-	private int totalPages;
-	private String sortField;
-	private boolean isAscending;
+    private List<MovieDto> entries;
+    private int pageNumber;
+    private int totalPages;
+    private String sortField;
+    private boolean isAscending;
 }

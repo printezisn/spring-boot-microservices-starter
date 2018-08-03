@@ -8,17 +8,17 @@ import org.springframework.security.core.AuthenticationException;
 @SuppressWarnings("serial")
 public class AccountAuthenticationException extends AuthenticationException {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public AccountAuthenticationException(String msg) {
-		super(msg);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public AccountAuthenticationException(String msg) {
+        super(msg);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public AccountAuthenticationException(String msg, Throwable t) {
-		super(msg, t);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public AccountAuthenticationException(String msg, Throwable t) {
+        super(msg, t);
+    }
 }

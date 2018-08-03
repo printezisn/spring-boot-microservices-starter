@@ -12,10 +12,10 @@ import lombok.Data;
 @Data
 public class MovieLike {
 
-	@Id
-	private String id;
-	
-	private String user;
-	
-	private String movieId;
+    @Id
+    private String id;
+
+    private String user;
+
+    private String movieId;
 }

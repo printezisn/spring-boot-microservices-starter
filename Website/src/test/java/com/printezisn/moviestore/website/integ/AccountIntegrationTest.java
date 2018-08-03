@@ -30,50 +30,50 @@ import com.printezisn.moviestore.common.dto.account.AccountDto;
 @AutoConfigureMockMvc
 @TestPropertySource("classpath:application-test.properties")
 public class AccountIntegrationTest {
-	
-	private static final String TEST_USERNAME = "test_username_%s";
-	private static final String TEST_EMAIL_ADDRESS = "test_email_%s@email.com";
-	private static final String TEST_PASSWORD = "T3stPA$$";
-	
-	@Autowired
-	private MockMvc mockMvc;
-	
-	/**
-	 * Tests if the account registration page is rendered successfully
-	 */
-	@Test
-	public void test_register_get_success() throws Exception {
-		mockMvc.perform(get("/account/register"))
-			.andExpect(status().isOk())
-			.andExpect(view().name("account/register"));
-	}
-	
-	/**
-	 * Tests if the account registration is successful
-	 */
-	@Test
-	public void test_register_post_success() throws Exception {
-		final String randomString = UUID.randomUUID().toString();
-		final AccountDto inputAccountDto = new AccountDto();
-		inputAccountDto.setUsername(String.format(TEST_USERNAME, randomString));
-		inputAccountDto.setPassword(TEST_PASSWORD);
-		inputAccountDto.setEmailAddress(String.format(TEST_EMAIL_ADDRESS, randomString));
-		
-		mockMvc.perform(post("/account/register")
-			.with(csrf())
-			.param("username", inputAccountDto.getUsername())
-			.param("password", inputAccountDto.getPassword())
-			.param("emailAddress", inputAccountDto.getEmailAddress()))
-			.andExpect(status().is3xxRedirection())
-			.andExpect(redirectedUrl("/"));
-		
-		mockMvc.perform(post("/account/register")
-			.with(csrf())
-			.param("username", inputAccountDto.getUsername())
-			.param("password", inputAccountDto.getPassword())
-			.param("emailAddress", inputAccountDto.getEmailAddress()))
-			.andExpect(status().isOk())
-			.andExpect(view().name("account/register"))
-			.andExpect(model().attributeExists("errors"));
-	}
+
+    private static final String TEST_USERNAME = "test_username_%s";
+    private static final String TEST_EMAIL_ADDRESS = "test_email_%s@email.com";
+    private static final String TEST_PASSWORD = "T3stPA$$";
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    /**
+     * Tests if the account registration page is rendered successfully
+     */
+    @Test
+    public void test_register_get_success() throws Exception {
+        mockMvc.perform(get("/account/register"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("account/register"));
+    }
+
+    /**
+     * Tests if the account registration is successful
+     */
+    @Test
+    public void test_register_post_success() throws Exception {
+        final String randomString = UUID.randomUUID().toString();
+        final AccountDto inputAccountDto = new AccountDto();
+        inputAccountDto.setUsername(String.format(TEST_USERNAME, randomString));
+        inputAccountDto.setPassword(TEST_PASSWORD);
+        inputAccountDto.setEmailAddress(String.format(TEST_EMAIL_ADDRESS, randomString));
+
+        mockMvc.perform(post("/account/register")
+            .with(csrf())
+            .param("username", inputAccountDto.getUsername())
+            .param("password", inputAccountDto.getPassword())
+            .param("emailAddress", inputAccountDto.getEmailAddress()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        mockMvc.perform(post("/account/register")
+            .with(csrf())
+            .param("username", inputAccountDto.getUsername())
+            .param("password", inputAccountDto.getPassword())
+            .param("emailAddress", inputAccountDto.getEmailAddress()))
+            .andExpect(status().isOk())
+            .andExpect(view().name("account/register"))
+            .andExpect(model().attributeExists("errors"));
+    }
 }

@@ -13,16 +13,17 @@ import com.printezisn.moviestore.website.Constants.PageConstants;
 @Controller
 public class AuthController extends BaseController {
 
-	/**
-	 * Renders the login page
-	 * 
-	 * @param model The page model
-	 * @return The login page view
-	 */
-	@GetMapping("/auth/login")
-	public String login(final Model model) {
-		setCurrentPage(model, PageConstants.LOGIN_PAGE);
-		
-		return "auth/login";
-	}
+    /**
+     * Renders the login page
+     * 
+     * @param model
+     *            The page model
+     * @return The login page view
+     */
+    @GetMapping("/auth/login")
+    public String login(final Model model) {
+        setCurrentPage(model, PageConstants.LOGIN_PAGE);
+
+        return "auth/login";
+    }
 }

@@ -12,8 +12,8 @@ import lombok.Data;
 @Data
 @Document(collection = "accounts")
 public class Account {
-	@Id
-	private String username;
+    @Id
+    private String username;
 	
 	@Indexed(unique = true)
 	private String emailAddress;

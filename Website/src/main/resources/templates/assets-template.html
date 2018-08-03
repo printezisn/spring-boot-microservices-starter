@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <th:block th:fragment="css">
-        <% for(var i = 0; i < htmlWebpackPlugin.files.css.length; i++) { %>
-        <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[i].replace('../static/', '/') %>" />
-        <% } %>
-    </th:block>
+<th:block th:fragment="css">
+    <% for(var i = 0; i < htmlWebpackPlugin.files.css.length; i++) { %>
+    <link rel="stylesheet"
+        href="<%= htmlWebpackPlugin.files.css[i].replace('../static/', '/') %>" />
+    <% } %>
+</th:block>
 </head>
 <body>
 
     <th:block th:fragment="js">
         <% for(var i = 0; i < htmlWebpackPlugin.files.js.length; i++) { %>
-        <script src="<%= htmlWebpackPlugin.files.js[i].replace('../static/', '/') %>"></script>
+        <script
+            src="<%= htmlWebpackPlugin.files.js[i].replace('../static/', '/') %>"></script>
         <% } %>
     </th:block>
 </body>

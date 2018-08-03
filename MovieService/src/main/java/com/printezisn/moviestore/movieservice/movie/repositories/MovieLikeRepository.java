@@ -11,18 +11,20 @@ import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
 @Repository
 public interface MovieLikeRepository extends MongoRepository<MovieLike, String> {
 
-	/**
-	 * Deletes movie likes based on movie id
-	 * 
-	 * @param movieId The movie id
-	 */
-	void deleteByMovieId(final String movieId);
-	
-	/**
-	 * Returns the number of likes for a movie
-	 * 
-	 * @param movieId The id of the movie
-	 * @return The number of likes
-	 */
-	long countByMovieId(final String movieId);
+    /**
+     * Deletes movie likes based on movie id
+     * 
+     * @param movieId
+     *            The movie id
+     */
+    void deleteByMovieId(final String movieId);
+
+    /**
+     * Returns the number of likes for a movie
+     * 
+     * @param movieId
+     *            The id of the movie
+     * @return The number of likes
+     */
+    long countByMovieId(final String movieId);
 }

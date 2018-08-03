@@ -13,16 +13,17 @@ import com.printezisn.moviestore.website.Constants.PageConstants;
 @Controller
 public class MovieController extends BaseController {
 
-	/**
-	 * Renders the home page
-	 * 
-	 * @param model The page model
-	 * @return The home page view
-	 */
-	@GetMapping("/")
-	public String index(final Model model) {
-		setCurrentPage(model, PageConstants.HOME_PAGE);
-		
-		return "movie/index";
-	}
+    /**
+     * Renders the home page
+     * 
+     * @param model
+     *            The page model
+     * @return The home page view
+     */
+    @GetMapping("/")
+    public String index(final Model model) {
+        setCurrentPage(model, PageConstants.HOME_PAGE);
+
+        return "movie/index";
+    }
 }

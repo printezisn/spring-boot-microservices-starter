@@ -12,24 +12,24 @@ import lombok.Data;
 @Data
 public class Movie {
 
-	@Id
-	private String id;
-	
-	private String revision;
-	
-	private String title;
-	
-	private String description;
-	
-	private double rating;
-	
-	private int releaseYear;
-	
-	private long totalLikes;
-	
-	private String creationTimestamp;
-	
-	private String updateTimestamp;
-	
-	private String creator;
+    @Id
+    private String id;
+
+    private String revision;
+
+    private String title;
+
+    private String description;
+
+    private double rating;
+
+    private int releaseYear;
+
+    private long totalLikes;
+
+    private String creationTimestamp;
+
+    private String updateTimestamp;
+
+    private String creator;
 }

@@ -16,48 +16,48 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 @Configuration
 public class LocaleConfiguration implements WebMvcConfigurer {
 
-	/**
-	 * The LocaleChangeInterceptor bean
-	 * 
-	 * @return The LocaleChangeInterceptor bean
-	 */
-	@Bean
-	public LocaleChangeInterceptor localeChangeInterceptor() {
-		final LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
-		localeChangeInterceptor.setParamName("lang");
-		
-		return localeChangeInterceptor;
-	}
-	
-	/**
-	 * The LocaleResolver bean
-	 * 
-	 * @return The LocaleResolver bean
-	 */
-	@Bean
-	public LocaleResolver localeResolver() {
-		final CookieLocaleResolver localeResolver = new CookieLocaleResolver();
-		localeResolver.setDefaultLocale(Locale.US);
-		
-		return localeResolver;
-	}
-	
-	/**
-	 * The ReloadableResourceBundleMessageSource bean 
-	 * 
-	 * @return The ReloadableResourceBundleMessageSource bean
-	 */
-	@Bean
-	public ReloadableResourceBundleMessageSource messageSource() {
-		final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
-		
-		source.setBasenames(
-			"classpath:i18n/messages/messages",
-			"classpath:i18n/pages/pages",
-			"classpath:i18n/labels/labels");
-		source.setCacheSeconds(0); 
-		source.setDefaultEncoding("UTF-8");
-		
-		return source;
-	} 
+    /**
+     * The LocaleChangeInterceptor bean
+     * 
+     * @return The LocaleChangeInterceptor bean
+     */
+    @Bean
+    public LocaleChangeInterceptor localeChangeInterceptor() {
+        final LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+        localeChangeInterceptor.setParamName("lang");
+
+        return localeChangeInterceptor;
+    }
+
+    /**
+     * The LocaleResolver bean
+     * 
+     * @return The LocaleResolver bean
+     */
+    @Bean
+    public LocaleResolver localeResolver() {
+        final CookieLocaleResolver localeResolver = new CookieLocaleResolver();
+        localeResolver.setDefaultLocale(Locale.US);
+
+        return localeResolver;
+    }
+
+    /**
+     * The ReloadableResourceBundleMessageSource bean
+     * 
+     * @return The ReloadableResourceBundleMessageSource bean
+     */
+    @Bean
+    public ReloadableResourceBundleMessageSource messageSource() {
+        final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
+
+        source.setBasenames(
+            "classpath:i18n/messages/messages",
+            "classpath:i18n/pages/pages",
+            "classpath:i18n/labels/labels");
+        source.setCacheSeconds(0);
+        source.setDefaultEncoding("UTF-8");
+
+        return source;
+    }
 }

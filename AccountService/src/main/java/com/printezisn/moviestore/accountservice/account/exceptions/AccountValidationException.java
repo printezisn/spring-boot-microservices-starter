@@ -6,12 +6,13 @@ package com.printezisn.moviestore.accountservice.account.exceptions;
 @SuppressWarnings("serial")
 public class AccountValidationException extends AccountException {
 
-	/**
-	 * The constructor
-	 * 
-	 * @param message The error message
-	 */
-	public AccountValidationException(final String message) {
-		super(message);
-	}
+    /**
+     * The constructor
+     * 
+     * @param message
+     *            The error message
+     */
+    public AccountValidationException(final String message) {
+        super(message);
+    }
 }

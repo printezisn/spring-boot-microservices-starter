@@ -14,25 +14,31 @@ import com.printezisn.moviestore.website.account.exceptions.AccountPersistenceEx
  */
 public interface AccountService extends UserDetailsService {
 
-	/**
-	 * Authenticates a user
-	 * 
-	 * @param username The username
-	 * @param password The password
-	 * @return The details of the account
-	 * @throws AccountAuthenticationException Exception thrown when there is an authentication error
-	 * @throws AccountNotValidatedException Exception thrown when the account is not authenticated
-	 */
-	UserDetails authenticate(final String username, final String password)
-		throws AccountAuthenticationException, AccountNotValidatedException;
-	
-	/**
-	 * Creates a new account
-	 * 
-	 * @param accountDto The model of the new account
-	 * @return The created account
-	 * @throws AccountPersistenceException Exception thrown when there is a persistence error 
-	 */
-	AccountResultModel createAccount(final AccountDto accountDto)
-		throws AccountPersistenceException;
+    /**
+     * Authenticates a user
+     * 
+     * @param username
+     *            The username
+     * @param password
+     *            The password
+     * @return The details of the account
+     * @throws AccountAuthenticationException
+     *             Exception thrown when there is an authentication error
+     * @throws AccountNotValidatedException
+     *             Exception thrown when the account is not authenticated
+     */
+    UserDetails authenticate(final String username, final String password)
+        throws AccountAuthenticationException, AccountNotValidatedException;
+
+    /**
+     * Creates a new account
+     * 
+     * @param accountDto
+     *            The model of the new account
+     * @return The created account
+     * @throws AccountPersistenceException
+     *             Exception thrown when there is a persistence error
+     */
+    AccountResultModel createAccount(final AccountDto accountDto)
+        throws AccountPersistenceException;
 }

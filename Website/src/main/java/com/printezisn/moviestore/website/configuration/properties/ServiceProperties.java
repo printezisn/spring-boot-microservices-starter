@@ -11,6 +11,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ServiceProperties {
-	private String accountServiceUrl;
-	private String movieServiceUrl;
+    private String accountServiceUrl;
+    private String movieServiceUrl;
 }

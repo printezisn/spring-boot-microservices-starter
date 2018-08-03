@@ -14,27 +14,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class AuthControllerTest {
 
-	private AuthController authController;
-	
-	private MockMvc mockMvc;
-	
-	/**
-	 * Initializes the test class
-	 */
-	@Before
-	public void setUp() {
-		authController = new AuthController();
-		
-		mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
-	}
-	
-	/**
-	 * Tests if the login page is rendered successfully
-	 */
-	@Test
-	public void test_login_success() throws Exception {
-		mockMvc.perform(get("/auth/login"))
-			.andExpect(status().isOk())
-			.andExpect(view().name("auth/login"));
-	}
+    private AuthController authController;
+
+    private MockMvc mockMvc;
+
+    /**
+     * Initializes the test class
+     */
+    @Before
+    public void setUp() {
+        authController = new AuthController();
+
+        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+    }
+
+    /**
+     * Tests if the login page is rendered successfully
+     */
+    @Test
+    public void test_login_success() throws Exception {
+        mockMvc.perform(get("/auth/login"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("auth/login"));
+    }
 }

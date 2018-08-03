@@ -16,40 +16,44 @@ import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
 @Mapper(componentModel = "spring", uses = { InstantMapper.class, UUIDMapper.class })
 public interface MovieMapper {
 
-	/**
-	 * Converts a Movie object to MovieDto
-	 * 
-	 * @param movie The Movie object to convert
-	 * @return The converted MovieDto object
-	 */
-	MovieDto movieToMovieDto(final Movie movie);
-	
-	/**
-	 * Converts a MovieDto object to Movie
-	 * 
-	 * @param movieDto The MovieDto object to convert
-	 * @return The converted Movie object
-	 */
-	@Mapping(target = "revision", ignore = true)
-	Movie movieDtoToMovie(final MovieDto movieDto);
-	
-	/**
-	 * Converts a Movie object to SearchedMovie
-	 * 
-	 * @param movie The Movie object to convert
-	 * @return The converted SearchedMovie object
-	 */
-	SearchedMovie movieToSearchedMovie(final Movie movie);
-	
-	/**
-	 * Converts a SearchedMovie object to MovieDto
-	 * 
-	 * @param searchedMovie The SearchedMovie object to convert
-	 * @return The converted MovieDto object
-	 */
-	@Mappings({
-		@Mapping(target = "creationTimestamp", ignore = true),
-		@Mapping(target = "updateTimestamp", ignore = true)
-	})
-	MovieDto searchedMovieToMovieDto(final SearchedMovie searchedMovie);
+    /**
+     * Converts a Movie object to MovieDto
+     * 
+     * @param movie
+     *            The Movie object to convert
+     * @return The converted MovieDto object
+     */
+    MovieDto movieToMovieDto(final Movie movie);
+
+    /**
+     * Converts a MovieDto object to Movie
+     * 
+     * @param movieDto
+     *            The MovieDto object to convert
+     * @return The converted Movie object
+     */
+    @Mapping(target = "revision", ignore = true)
+    Movie movieDtoToMovie(final MovieDto movieDto);
+
+    /**
+     * Converts a Movie object to SearchedMovie
+     * 
+     * @param movie
+     *            The Movie object to convert
+     * @return The converted SearchedMovie object
+     */
+    SearchedMovie movieToSearchedMovie(final Movie movie);
+
+    /**
+     * Converts a SearchedMovie object to MovieDto
+     * 
+     * @param searchedMovie
+     *            The SearchedMovie object to convert
+     * @return The converted MovieDto object
+     */
+    @Mappings({
+        @Mapping(target = "creationTimestamp", ignore = true),
+        @Mapping(target = "updateTimestamp", ignore = true)
+    })
+    MovieDto searchedMovieToMovieDto(final SearchedMovie searchedMovie);
 }

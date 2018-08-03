@@ -6,10 +6,10 @@ package com.printezisn.moviestore.movieservice.movie.exceptions;
 @SuppressWarnings("serial")
 public class MovieNotFoundException extends MovieException {
 
-	/**
-	 * The constructor
-	 */
-	public MovieNotFoundException() {
-		super();
-	}
+    /**
+     * The constructor
+     */
+    public MovieNotFoundException() {
+        super();
+    }
 }
