@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,15 +23,17 @@ import com.printezisn.moviestore.website.configuration.properties.ServicePropert
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import java.util.Locale;
+
 /**
  * Contains unit tests for the AccountServiceImpl class
  */
 public class AccountServiceImplTest {
 
     private static final String ACCOUNT_SERVICE_URL = "http://localhost";
-    private static final String ACCOUNT_AUTH_PATH = "/account/auth";
-    private static final String ACCOUNT_GET_PATH = "/account/get/%s";
-    private static final String ACCOUNT_CREATE_PATH = "/account/new";
+    private static final String ACCOUNT_AUTH_PATH = "/account/auth?lang=en";
+    private static final String ACCOUNT_GET_PATH = "/account/get/%s?lang=en";
+    private static final String ACCOUNT_CREATE_PATH = "/account/new?lang=en";
 
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
@@ -57,6 +60,8 @@ public class AccountServiceImplTest {
         accountService = new AccountServiceImpl(serviceProperties, restTemplate);
 
         when(serviceProperties.getAccountServiceUrl()).thenReturn(ACCOUNT_SERVICE_URL);
+
+        LocaleContextHolder.setLocale(Locale.ENGLISH);
     }
 
     /**

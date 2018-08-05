@@ -2,6 +2,7 @@ package com.printezisn.moviestore.website.account.services;
 
 import java.util.ArrayList;
 
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,9 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
-    private static final String GET_URL = "%s/account/get/%s";
-    private static final String AUTHENTICATE_URL = "%s/account/auth";
-    private static final String CREATE_URL = "%s/account/new";
+    private static final String GET_URL = "%s/account/get/%s?lang=%s";
+    private static final String AUTHENTICATE_URL = "%s/account/auth?lang=%s";
+    private static final String CREATE_URL = "%s/account/new?lang=%s";
 
     private final ServiceProperties serviceProperties;
 
@@ -44,7 +45,8 @@ public class AccountServiceImpl implements AccountService {
     public UserDetails authenticate(final String username, final String password)
         throws AccountAuthenticationException, AccountNotValidatedException {
 
-        final String url = String.format(AUTHENTICATE_URL, serviceProperties.getAccountServiceUrl());
+        final String url = String.format(AUTHENTICATE_URL, serviceProperties.getAccountServiceUrl(),
+            LocaleContextHolder.getLocale().getLanguage());
         final AuthDto authDto = new AuthDto();
         authDto.setUsername(username);
         authDto.setPassword(password);
@@ -77,7 +79,8 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        final String url = String.format(GET_URL, serviceProperties.getAccountServiceUrl(), username);
+        final String url = String.format(GET_URL, serviceProperties.getAccountServiceUrl(), username,
+            LocaleContextHolder.getLocale().getLanguage());
 
         ResponseEntity<AccountResultModel> response;
 
@@ -109,7 +112,8 @@ public class AccountServiceImpl implements AccountService {
     public AccountResultModel createAccount(final AccountDto accountDto)
         throws AccountPersistenceException {
 
-        final String url = String.format(CREATE_URL, serviceProperties.getAccountServiceUrl());
+        final String url = String.format(CREATE_URL, serviceProperties.getAccountServiceUrl(),
+            LocaleContextHolder.getLocale().getLanguage());
 
         try {
             return restTemplate.postForEntity(url, accountDto, AccountResultModel.class).getBody();
