@@ -66,7 +66,7 @@ public class LocaleConfiguration implements WebMvcConfigurer {
      * {@inheritDoc}
      */
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+    public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
     }
 }

@@ -9,9 +9,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.controllers.BaseController;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
+import com.printezisn.moviestore.common.models.Notification;
+import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.Constants.MessageKeys;
 import com.printezisn.moviestore.website.Constants.PageConstants;
@@ -55,7 +58,9 @@ public class AccountController extends BaseController {
      *         the register page view
      */
     @PostMapping("/account/register")
-    public String register(@ModelAttribute final AccountDto accountDto, final Model model) {
+    public String register(final RedirectAttributes redirectAttributes, @ModelAttribute final AccountDto accountDto,
+        final Model model) {
+
         if (accountDto == null) {
             setCurrentPage(model, PageConstants.REGISTER_PAGE);
             model.addAttribute("account", new AccountDto());
@@ -80,6 +85,9 @@ public class AccountController extends BaseController {
             return "account/register";
         }
 
+        addNotification(redirectAttributes,
+            new Notification(NotificationTypes.SUCCESS, getMessage("message.registerSuccess")));
+
         return "redirect:/";
     }
 
@@ -91,5 +99,16 @@ public class AccountController extends BaseController {
     private String getUnexpectedErrorMessage() {
         return messageSource.getMessage(MessageKeys.UNEXPECTED_ERROR_MESSAGE_KEY, null,
             LocaleContextHolder.getLocale());
+    }
+
+    /**
+     * Returns a localized message
+     * 
+     * @param messageKey
+     *            The key identifier of the message
+     * @return The localized message
+     */
+    private String getMessage(final String messageKey) {
+        return messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale());
     }
 }

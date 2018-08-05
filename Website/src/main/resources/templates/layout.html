@@ -22,18 +22,15 @@
             <div class="navbar-start">
                 <a class="navbar-item" th:href="@{/}"
                     th:classappend="${currentPage} == ${@pageConstants.HOME_PAGE} ? 'is-active' : ''"
-                    th:text="#{page.home}"></a>
-                <a class="navbar-item"
+                    th:text="#{page.home}"></a> <a class="navbar-item"
                     th:href="@{/auth/login}"
                     sec:authorize="!isAuthenticated()"
                     th:classappend="${currentPage} == ${@pageConstants.LOGIN_PAGE} ? 'is-active' : ''"
-                    th:text="#{page.login}"></a>
-                <a class="navbar-item"
+                    th:text="#{page.login}"></a> <a class="navbar-item"
                     th:href="@{/account/register}"
                     sec:authorize="!isAuthenticated()"
                     th:classappend="${currentPage} == ${@pageConstants.REGISTER_PAGE} ? 'is-active' : ''"
-                    th:text="#{page.register}"></a>
-                <a
+                    th:text="#{page.register}"></a> <a
                     class="navbar-item" th:href="@{/movie/new}"
                     sec:authorize="isAuthenticated()"
                     th:classappend="${currentPage} == ${@pageConstants.NEW_MOVIE_PAGE} ? 'is-active' : ''"
@@ -58,6 +55,12 @@
         th:action="@{/auth/logout}"></form>
 
     <th:block layout:fragment="main"></th:block>
+
+    <span th:each="notification : ${notifications}"
+        th:attr="notification-title=${notification.title},notification-type=${notification.type}"
+        th:text="${notification.message}" style="display: none"
+        class="toastr-notification"></span>
+
     <th:block th:replace="assets :: js"></th:block>
 </body>
 </html>

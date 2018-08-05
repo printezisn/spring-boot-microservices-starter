@@ -1,6 +1,7 @@
 package com.printezisn.moviestore.common.controllers;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,13 +10,18 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.printezisn.moviestore.common.models.Notification;
 import com.printezisn.moviestore.common.models.Result;
 
 /**
  * The base class for every controller
  */
 public class BaseController {
+
+    private static final String CURRENT_PAGE_MODEL_PROPERTY = "currentPage";
+    private static final String NOTIFICATION_LIST_ATTRIBUTE = "notifications";
 
     /**
      * Returns a result object that contains errors from the binding result
@@ -59,6 +65,27 @@ public class BaseController {
      *            The current page
      */
     protected void setCurrentPage(final Model model, final String currentPage) {
-        model.addAttribute("currentPage", currentPage);
+        model.addAttribute(CURRENT_PAGE_MODEL_PROPERTY, currentPage);
+    }
+
+    /**
+     * Adds a new notification, by using flash attributes
+     * 
+     * @param redirectAttributes
+     *            The redirected attributes that contain flash attributes
+     * @param notification
+     *            The notification to add
+     */
+    @SuppressWarnings("unchecked")
+    protected void addNotification(final RedirectAttributes redirectAttributes, final Notification notification) {
+        List<Notification> notifications = new LinkedList<>();
+
+        if (redirectAttributes.getFlashAttributes().containsKey(NOTIFICATION_LIST_ATTRIBUTE)) {
+            notifications = (List<Notification>) redirectAttributes.getFlashAttributes()
+                .get(NOTIFICATION_LIST_ATTRIBUTE);
+        }
+
+        notifications.add(notification);
+        redirectAttributes.addFlashAttribute(NOTIFICATION_LIST_ATTRIBUTE, notifications);
     }
 }

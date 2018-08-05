@@ -31,6 +31,8 @@ dependencies {
 	compile('io.springfox:springfox-swagger-ui:2.8.0')
 	
 	apt('org.projectlombok:lombok:1.16.20')
+	
+	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
 dependencyManagement {
