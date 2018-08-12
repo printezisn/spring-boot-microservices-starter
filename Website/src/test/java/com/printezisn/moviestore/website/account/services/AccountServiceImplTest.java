@@ -18,6 +18,7 @@ import com.printezisn.moviestore.website.account.exceptions.AccountAuthenticatio
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
 import com.printezisn.moviestore.website.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.website.account.models.AuthenticatedUser;
+import com.printezisn.moviestore.website.account.models.ChangePasswordModel;
 import com.printezisn.moviestore.website.configuration.properties.ServiceProperties;
 
 import static org.junit.Assert.assertEquals;
@@ -34,9 +35,11 @@ public class AccountServiceImplTest {
     private static final String ACCOUNT_AUTH_PATH = "/account/auth?lang=en";
     private static final String ACCOUNT_GET_PATH = "/account/get/%s?lang=en";
     private static final String ACCOUNT_CREATE_PATH = "/account/new?lang=en";
+    private static final String ACCOUNT_UPDATE_PATH = "/account/update?lang=en";
 
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
+    private static final String NEW_PASSWORD = "new_password";
     private static final String EMAIL_ADDRESS = "email";
 
     @Mock
@@ -204,5 +207,138 @@ public class AccountServiceImplTest {
             .thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         accountService.createAccount(accountDto);
+    }
+
+    /**
+     * Tests that the password is changed successfully if all requests are completed
+     * successfully
+     */
+    @Test
+    public void test_changePassword_success() throws AccountNotValidatedException, AccountPersistenceException {
+        final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
+        final String updateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_UPDATE_PATH;
+
+        final AuthDto authDto = new AuthDto();
+        authDto.setUsername(USERNAME);
+        authDto.setPassword(PASSWORD);
+
+        final ChangePasswordModel changePasswordModel = new ChangePasswordModel();
+        changePasswordModel.setCurrentPassword(PASSWORD);
+        changePasswordModel.setNewPassword(NEW_PASSWORD);
+
+        final AccountDto accountDto = new AccountDto();
+        accountDto.setUsername(USERNAME);
+        accountDto.setPassword(NEW_PASSWORD);
+        accountDto.setEmailAddress(EMAIL_ADDRESS);
+
+        final AccountResultModel expectedResult = new AccountResultModel();
+        expectedResult.setResult(accountDto);
+
+        when(response.getBody()).thenReturn(expectedResult);
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.postForEntity(authenticateUrl, authDto, AccountResultModel.class)).thenReturn(response);
+        when(restTemplate.postForEntity(updateUrl, accountDto, AccountResultModel.class)).thenReturn(response);
+
+        final AccountResultModel result = accountService.changePassword(USERNAME, changePasswordModel);
+
+        assertEquals(expectedResult, result);
+    }
+
+    /**
+     * Tests that the correct exception is thrown when authentication throws an
+     * exception
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_changePassword_authentication_exception()
+        throws AccountNotValidatedException, AccountPersistenceException {
+
+        final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
+
+        final AuthDto authDto = new AuthDto();
+        authDto.setUsername(USERNAME);
+        authDto.setPassword(PASSWORD);
+
+        final ChangePasswordModel changePasswordModel = new ChangePasswordModel();
+        changePasswordModel.setCurrentPassword(PASSWORD);
+        changePasswordModel.setNewPassword(NEW_PASSWORD);
+
+        when(restTemplate.postForEntity(authenticateUrl, authDto, AccountResultModel.class))
+            .thenThrow(new RuntimeException());
+
+        accountService.changePassword(USERNAME, changePasswordModel);
+    }
+
+    /**
+     * Tests that the correct exception is thrown when authentication fails
+     */
+    @Test(expected = AccountNotValidatedException.class)
+    public void test_changePassword_authentication_invalid()
+        throws AccountNotValidatedException, AccountPersistenceException {
+
+        final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
+
+        final AuthDto authDto = new AuthDto();
+        authDto.setUsername(USERNAME);
+        authDto.setPassword(PASSWORD);
+
+        final ChangePasswordModel changePasswordModel = new ChangePasswordModel();
+        changePasswordModel.setCurrentPassword(PASSWORD);
+        changePasswordModel.setNewPassword(NEW_PASSWORD);
+
+        when(response.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+        when(restTemplate.postForEntity(authenticateUrl, authDto, AccountResultModel.class)).thenReturn(response);
+
+        accountService.changePassword(USERNAME, changePasswordModel);
+    }
+
+    /**
+     * Tests that the correct exception is thrown when the account update fails
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_changePassword_update_exception()
+        throws AccountNotValidatedException, AccountPersistenceException {
+
+        final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
+        final String updateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_UPDATE_PATH;
+
+        final AuthDto authDto = new AuthDto();
+        authDto.setUsername(USERNAME);
+        authDto.setPassword(PASSWORD);
+
+        final ChangePasswordModel changePasswordModel = new ChangePasswordModel();
+        changePasswordModel.setCurrentPassword(PASSWORD);
+        changePasswordModel.setNewPassword(NEW_PASSWORD);
+
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.postForEntity(authenticateUrl, authDto, AccountResultModel.class)).thenReturn(response);
+        when(restTemplate.postForEntity(updateUrl, authDto, AccountResultModel.class))
+            .thenThrow(new RuntimeException());
+
+        accountService.changePassword(USERNAME, changePasswordModel);
+    }
+
+    /**
+     * Tests that the correct exception is thrown when the account is not found
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_changePassword_update_accountNotFound()
+        throws AccountNotValidatedException, AccountPersistenceException {
+
+        final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
+        final String updateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_UPDATE_PATH;
+
+        final AuthDto authDto = new AuthDto();
+        authDto.setUsername(USERNAME);
+        authDto.setPassword(PASSWORD);
+
+        final ChangePasswordModel changePasswordModel = new ChangePasswordModel();
+        changePasswordModel.setCurrentPassword(PASSWORD);
+        changePasswordModel.setNewPassword(NEW_PASSWORD);
+
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK).thenReturn(HttpStatus.NOT_FOUND);
+        when(restTemplate.postForEntity(authenticateUrl, authDto, AccountResultModel.class)).thenReturn(response);
+        when(restTemplate.postForEntity(updateUrl, authDto, AccountResultModel.class)).thenReturn(response);
+
+        accountService.changePassword(USERNAME, changePasswordModel);
     }
 }

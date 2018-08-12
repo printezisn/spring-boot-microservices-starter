@@ -1,6 +1,9 @@
 package com.printezisn.moviestore.website.integ;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -34,6 +37,7 @@ public class AccountIntegrationTest {
     private static final String TEST_USERNAME = "test_username_%s";
     private static final String TEST_EMAIL_ADDRESS = "test_email_%s@email.com";
     private static final String TEST_PASSWORD = "T3stPA$$";
+    private static final String TEST_NEW_PASSWORD = "T3stPA$$2";
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,5 +79,49 @@ public class AccountIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(view().name("account/register"))
             .andExpect(model().attributeExists("errors"));
+    }
+
+    /**
+     * Tests if the change password page is rendered successfully
+     */
+    @Test
+    public void test_changePassword_get_success() throws Exception {
+        mockMvc.perform(get("/account/changePassword")
+            .with(user(String.format(TEST_USERNAME, "1"))))
+            .andExpect(status().isOk())
+            .andExpect(view().name("account/changePassword"));
+    }
+
+    /**
+     * Tests if the password is changed successfully
+     */
+    @Test
+    public void test_changePassword_post_success() throws Exception {
+        final String randomString = UUID.randomUUID().toString();
+        final AccountDto inputAccountDto = new AccountDto();
+        inputAccountDto.setUsername(String.format(TEST_USERNAME, randomString));
+        inputAccountDto.setPassword(TEST_PASSWORD);
+        inputAccountDto.setEmailAddress(String.format(TEST_EMAIL_ADDRESS, randomString));
+
+        mockMvc.perform(post("/account/register")
+            .with(csrf())
+            .param("username", inputAccountDto.getUsername())
+            .param("password", inputAccountDto.getPassword())
+            .param("emailAddress", inputAccountDto.getEmailAddress()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        mockMvc.perform(post("/account/changePassword")
+            .with(csrf())
+            .with(user(inputAccountDto.getUsername()))
+            .param("currentPassword", TEST_PASSWORD)
+            .param("newPassword", TEST_NEW_PASSWORD))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        mockMvc.perform(formLogin("/auth/login")
+            .user("username", inputAccountDto.getUsername())
+            .password("password", TEST_NEW_PASSWORD))
+            .andExpect(authenticated());
     }
 }

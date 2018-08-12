@@ -17,6 +17,7 @@ import com.printezisn.moviestore.website.account.exceptions.AccountAuthenticatio
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
 import com.printezisn.moviestore.website.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.website.account.models.AuthenticatedUser;
+import com.printezisn.moviestore.website.account.models.ChangePasswordModel;
 import com.printezisn.moviestore.website.configuration.properties.ServiceProperties;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class AccountServiceImpl implements AccountService {
     private static final String GET_URL = "%s/account/get/%s?lang=%s";
     private static final String AUTHENTICATE_URL = "%s/account/auth?lang=%s";
     private static final String CREATE_URL = "%s/account/new?lang=%s";
+    private static final String UPDATE_URL = "%s/account/update?lang=%s";
 
     private final ServiceProperties serviceProperties;
 
@@ -89,7 +91,7 @@ public class AccountServiceImpl implements AccountService {
         }
         catch (final Exception ex) {
             log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException(ex.getMessage());
         }
 
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
@@ -120,7 +122,43 @@ public class AccountServiceImpl implements AccountService {
         }
         catch (final Exception ex) {
             log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException();
+            throw new AccountPersistenceException(ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AccountResultModel changePassword(final String username, final ChangePasswordModel changePasswordModel)
+        throws AccountNotValidatedException, AccountPersistenceException {
+
+        final String url = String.format(UPDATE_URL, serviceProperties.getAccountServiceUrl(),
+            LocaleContextHolder.getLocale().getLanguage());
+
+        try {
+            final AuthenticatedUser authenticatedUser = (AuthenticatedUser) authenticate(username,
+                changePasswordModel.getCurrentPassword());
+
+            final AccountDto accountDto = new AccountDto();
+            accountDto.setUsername(authenticatedUser.getUsername());
+            accountDto.setEmailAddress(authenticatedUser.getEmailAddress());
+            accountDto.setPassword(changePasswordModel.getNewPassword());
+
+            final ResponseEntity<AccountResultModel> result = restTemplate.postForEntity(url, accountDto,
+                AccountResultModel.class);
+            if (result.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                throw new AccountNotValidatedException();
+            }
+
+            return result.getBody();
+        }
+        catch (final AccountNotValidatedException ex) {
+            throw ex;
+        }
+        catch (final Exception ex) {
+            log.error("An error occurred: " + ex.getMessage(), ex);
+            throw new AccountPersistenceException(ex);
         }
     }
 }

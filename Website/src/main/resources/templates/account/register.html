@@ -5,7 +5,7 @@
 </head>
 <body>
     <div class="box small-form" layout:fragment="main">
-        <div class="notification is-danger" th:if="${errors}">
+        <div class="notification is-danger" th:if="${errors.size() > 0}">
             <button type="button" class="delete"></button>
             <ul class="error-list">
                 <li th:each="error : ${errors}" th:text="${error}"></li>

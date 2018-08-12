@@ -8,6 +8,7 @@ import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.account.exceptions.AccountAuthenticationException;
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
 import com.printezisn.moviestore.website.account.exceptions.AccountPersistenceException;
+import com.printezisn.moviestore.website.account.models.ChangePasswordModel;
 
 /**
  * The interface of the account service
@@ -41,4 +42,21 @@ public interface AccountService extends UserDetailsService {
      */
     AccountResultModel createAccount(final AccountDto accountDto)
         throws AccountPersistenceException;
+
+    /**
+     * Changes the password for an account
+     * 
+     * @param username
+     *            The username of the account to change password for
+     * @param changePasswordModel
+     *            The model instance used for the change password operation
+     * @return The updated account
+     * @throws AccountNotValidatedException
+     *             Exception thrown when the account is not authenticated with the
+     *             current password
+     * @throws AccountPersistenceException
+     *             Exception thrown when there is a persistence error
+     */
+    AccountResultModel changePassword(final String username, final ChangePasswordModel changePasswordModel)
+        throws AccountNotValidatedException, AccountPersistenceException;
 }

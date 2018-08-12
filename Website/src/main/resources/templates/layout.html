@@ -41,7 +41,13 @@
                     <a class="navbar-link" href="javascript:void(0)"
                         sec:authentication="name"></a>
                     <div class="navbar-dropdown is-right">
-                        <a class="navbar-item" href="javascript:void(0)"
+                        <a class="navbar-item"
+                            th:href="@{/account/changePassword}"
+                            th:classappend="${currentPage} == ${@pageConstants.CHANGE_PASSWORD_PAGE} ? 'is-active' : ''"
+                            th:text="#{page.changePassword}"></a>
+                        <a
+                            class="navbar-item"
+                            href="javascript:void(0)"
                             th:text="#{message.logout}"
                             onclick="document.getElementById('logout-form').submit()"></a>
                     </div>
