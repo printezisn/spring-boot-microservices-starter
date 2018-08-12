@@ -1,3 +1,5 @@
+@import "_colors";
+
 .small-form {
     max-width: 700px;
     margin: auto;
@@ -6,4 +8,17 @@
 .error-list {
     list-style: disc;
     margin-left: 10px;
+}
+
+.required-field {
+    padding-right: 5px;
+    position: relative;
+}
+
+.required-field:after {
+    content: '*';
+    color: $moviestore-red;
+    position: absolute;
+    top: 0;
+    right: -5px;
 }
