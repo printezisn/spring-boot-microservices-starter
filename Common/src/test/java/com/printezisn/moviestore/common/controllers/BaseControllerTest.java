@@ -29,7 +29,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.models.Notification;
 import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
-import com.printezisn.moviestore.common.models.Result;
 
 /**
  * Contains unit tests for the BaseController class
@@ -77,7 +76,7 @@ public class BaseControllerTest {
      * Tests that field error messages are returned correctly
      */
     @Test
-    public void test_getErrorResult_fieldErrors() {
+    public void test_getModelErrors_fieldErrors() {
         final List<ObjectError> fieldErrors = Arrays.asList(
             new FieldError("", "field1", "message1"),
             new FieldError("", "field2", "message2"));
@@ -87,17 +86,17 @@ public class BaseControllerTest {
             .forEach(fieldError -> when(messageSource.getMessage(fieldError.getDefaultMessage(), null, Locale.ENGLISH))
                 .thenReturn(fieldError.getDefaultMessage()));
 
-        final Result<Integer> result = baseController.getErrorResult(bindingResult, messageSource);
+        final List<String> errors = baseController.getModelErrors(bindingResult, messageSource);
 
-        assertEquals(fieldErrors.size(), result.getErrors().size());
-        fieldErrors.forEach(fieldError -> assertTrue(result.getErrors().contains(fieldError.getDefaultMessage())));
+        assertEquals(fieldErrors.size(), errors.size());
+        fieldErrors.forEach(fieldError -> assertTrue(errors.contains(fieldError.getDefaultMessage())));
     }
 
     /**
      * Tests that error messages for excluded fields are not taken into account
      */
     @Test
-    public void test_getErrorResult_excludedField() {
+    public void test_getModelErrors_excludedField() {
         final List<ObjectError> fieldErrors = Arrays.asList(
             new FieldError("", "field1", "message1"),
             new FieldError("", "field2", "message2"));
@@ -107,10 +106,10 @@ public class BaseControllerTest {
             .forEach(fieldError -> when(messageSource.getMessage(fieldError.getDefaultMessage(), null, Locale.ENGLISH))
                 .thenReturn(fieldError.getDefaultMessage()));
 
-        final Result<Integer> result = baseController.getErrorResult(bindingResult, messageSource, "field1");
+        final List<String> errors = baseController.getModelErrors(bindingResult, messageSource, "field1");
 
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().contains("message2"));
+        assertEquals(1, errors.size());
+        assertTrue(errors.contains("message2"));
     }
 
     /**

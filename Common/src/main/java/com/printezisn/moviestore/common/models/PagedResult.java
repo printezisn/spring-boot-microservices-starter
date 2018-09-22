@@ -2,22 +2,46 @@ package com.printezisn.moviestore.common.models;
 
 import java.util.List;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 /**
- * The class that holds paged entries
+ * Model that holds paged entries
  *
  * @param <T>
  *            The type of entries
  */
-@RequiredArgsConstructor
-@Getter
-public class PagedResult<T> {
+public interface PagedResult<T> {
 
-    private final List<T> entries;
-    private final int pageNumber;
-    private final int totalPages;
-    private final String sortField;
-    private final boolean isAscending;
+    /**
+     * Returns the entries of the result
+     * 
+     * @return The list of entries
+     */
+    List<T> getEntries();
+
+    /**
+     * Returns the current page of the results
+     * 
+     * @return The current page
+     */
+    int getPageNumber();
+
+    /**
+     * Returns the total number of available pages
+     * 
+     * @return The total number of available pages
+     */
+    int getTotalPages();
+
+    /**
+     * Returns the field name used to sort the results
+     * 
+     * @return The sorting field name
+     */
+    String getSortField();
+
+    /**
+     * Indicates if the sorting is ascending or descending
+     * 
+     * @return True if the sorting is ascending, otherwise false
+     */
+    boolean isAscending();
 }

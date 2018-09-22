@@ -13,7 +13,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.models.Notification;
-import com.printezisn.moviestore.common.models.Result;
 
 /**
  * The base class for every controller
@@ -24,20 +23,19 @@ public class BaseController {
     private static final String NOTIFICATION_LIST_ATTRIBUTE = "notifications";
 
     /**
-     * Returns a result object that contains errors from the binding result
+     * Returns a list of errors from the binding result
      * 
      * @param bindingResult
      *            The binding result
      * @param messageSource
      *            The source of localized messages
-     * @return The result object
+     * @return The list of errors found
      */
-    protected <T> Result<T> getErrorResult(final BindingResult bindingResult, final MessageSource messageSource,
+    protected List<String> getModelErrors(final BindingResult bindingResult, final MessageSource messageSource,
         final String... excludedFields) {
         final List<String> excludedFieldsList = Arrays.asList(excludedFields);
-        final Result<T> errorResult = new Result<>();
 
-        final List<String> errors = bindingResult.getAllErrors()
+        return bindingResult.getAllErrors()
             .stream()
             .filter(error -> {
                 if (!(error instanceof FieldError)) {
@@ -50,10 +48,6 @@ public class BaseController {
             })
             .map(error -> messageSource.getMessage(error.getDefaultMessage(), null, LocaleContextHolder.getLocale()))
             .collect(Collectors.toList());
-
-        errorResult.setErrors(errors);
-
-        return errorResult;
     }
 
     /**

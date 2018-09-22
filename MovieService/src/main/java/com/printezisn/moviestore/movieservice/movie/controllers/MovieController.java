@@ -1,5 +1,6 @@
 package com.printezisn.moviestore.movieservice.movie.controllers;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.printezisn.moviestore.common.controllers.BaseController;
 import com.printezisn.moviestore.common.models.PagedResult;
 import com.printezisn.moviestore.common.models.Result;
+import com.printezisn.moviestore.common.models.movie.MovieResultModel;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
@@ -92,13 +94,14 @@ public class MovieController extends BaseController {
     public ResponseEntity<?> createMovie(@Valid @RequestBody final MovieDto movieDto,
         final BindingResult bindingResult) {
 
-        final Result<MovieDto> errorResult = getErrorResult(bindingResult, messageSource, "id");
-        if (!errorResult.getErrors().isEmpty()) {
-            return ResponseEntity.badRequest().body(errorResult);
+        final List<String> errors = getModelErrors(bindingResult, messageSource, "id");
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                MovieResultModel.builder().errors(errors).build());
         }
 
         final MovieDto createdMovieDto = movieService.createMovie(movieDto);
-        final Result<MovieDto> result = new Result<>(createdMovieDto);
+        final Result<MovieDto> result = MovieResultModel.builder().result(createdMovieDto).build();
 
         return ResponseEntity.ok(result);
     }
@@ -116,14 +119,15 @@ public class MovieController extends BaseController {
     public ResponseEntity<?> updateMovie(@Valid @RequestBody final MovieDto movieDto,
         final BindingResult bindingResult) {
 
-        final Result<MovieDto> errorResult = getErrorResult(bindingResult, messageSource, "creatorId");
-        if (!errorResult.getErrors().isEmpty()) {
-            return ResponseEntity.badRequest().body(errorResult);
+        final List<String> errors = getModelErrors(bindingResult, messageSource, "creatorId");
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                MovieResultModel.builder().errors(errors).build());
         }
 
         try {
             final MovieDto updatedMovieDto = movieService.updateMovie(movieDto);
-            final Result<MovieDto> result = new Result<>(updatedMovieDto);
+            final Result<MovieDto> result = MovieResultModel.builder().result(updatedMovieDto).build();
 
             return ResponseEntity.ok(result);
         }

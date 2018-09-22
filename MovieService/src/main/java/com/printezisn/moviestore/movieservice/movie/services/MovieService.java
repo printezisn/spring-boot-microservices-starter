@@ -3,7 +3,7 @@ package com.printezisn.moviestore.movieservice.movie.services;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
@@ -26,7 +26,7 @@ public interface MovieService {
      *            Indicates if the sorting is ascending or descending
      * @return The movies found
      */
-    PagedResult<MovieDto> searchMovies(final Optional<String> text, final Optional<Integer> pageNumber,
+    MoviePagedResultModel searchMovies(final Optional<String> text, final Optional<Integer> pageNumber,
         final Optional<String> sortField, final boolean isAscending);
 
     /**

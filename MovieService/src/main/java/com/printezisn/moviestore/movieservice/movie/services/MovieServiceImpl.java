@@ -15,7 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
-import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
 import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
@@ -54,7 +54,7 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public PagedResult<MovieDto> searchMovies(final Optional<String> text, final Optional<Integer> pageNumber,
+    public MoviePagedResultModel searchMovies(final Optional<String> text, final Optional<Integer> pageNumber,
         final Optional<String> sortField, final boolean isAscending) {
 
         try {
@@ -74,12 +74,13 @@ public class MovieServiceImpl implements MovieService {
                 .map(searchedMovie -> movieMapper.searchedMovieToMovieDto(searchedMovie))
                 .collect(Collectors.toList());
 
-            return new PagedResult<>(
-                results,
-                page.getNumber(),
-                page.getTotalPages(),
-                requiredSortField,
-                isAscending);
+            return MoviePagedResultModel.builder()
+                .entries(results)
+                .pageNumber(page.getNumber())
+                .totalPages(page.getTotalPages())
+                .sortField(requiredSortField)
+                .isAscending(isAscending)
+                .build();
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while searching movies: %s", ex.getMessage());

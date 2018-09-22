@@ -13,7 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
 import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
@@ -93,7 +93,7 @@ public class MovieServiceImplTest {
         when(pagedResult.getNumber()).thenReturn(PAGE_NUMBER);
         when(pagedResult.getTotalPages()).thenReturn(TOTAL_PAGES);
 
-        final PagedResult<MovieDto> result = movieService.searchMovies(Optional.of(SEARCH_TEXT),
+        final MoviePagedResultModel result = movieService.searchMovies(Optional.of(SEARCH_TEXT),
             Optional.of(PAGE_NUMBER), Optional.of(SORT_FIELD), IS_ASCENDING);
 
         assertEquals(PAGE_NUMBER, pageableCaptor.getValue().getPageNumber());
@@ -124,7 +124,7 @@ public class MovieServiceImplTest {
         when(pagedResult.getNumber()).thenReturn(DEFAULT_PAGE_NUMBER);
         when(pagedResult.getTotalPages()).thenReturn(TOTAL_PAGES);
 
-        final PagedResult<MovieDto> result = movieService.searchMovies(Optional.empty(),
+        final MoviePagedResultModel result = movieService.searchMovies(Optional.empty(),
             Optional.empty(), Optional.empty(), IS_ASCENDING);
 
         assertEquals(DEFAULT_PAGE_NUMBER, pageableCaptor.getValue().getPageNumber());
@@ -156,7 +156,7 @@ public class MovieServiceImplTest {
         when(pagedResult.getNumber()).thenReturn(PAGE_NUMBER);
         when(pagedResult.getTotalPages()).thenReturn(TOTAL_PAGES);
 
-        final PagedResult<MovieDto> result = movieService.searchMovies(Optional.of(SEARCH_TEXT),
+        final MoviePagedResultModel result = movieService.searchMovies(Optional.of(SEARCH_TEXT),
             Optional.of(PAGE_NUMBER), Optional.of("wrong"), IS_ASCENDING);
 
         assertEquals(PAGE_NUMBER, pageableCaptor.getValue().getPageNumber());
@@ -187,7 +187,7 @@ public class MovieServiceImplTest {
         when(pagedResult.getNumber()).thenReturn(DEFAULT_PAGE_NUMBER);
         when(pagedResult.getTotalPages()).thenReturn(TOTAL_PAGES);
 
-        final PagedResult<MovieDto> result = movieService.searchMovies(Optional.of(SEARCH_TEXT),
+        final MoviePagedResultModel result = movieService.searchMovies(Optional.of(SEARCH_TEXT),
             Optional.of(-1), Optional.of(SORT_FIELD), IS_ASCENDING);
 
         assertEquals(DEFAULT_PAGE_NUMBER, pageableCaptor.getValue().getPageNumber());

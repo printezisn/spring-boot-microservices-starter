@@ -3,6 +3,7 @@ package com.printezisn.moviestore.website.account.controllers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -21,7 +22,6 @@ import com.printezisn.moviestore.common.controllers.BaseController;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.models.Notification;
 import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
-import com.printezisn.moviestore.common.models.Result;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.Constants.MessageKeys;
 import com.printezisn.moviestore.website.Constants.PageConstants;
@@ -80,7 +80,7 @@ public class AccountController extends BaseController {
             }
         }
         catch (final Exception ex) {
-            return getRegisterPage(model, accountDto, Arrays.asList(getUnexpectedErrorMessage()));
+            return getRegisterPage(model, accountDto, getUnexpectedErrorMessageAsList());
         }
 
         addNotification(redirectAttributes,
@@ -143,9 +143,9 @@ public class AccountController extends BaseController {
         final Model model) {
 
         // Checks if there are validation errors
-        final Result<ChangePasswordModel> errorResult = getErrorResult(bindingResult, messageSource);
-        if (!errorResult.getErrors().isEmpty()) {
-            return getChangePasswordPage(model, changePasswordModel, errorResult.getErrors());
+        final List<String> errors = getModelErrors(bindingResult, messageSource);
+        if (!errors.isEmpty()) {
+            return getChangePasswordPage(model, changePasswordModel, errors);
         }
 
         try {
@@ -159,11 +159,10 @@ public class AccountController extends BaseController {
         catch (final AccountNotValidatedException ex) {
             // Checks if the current password is valid
             return getChangePasswordPage(model, changePasswordModel,
-                Arrays.asList(getMessage("message.changePassword.invalidCurrentPassword")));
+                getMessages("message.changePassword.invalidCurrentPassword"));
         }
         catch (final Exception ex) {
-            return getChangePasswordPage(model, changePasswordModel,
-                Arrays.asList(getUnexpectedErrorMessage()));
+            return getChangePasswordPage(model, changePasswordModel, getUnexpectedErrorMessageAsList());
         }
 
         addNotification(redirectAttributes,
@@ -196,13 +195,25 @@ public class AccountController extends BaseController {
     }
 
     /**
-     * Returns a localized message for unexpected errors
+     * Returns a localized message, for unexpected errors, in a list
      * 
-     * @return The localized message
+     * @return The localized message in a list
      */
-    private String getUnexpectedErrorMessage() {
-        return messageSource.getMessage(MessageKeys.UNEXPECTED_ERROR_MESSAGE_KEY, null,
-            LocaleContextHolder.getLocale());
+    private List<String> getUnexpectedErrorMessageAsList() {
+        return getMessages(MessageKeys.UNEXPECTED_ERROR_MESSAGE_KEY);
+    }
+
+    /**
+     * Returns localized messages
+     * 
+     * @param messageKeys
+     *            The key identifiers of the messages
+     * @return The localized messages
+     */
+    private List<String> getMessages(final String... messageKeys) {
+        return Arrays.stream(messageKeys)
+            .map(this::getMessage)
+            .collect(Collectors.toList());
     }
 
     /**

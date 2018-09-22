@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.printezisn.moviestore.common.models.PagedResult;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.movieservice.movie.controllers.MovieController;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
@@ -84,8 +84,13 @@ public class MovieControllerTest {
             pageNumber.get(), sortField.get(), isAscending);
 
         final MovieDto movieDto = createMovie();
-        final PagedResult<MovieDto> pagedResult = new PagedResult<>(Arrays.asList(movieDto),
-            pageNumber.get(), totalPages, sortField.get(), isAscending);
+        final MoviePagedResultModel pagedResult = MoviePagedResultModel.builder()
+            .entries(Arrays.asList(movieDto))
+            .pageNumber(pageNumber.get())
+            .totalPages(totalPages)
+            .sortField(sortField.get())
+            .isAscending(isAscending)
+            .build();
 
         when(movieService.searchMovies(text, pageNumber, sortField, isAscending)).thenReturn(pagedResult);
 

@@ -1,6 +1,9 @@
 package com.printezisn.moviestore.accountservice.account.controllers;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -20,7 +23,7 @@ import com.printezisn.moviestore.accountservice.account.services.AccountService;
 import com.printezisn.moviestore.common.controllers.BaseController;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.dto.account.AuthDto;
-import com.printezisn.moviestore.common.models.Result;
+import com.printezisn.moviestore.common.models.account.AccountResultModel;
 
 import lombok.RequiredArgsConstructor;
 
@@ -62,16 +65,19 @@ public class AccountController extends BaseController {
     public ResponseEntity<?> authenticate(@Valid @RequestBody final AuthDto authDto,
         final BindingResult bindingResult) {
 
-        final Result<AccountDto> errorResult = getErrorResult(bindingResult, messageSource);
-        if (!errorResult.getErrors().isEmpty()) {
-            return ResponseEntity.badRequest().body(errorResult);
+        final List<String> errors = getModelErrors(bindingResult, messageSource);
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                AccountResultModel.builder().errors(errors).build());
         }
 
         final Optional<AccountDto> account = accountService.getAccount(authDto.getUsername(), authDto.getPassword());
 
         return account.isPresent()
-            ? ResponseEntity.ok(new Result<>(account))
-            : ResponseEntity.badRequest().body(new Result<AccountDto>(getMessage("usernameOrPasswordInvalid")));
+            ? ResponseEntity.ok(
+                AccountResultModel.builder().result(account.get()).build())
+            : ResponseEntity.badRequest().body(
+                AccountResultModel.builder().errors(getMessages("usernameOrPasswordInvalid")).build());
     }
 
     /**
@@ -87,19 +93,22 @@ public class AccountController extends BaseController {
     public ResponseEntity<?> createAccount(@Valid @RequestBody final AccountDto account,
         final BindingResult bindingResult) {
 
-        final Result<AccountDto> errorResult = getErrorResult(bindingResult, messageSource, "id");
-        if (!errorResult.getErrors().isEmpty()) {
-            return ResponseEntity.badRequest().body(errorResult);
+        final List<String> errors = getModelErrors(bindingResult, messageSource, "id");
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                AccountResultModel.builder().errors(errors).build());
         }
 
         try {
             final AccountDto createdAccount = accountService.createAccount(account);
-            final Result<AccountDto> result = new Result<>(createdAccount);
+            final AccountResultModel result = AccountResultModel.builder().result(createdAccount).build();
 
             return ResponseEntity.ok(result);
         }
         catch (final AccountValidationException ex) {
-            final Result<AccountDto> result = new Result<>(ex.getMessage());
+            final AccountResultModel result = AccountResultModel.builder()
+                .errors(Arrays.asList(ex.getMessage()))
+                .build();
 
             return ResponseEntity.badRequest().body(result);
         }
@@ -118,14 +127,15 @@ public class AccountController extends BaseController {
     public ResponseEntity<?> updateAccount(@Valid @RequestBody final AccountDto account,
         final BindingResult bindingResult) {
 
-        final Result<AccountDto> errorResult = getErrorResult(bindingResult, messageSource, "username", "emailAddress");
-        if (!errorResult.getErrors().isEmpty()) {
-            return ResponseEntity.badRequest().body(errorResult);
+        final List<String> errors = getModelErrors(bindingResult, messageSource, "username", "emailAddress");
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                AccountResultModel.builder().errors(errors).build());
         }
 
         try {
             final AccountDto updatedAccount = accountService.updateAccount(account);
-            final Result<AccountDto> result = new Result<>(updatedAccount);
+            final AccountResultModel result = AccountResultModel.builder().result(updatedAccount).build();
 
             return ResponseEntity.ok(result);
         }
@@ -149,13 +159,15 @@ public class AccountController extends BaseController {
     }
 
     /**
-     * Returns a localized message
+     * Returns localized messages
      * 
-     * @param key
-     *            The message key
-     * @return The localized message
+     * @param keys
+     *            The message keys
+     * @return The list of localized messages
      */
-    private String getMessage(final String key) {
-        return messageSource.getMessage("message.account." + key, null, LocaleContextHolder.getLocale());
+    private List<String> getMessages(final String... keys) {
+        return Arrays.stream(keys)
+            .map(key -> messageSource.getMessage("message.account." + key, null, LocaleContextHolder.getLocale()))
+            .collect(Collectors.toList());
     }
 }

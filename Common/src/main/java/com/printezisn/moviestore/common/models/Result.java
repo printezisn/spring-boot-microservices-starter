@@ -1,9 +1,6 @@
 package com.printezisn.moviestore.common.models;
 
-import java.util.LinkedList;
 import java.util.List;
-
-import lombok.Data;
 
 /**
  * Model that holds information about the result of an operation
@@ -11,37 +8,28 @@ import lombok.Data;
  * @param <T>
  *            The type of the result
  */
-@Data
-public class Result<T> {
-    private T result;
-    private List<String> errors;
+public interface Result<T> {
 
     /**
-     * The constructor
-     */
-    public Result() {
-        this.errors = new LinkedList<>();
-    }
-
-    /**
-     * The constructor
+     * Returns the result of the operation
      * 
-     * @param error
-     *            An operation error
+     * @return The result
      */
-    public Result(final String error) {
-        this();
-        this.errors.add(error);
-    }
+    T getResult();
 
     /**
-     * The constructor
+     * Returns the errors associated with the operation
      * 
-     * @param result
-     *            The result of the operation
+     * @return The list of errors
      */
-    public Result(final T result) {
-        this();
-        this.result = result;
+    List<String> getErrors();
+
+    /**
+     * Indicates if the operation has errors
+     * 
+     * @return True if the operation has errors, otherwise false
+     */
+    default boolean hasErrors() {
+        return !getErrors().isEmpty();
     }
 }
