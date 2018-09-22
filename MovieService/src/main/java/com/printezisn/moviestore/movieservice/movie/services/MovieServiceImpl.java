@@ -55,8 +55,7 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public PagedResult<MovieDto> searchMovies(final Optional<String> text, final Optional<Integer> pageNumber,
-        final Optional<String> sortField, final boolean isAscending)
-        throws MoviePersistenceException {
+        final Optional<String> sortField, final boolean isAscending) {
 
         try {
             final String requiredSortField = (sortField.isPresent() && SORT_FIELDS.contains(sortField.get()))
@@ -83,8 +82,10 @@ public class MovieServiceImpl implements MovieService {
                 isAscending);
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while searching movies: %s", ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
     }
 
@@ -92,16 +93,17 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public MovieDto getMovie(final UUID id)
-        throws MoviePersistenceException, MovieNotFoundException {
-
+    public MovieDto getMovie(final UUID id) throws MovieNotFoundException {
         Optional<Movie> movie;
         try {
             movie = movieRepository.findById(id.toString());
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while reading movie %s: %s", id,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
 
         if (!movie.isPresent()) {
@@ -115,8 +117,7 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public MovieDto createMovie(MovieDto movieDto) throws MoviePersistenceException {
-
+    public MovieDto createMovie(MovieDto movieDto) {
         movieDto.setId(UUID.randomUUID());
         movieDto.setTotalLikes(0);
         movieDto.setCreationTimestamp(Instant.now());
@@ -132,8 +133,11 @@ public class MovieServiceImpl implements MovieService {
             movieSearchRepository.save(searchedMovie);
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while creating a new movie: %s",
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
 
         return movieDto;
@@ -143,9 +147,7 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public MovieDto updateMovie(final MovieDto movieDto)
-        throws MoviePersistenceException, MovieNotFoundException {
-
+    public MovieDto updateMovie(final MovieDto movieDto) throws MovieNotFoundException {
         movieDto.setUpdateTimestamp(Instant.now());
 
         final Movie movie = movieMapper.movieDtoToMovie(movieDto);
@@ -159,8 +161,11 @@ public class MovieServiceImpl implements MovieService {
             }
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieDto.getId(),
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
 
         if (affectedDocuments == 0) {
@@ -174,15 +179,18 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteMovie(final UUID id) throws MoviePersistenceException {
+    public void deleteMovie(final UUID id) {
         try {
             movieSearchRepository.deleteById(id.toString());
             movieRepository.deleteById(id.toString());
             movieLikeRepository.deleteByMovieId(id.toString());
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while deleting movie %s: %s", id,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
     }
 
@@ -191,7 +199,7 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public MovieDto likeMovie(final UUID movieId, final String user)
-        throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException {
+        throws MovieConditionalException, MovieNotFoundException {
 
         final MovieLike movieLike = new MovieLike();
         movieLike.setId(movieId + "-" + user);
@@ -205,12 +213,18 @@ public class MovieServiceImpl implements MovieService {
             movieDto = updateTotalLikes(movieId.toString());
         }
         catch (final MovieConditionalException ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
+            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieId,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
             throw ex;
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieId,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
 
         if (!movieDto.isPresent()) {
@@ -225,7 +239,7 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public MovieDto unlikeMovie(final UUID movieId, final String user)
-        throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException {
+        throws MovieConditionalException, MovieNotFoundException {
 
         final Optional<MovieDto> movieDto;
         final String id = movieId + "-" + user;
@@ -235,12 +249,18 @@ public class MovieServiceImpl implements MovieService {
             movieDto = updateTotalLikes(movieId.toString());
         }
         catch (final MovieConditionalException ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
+            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieId,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
             throw ex;
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new MoviePersistenceException(ex);
+            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieId,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
 
         if (!movieDto.isPresent()) {

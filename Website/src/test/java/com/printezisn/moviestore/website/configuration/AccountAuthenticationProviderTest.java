@@ -52,7 +52,7 @@ public class AccountAuthenticationProviderTest {
      * Tests the scenario in which the authentication is successful
      */
     @Test
-    public void test_authenticate_success() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_authenticate_success() throws Exception {
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(
             USERNAME, PASSWORD, EMAIL_ADDRESS, new ArrayList<>());
 
@@ -71,7 +71,7 @@ public class AccountAuthenticationProviderTest {
      * Tests the scenario in which the authentication fails
      */
     @Test
-    public void test_authenticate_fail() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_authenticate_fail() throws Exception {
         when(accountService.authenticate(USERNAME, PASSWORD)).thenThrow(new AccountNotValidatedException());
 
         final Authentication result = accountAuthenticationProvider.authenticate(authentication);
@@ -83,7 +83,7 @@ public class AccountAuthenticationProviderTest {
      * Tests the scenario in which the authentication throws an exception
      */
     @Test(expected = AccountAuthenticationException.class)
-    public void test_authenticate_exception() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_authenticate_exception() throws Exception {
         when(accountService.authenticate(USERNAME, PASSWORD)).thenThrow(new AccountAuthenticationException("test"));
         accountAuthenticationProvider.authenticate(authentication);
     }

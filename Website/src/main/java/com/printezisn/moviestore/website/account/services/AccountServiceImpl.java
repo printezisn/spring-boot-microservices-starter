@@ -53,14 +53,17 @@ public class AccountServiceImpl implements AccountService {
         authDto.setUsername(username);
         authDto.setPassword(password);
 
-        ResponseEntity<AccountResultModel> response;
+        final ResponseEntity<AccountResultModel> response;
 
         try {
             response = restTemplate.postForEntity(url, authDto, AccountResultModel.class);
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountAuthenticationException("User was not authenticated.", ex);
+            final String errorMessage = String.format("An error occured while authenticating account %s: %s", username,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountAuthenticationException(errorMessage, ex);
         }
 
         if (response.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
@@ -84,18 +87,21 @@ public class AccountServiceImpl implements AccountService {
         final String url = String.format(GET_URL, serviceProperties.getAccountServiceUrl(), username,
             LocaleContextHolder.getLocale().getLanguage());
 
-        ResponseEntity<AccountResultModel> response;
+        final ResponseEntity<AccountResultModel> response;
 
         try {
             response = restTemplate.getForEntity(url, AccountResultModel.class);
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new UsernameNotFoundException(ex.getMessage());
+            final String errorMessage = String.format("An error occured while loading account %s: %s", username,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new UsernameNotFoundException(errorMessage, ex);
         }
 
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException(String.format("Account %s was not found.", username));
         }
 
         final AccountDto accountDto = response.getBody().getResult();
@@ -111,9 +117,7 @@ public class AccountServiceImpl implements AccountService {
      * {@inheritDoc}
      */
     @Override
-    public AccountResultModel createAccount(final AccountDto accountDto)
-        throws AccountPersistenceException {
-
+    public AccountResultModel createAccount(final AccountDto accountDto) {
         final String url = String.format(CREATE_URL, serviceProperties.getAccountServiceUrl(),
             LocaleContextHolder.getLocale().getLanguage());
 
@@ -121,8 +125,11 @@ public class AccountServiceImpl implements AccountService {
             return restTemplate.postForEntity(url, accountDto, AccountResultModel.class).getBody();
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while creating account %s: %s",
+                accountDto.getUsername(), ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
     }
 
@@ -131,7 +138,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountResultModel changePassword(final String username, final ChangePasswordModel changePasswordModel)
-        throws AccountNotValidatedException, AccountPersistenceException {
+        throws AccountNotValidatedException {
 
         final String url = String.format(UPDATE_URL, serviceProperties.getAccountServiceUrl(),
             LocaleContextHolder.getLocale().getLanguage());
@@ -157,8 +164,11 @@ public class AccountServiceImpl implements AccountService {
             throw ex;
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while changing password for account %s: %s.",
+                username, ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
     }
 }

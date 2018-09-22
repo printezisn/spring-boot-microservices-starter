@@ -37,9 +37,7 @@ public class AccountServiceImpl implements AccountService {
      * {@inheritDoc}
      */
     @Override
-    public Optional<AccountDto> getAccount(final String username)
-        throws AccountPersistenceException {
-
+    public Optional<AccountDto> getAccount(final String username) {
         try {
             final Optional<Account> account = accountRepository.findById(username);
 
@@ -48,8 +46,11 @@ public class AccountServiceImpl implements AccountService {
                 : Optional.empty();
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while reading account %s: %s", username,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
     }
 
@@ -57,9 +58,7 @@ public class AccountServiceImpl implements AccountService {
      * {@inheritDoc}
      */
     @Override
-    public Optional<AccountDto> getAccount(final String username, final String password)
-        throws AccountPersistenceException {
-
+    public Optional<AccountDto> getAccount(final String username, final String password) {
         try {
             final Optional<Account> account = accountRepository.findById(username);
             if (!account.isPresent()) {
@@ -73,8 +72,11 @@ public class AccountServiceImpl implements AccountService {
                 : Optional.empty();
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while reading account %s: %s", username,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
     }
 
@@ -82,9 +84,7 @@ public class AccountServiceImpl implements AccountService {
      * {@inheritDoc}
      */
     @Override
-    public AccountDto createAccount(final AccountDto accountDto)
-        throws AccountPersistenceException, AccountValidationException {
-
+    public AccountDto createAccount(final AccountDto accountDto) throws AccountValidationException {
         // The username and email address must be unique
         if (accountRepository.findById(accountDto.getUsername()).isPresent()) {
             throw new AccountValidationException(getMessage("usernameExists"));
@@ -107,8 +107,11 @@ public class AccountServiceImpl implements AccountService {
             throw new AccountValidationException(getMessage("usernameOrEmailAddressExists"));
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while creating a new account: %s",
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
 
         return accountMapper.accountToAccountDto(account);
@@ -118,9 +121,7 @@ public class AccountServiceImpl implements AccountService {
      * {@inheritDoc}
      */
     @Override
-    public AccountDto updateAccount(final AccountDto accountDto)
-        throws AccountPersistenceException, AccountNotFoundException {
-
+    public AccountDto updateAccount(final AccountDto accountDto) throws AccountNotFoundException {
         final Account account = accountRepository.findById(accountDto.getUsername()).orElse(null);
         if (account == null) {
             throw new AccountNotFoundException();
@@ -134,8 +135,11 @@ public class AccountServiceImpl implements AccountService {
             accountRepository.save(account);
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while updating account %s: %s",
+                account.getUsername(), ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
 
         return accountMapper.accountToAccountDto(account);
@@ -145,13 +149,16 @@ public class AccountServiceImpl implements AccountService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteAccount(final String username) throws AccountPersistenceException {
+    public void deleteAccount(final String username) {
         try {
             accountRepository.deleteById(username);
         }
         catch (final Exception ex) {
-            log.error("An error occurred: " + ex.getMessage(), ex);
-            throw new AccountPersistenceException(ex);
+            final String errorMessage = String.format("An error occured while deleting account %s: %s", username,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new AccountPersistenceException(errorMessage, ex);
         }
     }
 

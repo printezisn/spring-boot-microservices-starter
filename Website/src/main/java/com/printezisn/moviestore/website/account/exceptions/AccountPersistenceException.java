@@ -4,34 +4,7 @@ package com.printezisn.moviestore.website.account.exceptions;
  * Exception class related to persistence errors for the account entity
  */
 @SuppressWarnings("serial")
-public class AccountPersistenceException extends AccountException {
-
-    /**
-     * The constructor
-     */
-    public AccountPersistenceException() {
-        super();
-    }
-
-    /**
-     * The constructor
-     * 
-     * @param message
-     *            The exception message
-     */
-    public AccountPersistenceException(final String message) {
-        super(message);
-    }
-
-    /**
-     * The constructor
-     * 
-     * @param cause
-     *            The inner cause
-     */
-    public AccountPersistenceException(final Throwable cause) {
-        super(cause);
-    }
+public class AccountPersistenceException extends RuntimeException {
 
     /**
      * The constructor

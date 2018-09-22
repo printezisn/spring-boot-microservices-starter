@@ -21,7 +21,6 @@ import com.printezisn.moviestore.common.models.Result;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
-import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;
 import com.printezisn.moviestore.movieservice.movie.services.MovieService;
 
 import lombok.RequiredArgsConstructor;
@@ -48,16 +47,13 @@ public class MovieController extends BaseController {
      * @param isAscending
      *            Indicates if sorting is ascending or descending
      * @return The movies found
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
     @GetMapping("/movie/search")
     public ResponseEntity<?> searchMovies(
         @RequestParam(value = "text") final Optional<String> text,
         @RequestParam(value = "page") final Optional<Integer> pageNumber,
         @RequestParam(value = "sort") final Optional<String> sortField,
-        @RequestParam(value = "asc", defaultValue = "true") final boolean isAscending)
-        throws MoviePersistenceException {
+        @RequestParam(value = "asc", defaultValue = "true") final boolean isAscending) {
 
         final PagedResult<MovieDto> result = movieService.searchMovies(text, pageNumber, sortField, isAscending);
 
@@ -70,13 +66,9 @@ public class MovieController extends BaseController {
      * @param id
      *            The id of the movie
      * @return The movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
     @GetMapping("/movie/get/{id}")
-    public ResponseEntity<?> getMovie(@PathVariable("id") final UUID id)
-        throws MoviePersistenceException {
-
+    public ResponseEntity<?> getMovie(@PathVariable("id") final UUID id) {
         try {
             final MovieDto result = movieService.getMovie(id);
 
@@ -95,12 +87,10 @@ public class MovieController extends BaseController {
      * @param bindingResult
      *            The model binding result
      * @return The created movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
     @PostMapping("/movie/new")
-    public ResponseEntity<?> createMovie(@Valid @RequestBody final MovieDto movieDto, final BindingResult bindingResult)
-        throws MoviePersistenceException {
+    public ResponseEntity<?> createMovie(@Valid @RequestBody final MovieDto movieDto,
+        final BindingResult bindingResult) {
 
         final Result<MovieDto> errorResult = getErrorResult(bindingResult, messageSource, "id");
         if (!errorResult.getErrors().isEmpty()) {
@@ -121,12 +111,10 @@ public class MovieController extends BaseController {
      * @param bindingResult
      *            The model binding result
      * @return The updated movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
     @PostMapping("/movie/update")
-    public ResponseEntity<?> updateMovie(@Valid @RequestBody final MovieDto movieDto, final BindingResult bindingResult)
-        throws MoviePersistenceException {
+    public ResponseEntity<?> updateMovie(@Valid @RequestBody final MovieDto movieDto,
+        final BindingResult bindingResult) {
 
         final Result<MovieDto> errorResult = getErrorResult(bindingResult, messageSource, "creatorId");
         if (!errorResult.getErrors().isEmpty()) {
@@ -150,12 +138,9 @@ public class MovieController extends BaseController {
      * @param id
      *            The id of the movie
      * @return The result of the operation
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
     @GetMapping("/movie/delete/{id}")
-    public ResponseEntity<?> deleteMovie(@PathVariable("id") final UUID id)
-        throws MoviePersistenceException {
+    public ResponseEntity<?> deleteMovie(@PathVariable("id") final UUID id) {
 
         movieService.deleteMovie(id);
 
@@ -170,8 +155,6 @@ public class MovieController extends BaseController {
      * @param user
      *            The user who likes the movie
      * @return The updated movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      */
@@ -179,7 +162,7 @@ public class MovieController extends BaseController {
     public ResponseEntity<?> likeMovie(
         @PathVariable("movieId") final UUID movieId,
         @PathVariable("user") final String user)
-        throws MoviePersistenceException, MovieConditionalException {
+        throws MovieConditionalException {
 
         try {
             final MovieDto result = movieService.likeMovie(movieId, user);
@@ -199,8 +182,6 @@ public class MovieController extends BaseController {
      * @param user
      *            The user whose like is removed from the movie
      * @return The updated movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      */
@@ -208,7 +189,7 @@ public class MovieController extends BaseController {
     public ResponseEntity<?> unlikeMovie(
         @PathVariable("movieId") final UUID movieId,
         @PathVariable("user") final String user)
-        throws MoviePersistenceException, MovieConditionalException {
+        throws MovieConditionalException {
 
         try {
             final MovieDto result = movieService.unlikeMovie(movieId, user);

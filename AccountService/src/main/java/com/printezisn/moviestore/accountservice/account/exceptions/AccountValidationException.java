@@ -4,7 +4,7 @@ package com.printezisn.moviestore.accountservice.account.exceptions;
  * Exception class indicating validation error for an account
  */
 @SuppressWarnings("serial")
-public class AccountValidationException extends AccountException {
+public class AccountValidationException extends Exception {
 
     /**
      * The constructor

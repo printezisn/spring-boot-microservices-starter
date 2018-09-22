@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
-import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.services.AccountService;
 import com.printezisn.moviestore.common.controllers.BaseController;
@@ -41,13 +40,9 @@ public class AccountController extends BaseController {
      * @param username
      *            The username of the account
      * @return The account
-     * @throws AccountPersistenceException
-     *             Persistence error
      */
     @GetMapping(path = "/account/get/{username}")
-    public ResponseEntity<?> getAccount(@PathVariable("username") final String username)
-        throws AccountPersistenceException {
-
+    public ResponseEntity<?> getAccount(@PathVariable("username") final String username) {
         final Optional<AccountDto> account = accountService.getAccount(username);
         return account.isPresent()
             ? ResponseEntity.ok(account.get())
@@ -62,12 +57,10 @@ public class AccountController extends BaseController {
      * @param bindingResult
      *            The model binding result
      * @return The result of the operation
-     * @throws AccountPersistenceException
-     *             Persistence error
      */
     @PostMapping(path = "/account/auth")
-    public ResponseEntity<?> authenticate(@Valid @RequestBody final AuthDto authDto, final BindingResult bindingResult)
-        throws AccountPersistenceException {
+    public ResponseEntity<?> authenticate(@Valid @RequestBody final AuthDto authDto,
+        final BindingResult bindingResult) {
 
         final Result<AccountDto> errorResult = getErrorResult(bindingResult, messageSource);
         if (!errorResult.getErrors().isEmpty()) {
@@ -89,13 +82,10 @@ public class AccountController extends BaseController {
      * @param bindingResult
      *            The model binding result
      * @return The result of the operation
-     * @throws AccountPersistenceException
-     *             Persistence error
      */
     @PostMapping(path = "/account/new")
     public ResponseEntity<?> createAccount(@Valid @RequestBody final AccountDto account,
-        final BindingResult bindingResult)
-        throws AccountPersistenceException {
+        final BindingResult bindingResult) {
 
         final Result<AccountDto> errorResult = getErrorResult(bindingResult, messageSource, "id");
         if (!errorResult.getErrors().isEmpty()) {
@@ -123,13 +113,10 @@ public class AccountController extends BaseController {
      * @param bindingResult
      *            The model binding result
      * @return The result of the operation
-     * @throws AccountPersistenceException
-     *             Persistence error
      */
     @PostMapping(path = "/account/update")
     public ResponseEntity<?> updateAccount(@Valid @RequestBody final AccountDto account,
-        final BindingResult bindingResult)
-        throws AccountPersistenceException {
+        final BindingResult bindingResult) {
 
         final Result<AccountDto> errorResult = getErrorResult(bindingResult, messageSource, "username", "emailAddress");
         if (!errorResult.getErrors().isEmpty()) {
@@ -153,13 +140,9 @@ public class AccountController extends BaseController {
      * @param username
      *            The username of the account
      * @return The result of the operation
-     * @throws AccountPersistenceException
-     *             Persistence error
      */
     @GetMapping(path = "/account/delete/{id}")
-    public ResponseEntity<?> deleteAccount(@PathVariable("id") final String username)
-        throws AccountPersistenceException {
-
+    public ResponseEntity<?> deleteAccount(@PathVariable("id") final String username) {
         accountService.deleteAccount(username);
 
         return ResponseEntity.ok().build();

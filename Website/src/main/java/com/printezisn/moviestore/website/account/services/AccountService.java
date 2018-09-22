@@ -7,7 +7,6 @@ import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.account.exceptions.AccountAuthenticationException;
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
-import com.printezisn.moviestore.website.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.website.account.models.ChangePasswordModel;
 
 /**
@@ -37,11 +36,8 @@ public interface AccountService extends UserDetailsService {
      * @param accountDto
      *            The model of the new account
      * @return The created account
-     * @throws AccountPersistenceException
-     *             Exception thrown when there is a persistence error
      */
-    AccountResultModel createAccount(final AccountDto accountDto)
-        throws AccountPersistenceException;
+    AccountResultModel createAccount(final AccountDto accountDto);
 
     /**
      * Changes the password for an account
@@ -54,9 +50,7 @@ public interface AccountService extends UserDetailsService {
      * @throws AccountNotValidatedException
      *             Exception thrown when the account is not authenticated with the
      *             current password
-     * @throws AccountPersistenceException
-     *             Exception thrown when there is a persistence error
      */
     AccountResultModel changePassword(final String username, final ChangePasswordModel changePasswordModel)
-        throws AccountNotValidatedException, AccountPersistenceException;
+        throws AccountNotValidatedException;
 }

@@ -4,12 +4,22 @@ package com.printezisn.moviestore.movieservice.movie.exceptions;
  * Exception class thrown when a movie is not found
  */
 @SuppressWarnings("serial")
-public class MovieNotFoundException extends MovieException {
+public class MovieNotFoundException extends Exception {
 
     /**
      * The constructor
      */
     public MovieNotFoundException() {
-        super();
+        super("The movie was not found.");
+    }
+
+    /**
+     * The constructor
+     * 
+     * @param message
+     *            The exception message
+     */
+    public MovieNotFoundException(final String message) {
+        super(message);
     }
 }

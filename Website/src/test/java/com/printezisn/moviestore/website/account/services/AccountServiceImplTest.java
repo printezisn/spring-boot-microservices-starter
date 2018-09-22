@@ -71,7 +71,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the authentication is successful
      */
     @Test
-    public void test_authenticate_success() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_authenticate_success() throws Exception {
         final AuthDto authDto = new AuthDto();
         authDto.setUsername(USERNAME);
         authDto.setPassword(PASSWORD);
@@ -97,7 +97,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the authentication fails
      */
     @Test(expected = AccountNotValidatedException.class)
-    public void test_authenticate_fail() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_authenticate_fail() throws Exception {
         final AuthDto authDto = new AuthDto();
         authDto.setUsername(USERNAME);
         authDto.setPassword(PASSWORD);
@@ -113,7 +113,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the authentication throws an exception
      */
     @Test(expected = AccountAuthenticationException.class)
-    public void test_authenticate_exception() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_authenticate_exception() throws Exception {
         final AuthDto authDto = new AuthDto();
         authDto.setUsername(USERNAME);
         authDto.setPassword(PASSWORD);
@@ -128,7 +128,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is loaded successfully
      */
     @Test
-    public void test_loadUserByUsername_success() throws AccountAuthenticationException, AccountNotValidatedException {
+    public void test_loadUserByUsername_success() throws Exception {
         final AccountResultModel expectedResult = new AccountResultModel();
         expectedResult.setResult(new AccountDto());
         expectedResult.getResult().setUsername(USERNAME);
@@ -151,7 +151,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is not found
      */
     @Test(expected = UsernameNotFoundException.class)
-    public void test_loadUserByUsername_notFound() throws UsernameNotFoundException {
+    public void test_loadUserByUsername_notFound() throws Exception {
         final String url = ACCOUNT_SERVICE_URL + String.format(ACCOUNT_GET_PATH, USERNAME);
 
         when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
@@ -165,7 +165,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account loading throws an exception
      */
     @Test(expected = UsernameNotFoundException.class)
-    public void test_loadUserByUsername_exception() throws UsernameNotFoundException {
+    public void test_loadUserByUsername_exception() throws Exception {
         final String url = ACCOUNT_SERVICE_URL + String.format(ACCOUNT_GET_PATH, USERNAME);
 
         when(restTemplate.getForEntity(url, AccountResultModel.class))
@@ -178,7 +178,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is created successfully
      */
     @Test
-    public void test_createAccount_success() throws AccountPersistenceException {
+    public void test_createAccount_success() throws Exception {
         final AccountResultModel expectedResult = new AccountResultModel();
         final AccountDto accountDto = new AccountDto();
 
@@ -198,7 +198,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account creation throws an exception
      */
     @Test(expected = AccountPersistenceException.class)
-    public void test_createAccount_exception() throws AccountPersistenceException {
+    public void test_createAccount_exception() throws Exception {
         final AccountDto accountDto = new AccountDto();
 
         final String url = ACCOUNT_SERVICE_URL + ACCOUNT_CREATE_PATH;
@@ -214,7 +214,7 @@ public class AccountServiceImplTest {
      * successfully
      */
     @Test
-    public void test_changePassword_success() throws AccountNotValidatedException, AccountPersistenceException {
+    public void test_changePassword_success() throws Exception {
         final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
         final String updateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_UPDATE_PATH;
 
@@ -249,8 +249,7 @@ public class AccountServiceImplTest {
      * exception
      */
     @Test(expected = AccountPersistenceException.class)
-    public void test_changePassword_authentication_exception()
-        throws AccountNotValidatedException, AccountPersistenceException {
+    public void test_changePassword_authentication_exception() throws Exception {
 
         final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
 
@@ -272,8 +271,7 @@ public class AccountServiceImplTest {
      * Tests that the correct exception is thrown when authentication fails
      */
     @Test(expected = AccountNotValidatedException.class)
-    public void test_changePassword_authentication_invalid()
-        throws AccountNotValidatedException, AccountPersistenceException {
+    public void test_changePassword_authentication_invalid() throws Exception {
 
         final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
 
@@ -295,8 +293,7 @@ public class AccountServiceImplTest {
      * Tests that the correct exception is thrown when the account update fails
      */
     @Test(expected = AccountPersistenceException.class)
-    public void test_changePassword_update_exception()
-        throws AccountNotValidatedException, AccountPersistenceException {
+    public void test_changePassword_update_exception() throws Exception {
 
         final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
         final String updateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_UPDATE_PATH;
@@ -321,8 +318,7 @@ public class AccountServiceImplTest {
      * Tests that the correct exception is thrown when the account is not found
      */
     @Test(expected = AccountPersistenceException.class)
-    public void test_changePassword_update_accountNotFound()
-        throws AccountNotValidatedException, AccountPersistenceException {
+    public void test_changePassword_update_accountNotFound() throws Exception {
 
         final String authenticateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_AUTH_PATH;
         final String updateUrl = ACCOUNT_SERVICE_URL + ACCOUNT_UPDATE_PATH;

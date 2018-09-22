@@ -23,7 +23,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import com.printezisn.moviestore.accountservice.account.entities.Account;
-import com.printezisn.moviestore.accountservice.account.exceptions.AccountException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.mappers.AccountMapper;
@@ -67,7 +66,7 @@ public class AccountServiceImplTest {
      * provided
      */
     @Test
-    public void test_getAccount_onlyWithUsername_found() throws AccountException {
+    public void test_getAccount_onlyWithUsername_found() {
         final Account account = new Account();
         final AccountDto accountDto = new AccountDto();
 
@@ -85,7 +84,7 @@ public class AccountServiceImplTest {
      * provided
      */
     @Test
-    public void test_getAccount_onlyWithUsername_notFound() throws AccountException {
+    public void test_getAccount_onlyWithUsername_notFound() {
         when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 
         final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME);
@@ -98,7 +97,7 @@ public class AccountServiceImplTest {
      * password are provided
      */
     @Test
-    public void test_getAccount_withAuth_found() throws AccountException {
+    public void test_getAccount_withAuth_found() {
         final Account account = new Account();
         account.setUsername(TEST_USERNAME);
         account.setPasswordSalt(BCrypt.gensalt());
@@ -120,7 +119,7 @@ public class AccountServiceImplTest {
      * password are provided
      */
     @Test
-    public void test_getAccount_withAuth_notFound() throws AccountException {
+    public void test_getAccount_withAuth_notFound() {
         when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
 
         final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, TEST_PASSWORD);
@@ -133,7 +132,7 @@ public class AccountServiceImplTest {
      * password was provided
      */
     @Test
-    public void test_getAccount_withAuth_invalidPassword() throws AccountException {
+    public void test_getAccount_withAuth_invalidPassword() {
         final Account account = new Account();
         account.setUsername(TEST_USERNAME);
         account.setPasswordSalt(BCrypt.gensalt());
@@ -153,7 +152,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the username already exists
      */
     @Test(expected = AccountValidationException.class)
-    public void test_createAccount_usernameExists() throws AccountException {
+    public void test_createAccount_usernameExists() throws Exception {
         final AccountDto accountDto = new AccountDto();
         accountDto.setUsername(TEST_USERNAME);
         accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
@@ -168,7 +167,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the email address already exists
      */
     @Test(expected = AccountValidationException.class)
-    public void test_createAccount_emailAddressExists() throws AccountException {
+    public void test_createAccount_emailAddressExists() throws Exception {
         final AccountDto accountDto = new AccountDto();
         accountDto.setUsername(TEST_USERNAME);
         accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
@@ -184,7 +183,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is created successfully
      */
     @Test
-    public void test_createAccount_successfulSave() throws AccountException {
+    public void test_createAccount_successfulSave() throws Exception {
         final AccountDto accountDto = new AccountDto();
         accountDto.setUsername(TEST_USERNAME);
         accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
@@ -210,7 +209,7 @@ public class AccountServiceImplTest {
      * DuplicateKeyException
      */
     @Test(expected = AccountValidationException.class)
-    public void test_createAccount_duplicateKeyException() throws AccountException {
+    public void test_createAccount_duplicateKeyException() throws Exception {
         final AccountDto accountDto = new AccountDto();
         accountDto.setUsername(TEST_USERNAME);
         accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
@@ -230,7 +229,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is not found
      */
     @Test(expected = AccountNotFoundException.class)
-    public void test_updateAccount_accountNotFound() throws AccountException {
+    public void test_updateAccount_accountNotFound() throws Exception {
         final AccountDto accountDto = new AccountDto();
 
         when(accountRepository.findById(accountDto.getUsername())).thenReturn(Optional.empty());
@@ -242,7 +241,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is updated successfully
      */
     @Test
-    public void test_updateAccount_successfulSave() throws AccountException {
+    public void test_updateAccount_successfulSave() throws Exception {
         final AccountDto accountDto = new AccountDto();
         accountDto.setPassword(TEST_PASSWORD);
 
@@ -266,7 +265,7 @@ public class AccountServiceImplTest {
      * Tests the scenario in which the account is deleted successfully
      */
     @Test
-    public void test_deleteAccount_successfulDelete() throws AccountException {
+    public void test_deleteAccount_successfulDelete() {
         accountService.deleteAccount(TEST_USERNAME);
 
         verify(accountRepository).deleteById(TEST_USERNAME);

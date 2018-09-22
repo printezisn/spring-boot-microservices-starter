@@ -7,7 +7,6 @@ import com.printezisn.moviestore.common.models.PagedResult;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
-import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;
 
 /**
  * The service layer for movies
@@ -26,12 +25,9 @@ public interface MovieService {
      * @param isAscending
      *            Indicates if the sorting is ascending or descending
      * @return The movies found
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
     PagedResult<MovieDto> searchMovies(final Optional<String> text, final Optional<Integer> pageNumber,
-        final Optional<String> sortField, final boolean isAscending)
-        throws MoviePersistenceException;
+        final Optional<String> sortField, final boolean isAscending);
 
     /**
      * Returns a movie
@@ -39,13 +35,10 @@ public interface MovieService {
      * @param id
      *            The id of the movie
      * @return The movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      * @throws MovieNotFoundException
      *             Exception thrown if the movie is not found
      */
-    MovieDto getMovie(final UUID id)
-        throws MoviePersistenceException, MovieNotFoundException;
+    MovieDto getMovie(final UUID id) throws MovieNotFoundException;
 
     /**
      * Creates a new movie
@@ -53,10 +46,8 @@ public interface MovieService {
      * @param movieDto
      *            The new movie model
      * @return The created movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
-    MovieDto createMovie(final MovieDto movieDto) throws MoviePersistenceException;
+    MovieDto createMovie(final MovieDto movieDto);
 
     /**
      * Updates a movie
@@ -64,23 +55,18 @@ public interface MovieService {
      * @param movieDto
      *            The movie model
      * @return The updated movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      * @throws MovieNotFoundException
      *             Exception thrown if the movie is not found
      */
-    MovieDto updateMovie(final MovieDto movieDto)
-        throws MoviePersistenceException, MovieNotFoundException;
+    MovieDto updateMovie(final MovieDto movieDto) throws MovieNotFoundException;
 
     /**
      * Deletes a movie
      * 
      * @param id
      *            The id of the movie to delete
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      */
-    void deleteMovie(final UUID id) throws MoviePersistenceException;
+    void deleteMovie(final UUID id);
 
     /**
      * Adds a like to a movie
@@ -90,15 +76,12 @@ public interface MovieService {
      * @param user
      *            The user who likes the movie
      * @return The updated movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      * @throws MovieNotFoundException
      *             Exception thrown if the movie is not found
      */
-    MovieDto likeMovie(final UUID movieId, final String user)
-        throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException;
+    MovieDto likeMovie(final UUID movieId, final String user) throws MovieConditionalException, MovieNotFoundException;
 
     /**
      * Removes a like from a movie
@@ -108,13 +91,11 @@ public interface MovieService {
      * @param user
      *            The user who removes the like from the movie
      * @return The updated movie
-     * @throws MoviePersistenceException
-     *             Exception thrown in case of persistence error
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      * @throws MovieNotFoundException
      *             Exception thrown if the movie is not found
      */
     MovieDto unlikeMovie(final UUID movieId, final String user)
-        throws MoviePersistenceException, MovieConditionalException, MovieNotFoundException;
+        throws MovieConditionalException, MovieNotFoundException;
 }
