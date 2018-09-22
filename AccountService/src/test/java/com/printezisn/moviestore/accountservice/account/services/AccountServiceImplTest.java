@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import com.printezisn.moviestore.accountservice.account.entities.Account;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
+import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersistenceException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.mappers.AccountMapper;
 import com.printezisn.moviestore.accountservice.account.repositories.AccountRepository;
@@ -91,6 +93,16 @@ public class AccountServiceImplTest {
     }
 
     /**
+     * Tests the scenario in which runtime exception is thrown
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_getAccount_onlyWithUsername_runtimeException() {
+        when(accountRepository.findById(TEST_USERNAME)).thenThrow(new RuntimeException());
+
+        accountService.getAccount(TEST_USERNAME);
+    }
+
+    /**
      * Tests the scenario in which the account is found, when a username and
      * password are provided
      */
@@ -144,6 +156,16 @@ public class AccountServiceImplTest {
         final Optional<AccountDto> result = accountService.getAccount(TEST_USERNAME, "12345");
 
         assertFalse(result.isPresent());
+    }
+
+    /**
+     * Tests the scenario in which runtime exception is thrown
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_getAccount_withAuth_runtimeException() {
+        when(accountRepository.findById(TEST_USERNAME)).thenThrow(new RuntimeException());
+
+        accountService.getAccount(TEST_USERNAME, TEST_PASSWORD);
     }
 
     /**
@@ -224,6 +246,26 @@ public class AccountServiceImplTest {
     }
 
     /**
+     * Tests the scenario in which a runtime exception is thrown
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_createAccount_runtimeException() throws Exception {
+        final AccountDto accountDto = new AccountDto();
+        accountDto.setUsername(TEST_USERNAME);
+        accountDto.setEmailAddress(TEST_EMAIL_ADDRESS);
+        accountDto.setPassword(TEST_PASSWORD);
+
+        final Account account = new Account();
+
+        when(accountRepository.findById(TEST_USERNAME)).thenReturn(Optional.empty());
+        when(accountRepository.findByEmailAddress(TEST_EMAIL_ADDRESS)).thenReturn(Optional.empty());
+        when(accountMapper.accountDtoToAccount(accountDto)).thenReturn(account);
+        when(accountRepository.save(account)).thenThrow(RuntimeException.class);
+
+        accountService.createAccount(accountDto);
+    }
+
+    /**
      * Tests the scenario in which the account is not found
      */
     @Test(expected = AccountNotFoundException.class)
@@ -260,6 +302,23 @@ public class AccountServiceImplTest {
     }
 
     /**
+     * Tests the scenario in which a runtime exception is thrown
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_updateAccount_runtimeException() throws Exception {
+        final AccountDto accountDto = new AccountDto();
+        accountDto.setPassword(TEST_PASSWORD);
+
+        final Account account = mock(Account.class);
+
+        when(accountRepository.findById(accountDto.getUsername())).thenReturn(Optional.of(account));
+        when(account.getPasswordSalt()).thenReturn(BCrypt.gensalt());
+        when(accountRepository.save(account)).thenThrow(new RuntimeException());
+
+        accountService.updateAccount(accountDto);
+    }
+
+    /**
      * Tests the scenario in which the account is deleted successfully
      */
     @Test
@@ -267,5 +326,15 @@ public class AccountServiceImplTest {
         accountService.deleteAccount(TEST_USERNAME);
 
         verify(accountRepository).deleteById(TEST_USERNAME);
+    }
+
+    /**
+     * Tests the scenario in which a runtime exception is thrown
+     */
+    @Test(expected = AccountPersistenceException.class)
+    public void test_deleteAccount_runtimeException() {
+        doThrow(new RuntimeException()).when(accountRepository).deleteById(TEST_USERNAME);
+
+        accountService.deleteAccount(TEST_USERNAME);
     }
 }
