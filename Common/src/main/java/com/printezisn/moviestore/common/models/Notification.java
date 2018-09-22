@@ -2,6 +2,7 @@ package com.printezisn.moviestore.common.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -15,14 +16,18 @@ public class Notification {
     /**
      * The available notification types
      */
-    public static class NotificationTypes {
-        public static final String INFO = "info";
-        public static final String SUCCESS = "success";
-        public static final String WARNING = "warning";
-        public static final String ERROR = "error";
+    @RequiredArgsConstructor
+    @Getter
+    public static enum NotificationType {
+        INFO("info"),
+        SUCCESS("success"),
+        WARNING("warning"),
+        ERROR("error");
+
+        private final String name;
     }
-    
-    private final String type;
+
+    private final NotificationType type;
     private String title;
     private final String message;
 }

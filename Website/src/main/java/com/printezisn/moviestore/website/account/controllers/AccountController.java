@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.models.Notification;
-import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
+import com.printezisn.moviestore.common.models.Notification.NotificationType;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.Constants.PageConstants;
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
@@ -79,7 +79,7 @@ public class AccountController {
         }
 
         appUtils.addNotification(redirectAttributes,
-            new Notification(NotificationTypes.SUCCESS, appUtils.getMessage("message.registerSuccess")));
+            new Notification(NotificationType.SUCCESS, appUtils.getMessage("message.registerSuccess")));
 
         return "redirect:/";
     }
@@ -161,7 +161,7 @@ public class AccountController {
         }
 
         appUtils.addNotification(redirectAttributes,
-            new Notification(NotificationTypes.SUCCESS, appUtils.getMessage("message.changePasswordSuccess")));
+            new Notification(NotificationType.SUCCESS, appUtils.getMessage("message.changePasswordSuccess")));
 
         return "redirect:/";
     }

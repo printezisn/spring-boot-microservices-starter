@@ -28,7 +28,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.models.Notification;
-import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
+import com.printezisn.moviestore.common.models.Notification.NotificationType;
 
 /**
  * Contains unit tests for the AppUtils class
@@ -127,7 +127,7 @@ public class AppUtilsTest {
      */
     @Test
     public void test_addNotification_withEmptyList() {
-        final Notification notification = new Notification(NotificationTypes.INFO, "message");
+        final Notification notification = new Notification(NotificationType.INFO, "message");
 
         appUtils.addNotification(redirectAttributes, notification);
 
@@ -143,8 +143,8 @@ public class AppUtilsTest {
      */
     @Test
     public void test_addNotification_withNonEmptyList() {
-        final Notification newNotification = new Notification(NotificationTypes.INFO, "message");
-        final Notification currentNotification = new Notification(NotificationTypes.INFO, "other message");
+        final Notification newNotification = new Notification(NotificationType.INFO, "message");
+        final Notification currentNotification = new Notification(NotificationType.INFO, "other message");
 
         flashAttributes.put(NOTIFICATION_LIST_ATTRIBUTE, new LinkedList<>(Arrays.asList(currentNotification)));
 

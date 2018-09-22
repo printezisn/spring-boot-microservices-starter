@@ -63,7 +63,7 @@
     <th:block layout:fragment="main"></th:block>
 
     <span th:each="notification : ${notifications}"
-        th:attr="notification-title=${notification.title},notification-type=${notification.type}"
+        th:attr="notification-title=${notification.title},notification-type=${notification.type.name}"
         th:text="${notification.message}" style="display: none"
         class="toastr-notification"></span>
 
