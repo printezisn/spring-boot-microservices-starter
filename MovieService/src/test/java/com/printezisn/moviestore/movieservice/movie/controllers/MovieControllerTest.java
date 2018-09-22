@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.movieservice.movie.controllers.MovieController;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.services.MovieService;
@@ -50,6 +51,8 @@ public class MovieControllerTest {
     @Mock
     private MessageSource messageSource;
 
+    private AppUtils appUtils;
+
     private MovieController movieController;
 
     private MockMvc mockMvc;
@@ -63,7 +66,9 @@ public class MovieControllerTest {
 
         when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("Message");
 
-        movieController = new MovieController(movieService, messageSource);
+        appUtils = new AppUtils(messageSource);
+
+        movieController = new MovieController(movieService, appUtils);
 
         mockMvc = MockMvcBuilders.standaloneSetup(movieController).build();
     }

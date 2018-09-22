@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
@@ -66,6 +67,8 @@ public class AccountControllerTest {
     @Mock
     private MessageSource messageSource;
 
+    private AppUtils appUtils;
+
     private AccountController accountController;
 
     private MockMvc mockMvc;
@@ -79,7 +82,9 @@ public class AccountControllerTest {
 
         when(messageSource.getMessage(anyString(), eq(null), any(Locale.class))).thenReturn(MESSAGE);
 
-        accountController = new AccountController(accountService, messageSource);
+        appUtils = new AppUtils(messageSource);
+
+        accountController = new AccountController(accountService, appUtils);
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(accountController)

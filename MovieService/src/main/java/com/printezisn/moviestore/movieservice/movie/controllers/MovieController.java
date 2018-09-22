@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.models.PagedResult;
 import com.printezisn.moviestore.common.models.Result;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
@@ -32,10 +31,10 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-public class MovieController extends BaseController {
+public class MovieController {
 
     private final MovieService movieService;
-    private final MessageSource messageSource;
+    private final AppUtils appUtils;
 
     /**
      * Searches for movies
@@ -94,7 +93,7 @@ public class MovieController extends BaseController {
     public ResponseEntity<?> createMovie(@Valid @RequestBody final MovieDto movieDto,
         final BindingResult bindingResult) {
 
-        final List<String> errors = getModelErrors(bindingResult, messageSource, "id");
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "id");
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(
                 MovieResultModel.builder().errors(errors).build());
@@ -119,7 +118,7 @@ public class MovieController extends BaseController {
     public ResponseEntity<?> updateMovie(@Valid @RequestBody final MovieDto movieDto,
         final BindingResult bindingResult) {
 
-        final List<String> errors = getModelErrors(bindingResult, messageSource, "creatorId");
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "creatorId");
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(
                 MovieResultModel.builder().errors(errors).build());

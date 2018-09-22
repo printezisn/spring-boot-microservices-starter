@@ -1,4 +1,4 @@
-package com.printezisn.moviestore.common.controllers;
+package com.printezisn.moviestore.common;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -14,25 +15,30 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.models.Notification;
 
+import lombok.RequiredArgsConstructor;
+
 /**
- * The base class for every controller
+ * Utility class with helpful methods for all the application layers
  */
-public class BaseController {
+@Component
+@RequiredArgsConstructor
+public class AppUtils {
 
     private static final String CURRENT_PAGE_MODEL_PROPERTY = "currentPage";
     private static final String NOTIFICATION_LIST_ATTRIBUTE = "notifications";
+
+    private final MessageSource messageSource;
 
     /**
      * Returns a list of errors from the binding result
      * 
      * @param bindingResult
      *            The binding result
-     * @param messageSource
-     *            The source of localized messages
+     * @param excludedFields
+     *            The fields to exclude (errors on these fields are not counted)
      * @return The list of errors found
      */
-    protected List<String> getModelErrors(final BindingResult bindingResult, final MessageSource messageSource,
-        final String... excludedFields) {
+    public List<String> getModelErrors(final BindingResult bindingResult, final String... excludedFields) {
         final List<String> excludedFieldsList = Arrays.asList(excludedFields);
 
         return bindingResult.getAllErrors()
@@ -58,7 +64,7 @@ public class BaseController {
      * @param currentPage
      *            The current page
      */
-    protected void setCurrentPage(final Model model, final String currentPage) {
+    public void setCurrentPage(final Model model, final String currentPage) {
         model.addAttribute(CURRENT_PAGE_MODEL_PROPERTY, currentPage);
     }
 
@@ -71,7 +77,7 @@ public class BaseController {
      *            The notification to add
      */
     @SuppressWarnings("unchecked")
-    protected void addNotification(final RedirectAttributes redirectAttributes, final Notification notification) {
+    public void addNotification(final RedirectAttributes redirectAttributes, final Notification notification) {
         List<Notification> notifications = new LinkedList<>();
 
         if (redirectAttributes.getFlashAttributes().containsKey(NOTIFICATION_LIST_ATTRIBUTE)) {
@@ -81,5 +87,38 @@ public class BaseController {
 
         notifications.add(notification);
         redirectAttributes.addFlashAttribute(NOTIFICATION_LIST_ATTRIBUTE, notifications);
+    }
+
+    /**
+     * Returns a localized message, for unexpected errors, in a list
+     * 
+     * @return The localized message in a list
+     */
+    public List<String> getUnexpectedErrorMessageAsList() {
+        return getMessages("message.error.unexpectedError");
+    }
+
+    /**
+     * Returns localized messages
+     * 
+     * @param messageKeys
+     *            The key identifiers of the messages
+     * @return The localized messages
+     */
+    public List<String> getMessages(final String... messageKeys) {
+        return Arrays.stream(messageKeys)
+            .map(this::getMessage)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a localized message
+     * 
+     * @param messageKey
+     *            The key identifier of the message
+     * @return The localized message
+     */
+    public String getMessage(final String messageKey) {
+        return messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale());
     }
 }

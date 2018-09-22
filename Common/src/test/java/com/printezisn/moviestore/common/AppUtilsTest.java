@@ -1,10 +1,10 @@
-package com.printezisn.moviestore.common.controllers;
+package com.printezisn.moviestore.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.eq;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,10 +31,9 @@ import com.printezisn.moviestore.common.models.Notification;
 import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
 
 /**
- * Contains unit tests for the BaseController class
+ * Contains unit tests for the AppUtils class
  */
-public class BaseControllerTest {
-
+public class AppUtilsTest {
     private static final String CURRENT_PAGE_MODEL_PROPERTY = "currentPage";
     private static final String NOTIFICATION_LIST_ATTRIBUTE = "notifications";
 
@@ -55,7 +54,7 @@ public class BaseControllerTest {
 
     private Map<String, Object> flashAttributes;
 
-    private BaseController baseController;
+    private AppUtils appUtils;
 
     /**
      * Initializes the test class
@@ -69,7 +68,7 @@ public class BaseControllerTest {
         flashAttributes = new HashMap<>();
         when(redirectAttributes.getFlashAttributes()).thenAnswer(i -> flashAttributes);
 
-        baseController = new BaseController();
+        appUtils = new AppUtils(messageSource);
     }
 
     /**
@@ -86,7 +85,7 @@ public class BaseControllerTest {
             .forEach(fieldError -> when(messageSource.getMessage(fieldError.getDefaultMessage(), null, Locale.ENGLISH))
                 .thenReturn(fieldError.getDefaultMessage()));
 
-        final List<String> errors = baseController.getModelErrors(bindingResult, messageSource);
+        final List<String> errors = appUtils.getModelErrors(bindingResult);
 
         assertEquals(fieldErrors.size(), errors.size());
         fieldErrors.forEach(fieldError -> assertTrue(errors.contains(fieldError.getDefaultMessage())));
@@ -106,7 +105,7 @@ public class BaseControllerTest {
             .forEach(fieldError -> when(messageSource.getMessage(fieldError.getDefaultMessage(), null, Locale.ENGLISH))
                 .thenReturn(fieldError.getDefaultMessage()));
 
-        final List<String> errors = baseController.getModelErrors(bindingResult, messageSource, "field1");
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "field1");
 
         assertEquals(1, errors.size());
         assertTrue(errors.contains("message2"));
@@ -117,7 +116,7 @@ public class BaseControllerTest {
      */
     @Test
     public void test_setCurrentPage_success() {
-        baseController.setCurrentPage(model, "test page");
+        appUtils.setCurrentPage(model, "test page");
 
         verify(model).addAttribute(CURRENT_PAGE_MODEL_PROPERTY, "test page");
     }
@@ -130,7 +129,7 @@ public class BaseControllerTest {
     public void test_addNotification_withEmptyList() {
         final Notification notification = new Notification(NotificationTypes.INFO, "message");
 
-        baseController.addNotification(redirectAttributes, notification);
+        appUtils.addNotification(redirectAttributes, notification);
 
         verify(redirectAttributes).addFlashAttribute(eq(NOTIFICATION_LIST_ATTRIBUTE), notificationListCaptor.capture());
 
@@ -149,12 +148,53 @@ public class BaseControllerTest {
 
         flashAttributes.put(NOTIFICATION_LIST_ATTRIBUTE, new LinkedList<>(Arrays.asList(currentNotification)));
 
-        baseController.addNotification(redirectAttributes, newNotification);
+        appUtils.addNotification(redirectAttributes, newNotification);
 
         verify(redirectAttributes).addFlashAttribute(eq(NOTIFICATION_LIST_ATTRIBUTE), notificationListCaptor.capture());
 
         assertEquals(2, notificationListCaptor.getValue().size());
         assertTrue(notificationListCaptor.getValue().contains(newNotification));
         assertTrue(notificationListCaptor.getValue().contains(currentNotification));
+    }
+
+    /**
+     * Tests that the correct message is returned
+     */
+    @Test
+    public void test_getMessage_success() {
+        when(messageSource.getMessage("test message", null, Locale.ENGLISH)).thenReturn("test message result");
+
+        final String result = appUtils.getMessage("test message");
+
+        assertEquals("test message result", result);
+    }
+
+    /**
+     * Tests that the correct messages are returned
+     */
+    @Test
+    public void test_getMessages_success() {
+        when(messageSource.getMessage("test message 1", null, Locale.ENGLISH)).thenReturn("test message result 1");
+        when(messageSource.getMessage("test message 2", null, Locale.ENGLISH)).thenReturn("test message result 2");
+
+        final List<String> result = appUtils.getMessages("test message 1", "test message 2");
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains("test message result 1"));
+        assertTrue(result.contains("test message result 2"));
+    }
+
+    /**
+     * Tests that the correct unexpected error message is returned
+     */
+    @Test
+    public void test_getUnexpectedErrorMessageAsList_success() {
+        when(messageSource.getMessage("message.error.unexpectedError", null, Locale.ENGLISH))
+            .thenReturn("error message");
+
+        final List<String> result = appUtils.getUnexpectedErrorMessageAsList();
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains("error message"));
     }
 }

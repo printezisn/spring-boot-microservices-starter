@@ -1,14 +1,10 @@
 package com.printezisn.moviestore.website.account.controllers;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,12 +14,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.models.Notification;
 import com.printezisn.moviestore.common.models.Notification.NotificationTypes;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
-import com.printezisn.moviestore.website.Constants.MessageKeys;
 import com.printezisn.moviestore.website.Constants.PageConstants;
 import com.printezisn.moviestore.website.account.exceptions.AccountNotValidatedException;
 import com.printezisn.moviestore.website.account.models.ChangePasswordModel;
@@ -36,10 +31,10 @@ import lombok.RequiredArgsConstructor;
  */
 @Controller
 @RequiredArgsConstructor
-public class AccountController extends BaseController {
+public class AccountController {
 
     private final AccountService accountService;
-    private final MessageSource messageSource;
+    private final AppUtils appUtils;
 
     /**
      * Renders the register page
@@ -80,11 +75,11 @@ public class AccountController extends BaseController {
             }
         }
         catch (final Exception ex) {
-            return getRegisterPage(model, accountDto, getUnexpectedErrorMessageAsList());
+            return getRegisterPage(model, accountDto, appUtils.getUnexpectedErrorMessageAsList());
         }
 
-        addNotification(redirectAttributes,
-            new Notification(NotificationTypes.SUCCESS, getMessage("message.registerSuccess")));
+        appUtils.addNotification(redirectAttributes,
+            new Notification(NotificationTypes.SUCCESS, appUtils.getMessage("message.registerSuccess")));
 
         return "redirect:/";
     }
@@ -101,7 +96,7 @@ public class AccountController extends BaseController {
      * @return The register page view
      */
     private String getRegisterPage(final Model model, final AccountDto accountDto, final List<String> errors) {
-        setCurrentPage(model, PageConstants.REGISTER_PAGE);
+        appUtils.setCurrentPage(model, PageConstants.REGISTER_PAGE);
         model.addAttribute("account", accountDto);
         model.addAttribute("errors", errors);
 
@@ -143,7 +138,7 @@ public class AccountController extends BaseController {
         final Model model) {
 
         // Checks if there are validation errors
-        final List<String> errors = getModelErrors(bindingResult, messageSource);
+        final List<String> errors = appUtils.getModelErrors(bindingResult);
         if (!errors.isEmpty()) {
             return getChangePasswordPage(model, changePasswordModel, errors);
         }
@@ -159,14 +154,14 @@ public class AccountController extends BaseController {
         catch (final AccountNotValidatedException ex) {
             // Checks if the current password is valid
             return getChangePasswordPage(model, changePasswordModel,
-                getMessages("message.changePassword.invalidCurrentPassword"));
+                appUtils.getMessages("message.changePassword.invalidCurrentPassword"));
         }
         catch (final Exception ex) {
-            return getChangePasswordPage(model, changePasswordModel, getUnexpectedErrorMessageAsList());
+            return getChangePasswordPage(model, changePasswordModel, appUtils.getUnexpectedErrorMessageAsList());
         }
 
-        addNotification(redirectAttributes,
-            new Notification(NotificationTypes.SUCCESS, getMessage("message.changePasswordSuccess")));
+        appUtils.addNotification(redirectAttributes,
+            new Notification(NotificationTypes.SUCCESS, appUtils.getMessage("message.changePasswordSuccess")));
 
         return "redirect:/";
     }
@@ -185,45 +180,12 @@ public class AccountController extends BaseController {
     private String getChangePasswordPage(final Model model, final ChangePasswordModel changePasswordModel,
         final List<String> errors) {
 
-        setCurrentPage(model, PageConstants.CHANGE_PASSWORD_PAGE);
+        appUtils.setCurrentPage(model, PageConstants.CHANGE_PASSWORD_PAGE);
         model.addAttribute("model", (changePasswordModel != null)
             ? changePasswordModel
             : new ChangePasswordModel());
         model.addAttribute("errors", errors);
 
         return "account/changePassword";
-    }
-
-    /**
-     * Returns a localized message, for unexpected errors, in a list
-     * 
-     * @return The localized message in a list
-     */
-    private List<String> getUnexpectedErrorMessageAsList() {
-        return getMessages(MessageKeys.UNEXPECTED_ERROR_MESSAGE_KEY);
-    }
-
-    /**
-     * Returns localized messages
-     * 
-     * @param messageKeys
-     *            The key identifiers of the messages
-     * @return The localized messages
-     */
-    private List<String> getMessages(final String... messageKeys) {
-        return Arrays.stream(messageKeys)
-            .map(this::getMessage)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns a localized message
-     * 
-     * @param messageKey
-     *            The key identifier of the message
-     * @return The localized message
-     */
-    private String getMessage(final String messageKey) {
-        return messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale());
     }
 }

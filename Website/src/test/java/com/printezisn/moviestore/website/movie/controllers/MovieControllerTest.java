@@ -6,13 +6,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.context.MessageSource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.printezisn.moviestore.common.AppUtils;
 
 /**
  * Contains unit tests for the movie controller
  */
 public class MovieControllerTest {
+
+    @Mock
+    private MessageSource messageSource;
+
+    private AppUtils appUtils;
 
     private MovieController movieController;
 
@@ -23,7 +33,11 @@ public class MovieControllerTest {
      */
     @Before
     public void setUp() {
-        movieController = new MovieController();
+        MockitoAnnotations.initMocks(this);
+
+        appUtils = new AppUtils(messageSource);
+
+        movieController = new MovieController(appUtils);
 
         mockMvc = MockMvcBuilders.standaloneSetup(movieController).build();
     }

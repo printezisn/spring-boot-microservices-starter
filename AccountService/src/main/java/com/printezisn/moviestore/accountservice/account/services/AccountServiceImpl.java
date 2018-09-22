@@ -3,8 +3,6 @@ package com.printezisn.moviestore.accountservice.account.services;
 import java.time.Instant;
 import java.util.Optional;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -15,6 +13,7 @@ import com.printezisn.moviestore.accountservice.account.exceptions.AccountPersis
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.mappers.AccountMapper;
 import com.printezisn.moviestore.accountservice.account.repositories.AccountRepository;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 
 import lombok.RequiredArgsConstructor;
@@ -30,8 +29,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
-
-    private final MessageSource messageSource;
+    private final AppUtils appUtils;
 
     /**
      * {@inheritDoc}
@@ -87,10 +85,10 @@ public class AccountServiceImpl implements AccountService {
     public AccountDto createAccount(final AccountDto accountDto) throws AccountValidationException {
         // The username and email address must be unique
         if (accountRepository.findById(accountDto.getUsername()).isPresent()) {
-            throw new AccountValidationException(getMessage("usernameExists"));
+            throw new AccountValidationException(appUtils.getMessage("message.account.usernameExists"));
         }
         if (accountRepository.findByEmailAddress(accountDto.getEmailAddress()).isPresent()) {
-            throw new AccountValidationException(getMessage("emailAddressExists"));
+            throw new AccountValidationException(appUtils.getMessage("message.account.emailAddressExists"));
         }
 
         accountDto.setPasswordSalt(BCrypt.gensalt());
@@ -104,7 +102,7 @@ public class AccountServiceImpl implements AccountService {
             accountRepository.save(account);
         }
         catch (final DuplicateKeyException ex) {
-            throw new AccountValidationException(getMessage("usernameOrEmailAddressExists"));
+            throw new AccountValidationException(appUtils.getMessage("message.account.usernameOrEmailAddressExists"));
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while creating a new account: %s",
@@ -160,16 +158,5 @@ public class AccountServiceImpl implements AccountService {
             log.error(errorMessage, ex);
             throw new AccountPersistenceException(errorMessage, ex);
         }
-    }
-
-    /**
-     * Returns a localized message
-     * 
-     * @param key
-     *            The message key
-     * @return The localized message
-     */
-    private String getMessage(final String key) {
-        return messageSource.getMessage("message.account." + key, null, LocaleContextHolder.getLocale());
     }
 }

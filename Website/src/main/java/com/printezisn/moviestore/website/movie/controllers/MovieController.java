@@ -4,14 +4,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.website.Constants.PageConstants;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * The controller class associated with movies
  */
 @Controller
-public class MovieController extends BaseController {
+@RequiredArgsConstructor
+public class MovieController {
+
+    public final AppUtils appUtils;
 
     /**
      * Renders the home page
@@ -22,7 +27,7 @@ public class MovieController extends BaseController {
      */
     @GetMapping("/")
     public String index(final Model model) {
-        setCurrentPage(model, PageConstants.HOME_PAGE);
+        appUtils.setCurrentPage(model, PageConstants.HOME_PAGE);
 
         return "movie/index";
     }

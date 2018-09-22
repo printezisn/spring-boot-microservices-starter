@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.services.AccountService;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.dto.account.AuthDto;
 
@@ -42,6 +43,8 @@ public class AccountControllerTest {
     @Mock
     private MessageSource messageSource;
 
+    private AppUtils appUtils;
+
     private AccountController accountController;
 
     private MockMvc mockMvc;
@@ -55,7 +58,9 @@ public class AccountControllerTest {
 
         when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("Message");
 
-        accountController = new AccountController(accountService, messageSource);
+        appUtils = new AppUtils(messageSource);
+
+        accountController = new AccountController(accountService, appUtils);
         mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
     }
 

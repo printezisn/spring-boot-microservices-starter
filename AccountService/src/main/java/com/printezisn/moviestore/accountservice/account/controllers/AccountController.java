@@ -3,12 +3,9 @@ package com.printezisn.moviestore.accountservice.account.controllers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFoundException;
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.services.AccountService;
-import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 import com.printezisn.moviestore.common.dto.account.AuthDto;
 import com.printezisn.moviestore.common.models.account.AccountResultModel;
@@ -32,10 +29,10 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-public class AccountController extends BaseController {
+public class AccountController {
 
     private final AccountService accountService;
-    private final MessageSource messageSource;
+    private final AppUtils appUtils;
 
     /**
      * Returns an account
@@ -65,7 +62,7 @@ public class AccountController extends BaseController {
     public ResponseEntity<?> authenticate(@Valid @RequestBody final AuthDto authDto,
         final BindingResult bindingResult) {
 
-        final List<String> errors = getModelErrors(bindingResult, messageSource);
+        final List<String> errors = appUtils.getModelErrors(bindingResult);
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(
                 AccountResultModel.builder().errors(errors).build());
@@ -77,7 +74,8 @@ public class AccountController extends BaseController {
             ? ResponseEntity.ok(
                 AccountResultModel.builder().result(account.get()).build())
             : ResponseEntity.badRequest().body(
-                AccountResultModel.builder().errors(getMessages("usernameOrPasswordInvalid")).build());
+                AccountResultModel.builder().errors(
+                    appUtils.getMessages("message.account.usernameOrPasswordInvalid")).build());
     }
 
     /**
@@ -93,7 +91,7 @@ public class AccountController extends BaseController {
     public ResponseEntity<?> createAccount(@Valid @RequestBody final AccountDto account,
         final BindingResult bindingResult) {
 
-        final List<String> errors = getModelErrors(bindingResult, messageSource, "id");
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "id");
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(
                 AccountResultModel.builder().errors(errors).build());
@@ -127,7 +125,7 @@ public class AccountController extends BaseController {
     public ResponseEntity<?> updateAccount(@Valid @RequestBody final AccountDto account,
         final BindingResult bindingResult) {
 
-        final List<String> errors = getModelErrors(bindingResult, messageSource, "username", "emailAddress");
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "username", "emailAddress");
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(
                 AccountResultModel.builder().errors(errors).build());
@@ -156,18 +154,5 @@ public class AccountController extends BaseController {
         accountService.deleteAccount(username);
 
         return ResponseEntity.ok().build();
-    }
-
-    /**
-     * Returns localized messages
-     * 
-     * @param keys
-     *            The message keys
-     * @return The list of localized messages
-     */
-    private List<String> getMessages(final String... keys) {
-        return Arrays.stream(keys)
-            .map(key -> messageSource.getMessage("message.account." + key, null, LocaleContextHolder.getLocale()))
-            .collect(Collectors.toList());
     }
 }

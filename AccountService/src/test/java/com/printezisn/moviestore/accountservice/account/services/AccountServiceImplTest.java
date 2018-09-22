@@ -7,18 +7,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
-import java.util.Locale;
 import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.context.MessageSource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -27,6 +24,7 @@ import com.printezisn.moviestore.accountservice.account.exceptions.AccountNotFou
 import com.printezisn.moviestore.accountservice.account.exceptions.AccountValidationException;
 import com.printezisn.moviestore.accountservice.account.mappers.AccountMapper;
 import com.printezisn.moviestore.accountservice.account.repositories.AccountRepository;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.account.AccountDto;
 
 /**
@@ -45,7 +43,7 @@ public class AccountServiceImplTest {
     private AccountMapper accountMapper;
 
     @Mock
-    private MessageSource messageSource;
+    private AppUtils appUtils;
 
     private AccountServiceImpl accountService;
 
@@ -56,9 +54,9 @@ public class AccountServiceImplTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("Message");
+        when(appUtils.getMessage(anyString())).thenReturn("Message");
 
-        accountService = new AccountServiceImpl(accountRepository, accountMapper, messageSource);
+        accountService = new AccountServiceImpl(accountRepository, accountMapper, appUtils);
     }
 
     /**

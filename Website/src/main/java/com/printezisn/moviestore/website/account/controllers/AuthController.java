@@ -4,14 +4,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.printezisn.moviestore.common.controllers.BaseController;
+import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.website.Constants.PageConstants;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * The controller class associated with authentication
  */
 @Controller
-public class AuthController extends BaseController {
+@RequiredArgsConstructor
+public class AuthController {
+
+    public final AppUtils appUtils;
 
     /**
      * Renders the login page
@@ -22,7 +27,7 @@ public class AuthController extends BaseController {
      */
     @GetMapping("/auth/login")
     public String login(final Model model) {
-        setCurrentPage(model, PageConstants.LOGIN_PAGE);
+        appUtils.setCurrentPage(model, PageConstants.LOGIN_PAGE);
 
         return "auth/login";
     }
