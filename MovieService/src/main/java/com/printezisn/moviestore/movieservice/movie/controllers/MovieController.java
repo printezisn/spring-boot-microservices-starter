@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -133,6 +134,9 @@ public class MovieController {
         catch (final MovieNotFoundException ex) {
             return ResponseEntity.notFound().build();
         }
+        catch (final MovieConditionalException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     /**
@@ -144,10 +148,14 @@ public class MovieController {
      */
     @GetMapping("/movie/delete/{id}")
     public ResponseEntity<?> deleteMovie(@PathVariable("id") final UUID id) {
+        try {
+            movieService.deleteMovie(id);
 
-        movieService.deleteMovie(id);
-
-        return ResponseEntity.ok().build();
+            return ResponseEntity.ok().build();
+        }
+        catch (final MovieConditionalException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     /**
@@ -164,16 +172,18 @@ public class MovieController {
     @GetMapping("/movie/like/{movieId}/{user}")
     public ResponseEntity<?> likeMovie(
         @PathVariable("movieId") final UUID movieId,
-        @PathVariable("user") final String user)
-        throws MovieConditionalException {
+        @PathVariable("user") final String user) {
 
         try {
-            final MovieDto result = movieService.likeMovie(movieId, user);
+            movieService.likeMovie(movieId, user);
 
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok().build();
         }
         catch (final MovieNotFoundException ex) {
             return ResponseEntity.notFound().build();
+        }
+        catch (final MovieConditionalException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
@@ -191,16 +201,18 @@ public class MovieController {
     @GetMapping("/movie/unlike/{movieId}/{user}")
     public ResponseEntity<?> unlikeMovie(
         @PathVariable("movieId") final UUID movieId,
-        @PathVariable("user") final String user)
-        throws MovieConditionalException {
+        @PathVariable("user") final String user) {
 
         try {
-            final MovieDto result = movieService.unlikeMovie(movieId, user);
+            movieService.unlikeMovie(movieId, user);
 
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok().build();
         }
         catch (final MovieNotFoundException ex) {
             return ResponseEntity.notFound().build();
+        }
+        catch (final MovieConditionalException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 }

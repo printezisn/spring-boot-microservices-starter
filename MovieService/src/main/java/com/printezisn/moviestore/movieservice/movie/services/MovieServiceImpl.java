@@ -1,18 +1,19 @@
 package com.printezisn.moviestore.movieservice.movie.services;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
@@ -40,9 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MovieServiceImpl implements MovieService {
 
     private static List<String> SORT_FIELDS = Arrays.asList("rating", "releaseYear", "totalLikes");
-
-    private static final int MAX_RETRIES = 5;
-    private static final Duration RETRY_INTERVAL = Duration.ofMillis(500);
     private static final int PAGE_SIZE = 10;
 
     private final MovieRepository movieRepository;
@@ -95,7 +93,7 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public MovieDto getMovie(final UUID id) throws MovieNotFoundException {
-        Optional<Movie> movie;
+        final Optional<Movie> movie;
         try {
             movie = movieRepository.findById(id.toString());
         }
@@ -107,7 +105,7 @@ public class MovieServiceImpl implements MovieService {
             throw new MoviePersistenceException(errorMessage, ex);
         }
 
-        if (!movie.isPresent()) {
+        if (!movie.isPresent() || movie.get().isDeleted()) {
             throw new MovieNotFoundException();
         }
 
@@ -120,18 +118,18 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public MovieDto createMovie(MovieDto movieDto) {
         movieDto.setId(UUID.randomUUID());
-        movieDto.setTotalLikes(0);
         movieDto.setCreationTimestamp(Instant.now());
         movieDto.setUpdateTimestamp(Instant.now());
 
         final Movie movie = movieMapper.movieDtoToMovie(movieDto);
         movie.setRevision(UUID.randomUUID().toString());
+        movie.setUpdated(true);
+        movie.setDeleted(false);
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>());
 
         try {
             movieRepository.save(movie);
-
-            final SearchedMovie searchedMovie = movieMapper.movieToSearchedMovie(movie);
-            movieSearchRepository.save(searchedMovie);
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while creating a new movie: %s",
@@ -148,18 +146,28 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public MovieDto updateMovie(final MovieDto movieDto) throws MovieNotFoundException {
-        movieDto.setUpdateTimestamp(Instant.now());
-
-        final Movie movie = movieMapper.movieDtoToMovie(movieDto);
-        long affectedDocuments;
+    public MovieDto updateMovie(final MovieDto movieDto) throws MovieNotFoundException, MovieConditionalException {
+        final long affectedDocuments;
 
         try {
-            affectedDocuments = movieRepository.updateMovie(movie);
-            if (affectedDocuments > 0) {
-                final SearchedMovie searchedMovie = movieMapper.movieToSearchedMovie(movie);
-                movieSearchRepository.save(searchedMovie);
+            final Optional<Movie> movie = movieRepository.findById(movieDto.getId().toString());
+            if (!movie.isPresent() || movie.get().isDeleted()) {
+                throw new MovieNotFoundException();
             }
+
+            movieDto.setUpdateTimestamp(Instant.now());
+
+            final Movie updatedMovie = movieMapper.movieDtoToMovie(movieDto);
+            updatedMovie.setRevision(UUID.randomUUID().toString());
+            updatedMovie.setUpdated(true);
+            updatedMovie.setDeleted(movie.get().isDeleted());
+            updatedMovie.setPendingLikes(movie.get().getPendingLikes());
+            updatedMovie.setPendingUnlikes(movie.get().getPendingUnlikes());
+
+            affectedDocuments = movieRepository.updateMovie(updatedMovie, movie.get().getRevision());
+        }
+        catch (final MovieNotFoundException ex) {
+            throw ex;
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while updating movie %s: %s", movieDto.getId(),
@@ -170,7 +178,7 @@ public class MovieServiceImpl implements MovieService {
         }
 
         if (affectedDocuments == 0) {
-            throw new MovieNotFoundException();
+            throw new MovieConditionalException();
         }
 
         return movieDto;
@@ -180,11 +188,22 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteMovie(final UUID id) {
+    public void deleteMovie(final UUID id) throws MovieConditionalException {
+        final long affectedDocuments;
+
         try {
-            movieSearchRepository.deleteById(id.toString());
-            movieRepository.deleteById(id.toString());
-            movieLikeRepository.deleteByMovieId(id.toString());
+            final Optional<Movie> movie = movieRepository.findById(id.toString());
+            if (!movie.isPresent() || movie.get().isDeleted()) {
+                return;
+            }
+
+            final String currentRevision = movie.get().getRevision();
+
+            movie.get().setRevision(UUID.randomUUID().toString());
+            movie.get().setUpdated(true);
+            movie.get().setDeleted(true);
+
+            affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while deleting movie %s: %s", id,
@@ -193,31 +212,36 @@ public class MovieServiceImpl implements MovieService {
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);
         }
+
+        if (affectedDocuments == 0) {
+            throw new MovieConditionalException();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public MovieDto likeMovie(final UUID movieId, final String user)
+    public void likeMovie(final UUID movieId, final String user)
         throws MovieConditionalException, MovieNotFoundException {
 
-        final MovieLike movieLike = new MovieLike();
-        movieLike.setId(movieId + "-" + user);
-        movieLike.setMovieId(movieId.toString());
-        movieLike.setUser(user);
-
-        final Optional<MovieDto> movieDto;
+        final long affectedDocuments;
 
         try {
-            movieLikeRepository.save(movieLike);
-            movieDto = updateTotalLikes(movieId.toString());
-        }
-        catch (final MovieConditionalException ex) {
-            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieId,
-                ex.getMessage());
+            final Optional<Movie> movie = movieRepository.findById(movieId.toString());
+            if (!movie.isPresent() || movie.get().isDeleted()) {
+                throw new MovieNotFoundException();
+            }
 
-            log.error(errorMessage, ex);
+            final String currentRevision = movie.get().getRevision();
+            movie.get().setRevision(UUID.randomUUID().toString());
+            movie.get().setUpdated(true);
+            movie.get().getPendingLikes().add(user);
+            movie.get().getPendingUnlikes().remove(user);
+
+            affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
+        }
+        catch (final MovieNotFoundException ex) {
             throw ex;
         }
         catch (final Exception ex) {
@@ -228,32 +252,35 @@ public class MovieServiceImpl implements MovieService {
             throw new MoviePersistenceException(errorMessage, ex);
         }
 
-        if (!movieDto.isPresent()) {
-            throw new MovieNotFoundException();
+        if (affectedDocuments == 0) {
+            throw new MovieConditionalException();
         }
-
-        return movieDto.get();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public MovieDto unlikeMovie(final UUID movieId, final String user)
+    public void unlikeMovie(final UUID movieId, final String user)
         throws MovieConditionalException, MovieNotFoundException {
 
-        final Optional<MovieDto> movieDto;
-        final String id = movieId + "-" + user;
+        final long affectedDocuments;
 
         try {
-            movieLikeRepository.deleteById(id);
-            movieDto = updateTotalLikes(movieId.toString());
-        }
-        catch (final MovieConditionalException ex) {
-            final String errorMessage = String.format("An error occured while updating movie %s: %s", movieId,
-                ex.getMessage());
+            final Optional<Movie> movie = movieRepository.findById(movieId.toString());
+            if (!movie.isPresent() || movie.get().isDeleted()) {
+                throw new MovieNotFoundException();
+            }
 
-            log.error(errorMessage, ex);
+            final String currentRevision = movie.get().getRevision();
+            movie.get().setRevision(UUID.randomUUID().toString());
+            movie.get().setUpdated(true);
+            movie.get().getPendingLikes().remove(user);
+            movie.get().getPendingUnlikes().add(user);
+
+            affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
+        }
+        catch (final MovieNotFoundException ex) {
             throw ex;
         }
         catch (final Exception ex) {
@@ -264,68 +291,68 @@ public class MovieServiceImpl implements MovieService {
             throw new MoviePersistenceException(errorMessage, ex);
         }
 
-        if (!movieDto.isPresent()) {
-            throw new MovieNotFoundException();
+        if (affectedDocuments == 0) {
+            throw new MovieConditionalException();
+        }
+    }
+
+    /**
+     * Updates the search index at a regular interval
+     */
+    @Scheduled(fixedRateString = "${searchIndex.fixedRate}")
+    public void updateSearchIndex() {
+        final Collection<Movie> movies;
+
+        try {
+            // Loads the recently updated movies
+            movies = movieRepository.findByUpdated(true);
+        }
+        catch (final Exception ex) {
+            log.error("An error occured while loading movies to index: " + ex.getMessage(), ex);
+            return;
         }
 
-        return movieDto.get();
-    }
-
-    /**
-     * Updates the total likes of a movie
-     * 
-     * @param movieId
-     *            The id of the movie
-     * @return The updated movie
-     * @throws Exception
-     *             Exception thrown by the callable method
-     */
-    private Optional<MovieDto> updateTotalLikes(final String movieId) throws Exception {
-        return runWithRetry(() -> {
-            final Optional<Movie> movie = movieRepository.findById(movieId);
-            if (!movie.isPresent()) {
-                return Optional.empty();
-            }
-
-            final long totalLikes = movieLikeRepository.countByMovieId(movieId);
-            final String newRevision = UUID.randomUUID().toString();
-
-            movie.get().setTotalLikes(totalLikes);
-            if (movieRepository.updateTotalLikes(movie.get(), newRevision) == 0) {
-                throw new MovieConditionalException();
-            }
-
-            movie.get().setRevision(newRevision);
-
-            final SearchedMovie searchedMovie = movieMapper.movieToSearchedMovie(movie.get());
-            movieSearchRepository.save(searchedMovie);
-
-            return Optional.of(movieMapper.movieToMovieDto(movie.get()));
-        });
-    }
-
-    /**
-     * Runs a method and retries a few times in case of a conditional exception
-     * 
-     * @param callable
-     *            The method to call
-     * @return The return value of the method
-     * @throws Exception
-     *             Exception thrown by the callable method
-     */
-    private <T> T runWithRetry(final Callable<T> callable) throws Exception {
-        int maxRetries = MAX_RETRIES;
-
-        while (maxRetries > 0) {
+        movies.forEach(movie -> {
             try {
-                return callable.call();
-            }
-            catch (final MovieConditionalException ex) {
-                maxRetries--;
-                Thread.sleep(RETRY_INTERVAL.toMillis());
-            }
-        }
+                // Deletes the movie if it's indicated as deleted
+                if (movie.isDeleted()) {
+                    movieSearchRepository.deleteById(movie.getId());
+                    movieLikeRepository.deleteByMovieId(movie.getId());
+                    movieRepository.deleteById(movie.getId());
 
-        throw new MovieConditionalException();
+                    return;
+                }
+
+                // Saves the pending likes
+                movie.getPendingLikes().forEach(user -> {
+                    final MovieLike movieLike = new MovieLike();
+                    movieLike.setId(movie.getId() + "-" + user);
+                    movieLike.setMovieId(movie.getId());
+                    movieLike.setUser(user);
+
+                    movieLikeRepository.save(movieLike);
+                });
+                movie.setPendingLikes(new HashSet<>());
+
+                // Removes the pending unlikes
+                movie.getPendingUnlikes().forEach(user -> movieLikeRepository.deleteById(movie.getId() + "-" + user));
+                movie.setPendingUnlikes(new HashSet<>());
+
+                // Indexes the movie
+                final SearchedMovie searchedMovie = movieMapper.movieToSearchedMovie(movie);
+                searchedMovie.setTotalLikes(movieLikeRepository.countByMovieId(movie.getId()));
+                movieSearchRepository.save(searchedMovie);
+
+                // Updates the movie in the database
+                final String currentRevision = movie.getRevision();
+                movie.setRevision(UUID.randomUUID().toString());
+                movie.setUpdated(false);
+                movieRepository.updateMovie(movie, currentRevision);
+            }
+            catch (final Exception ex) {
+                log.error(String.format("An error occured while indexing movie %s: %s", movie.getId(), ex.getMessage()),
+                    ex);
+            }
+        });
     }
 }

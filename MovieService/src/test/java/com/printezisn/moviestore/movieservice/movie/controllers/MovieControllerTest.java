@@ -15,12 +15,14 @@ import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.movieservice.movie.controllers.MovieController;
 import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
+import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.services.MovieService;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -75,8 +77,6 @@ public class MovieControllerTest {
 
     /**
      * Tests if movies are searched successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_searchMovies_success() throws Exception {
@@ -113,8 +113,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
      */
     @Test
     public void test_getMovie_notFound() throws Exception {
@@ -127,8 +125,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which the movie is found
-     * 
-     * @throws Exception
      */
     @Test
     public void test_getMovie_found() throws Exception {
@@ -143,8 +139,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which there are validation errors
-     * 
-     * @throws Exception
      */
     @Test
     public void test_createMovie_validationErrors() throws Exception {
@@ -163,8 +157,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which the movie is created successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_createMovie_success() throws Exception {
@@ -184,8 +176,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which there are validation errors
-     * 
-     * @throws Exception
      */
     @Test
     public void test_updatedMovie_validationErrors() throws Exception {
@@ -204,8 +194,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
      */
     @Test
     public void test_updateMovie_notFound() throws Exception {
@@ -223,9 +211,25 @@ public class MovieControllerTest {
     }
 
     /**
+     * Tests the scenario in which there is an update conflict
+     */
+    @Test
+    public void test_updateMovie_conflict() throws Exception {
+        final MovieDto movieDto = createMovie();
+        final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+
+        when(movieService.updateMovie(movieDto)).thenThrow(new MovieConditionalException());
+
+        final String requestContent = objectMapper.writeValueAsString(movieDto);
+
+        mockMvc.perform(post("/movie/update")
+            .content(requestContent)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isConflict());
+    }
+
+    /**
      * Tests the scenario in which the movie is updated successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_updateMovie_success() throws Exception {
@@ -245,8 +249,6 @@ public class MovieControllerTest {
 
     /**
      * Tests the scenario in which the movie is deleted successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_deleteMovie_success() throws Exception {
@@ -259,9 +261,20 @@ public class MovieControllerTest {
     }
 
     /**
+     * Tests the scenario in which there is an update conflict
+     */
+    @Test
+    public void test_deleteMovie_conflict() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        doThrow(new MovieConditionalException()).when(movieService).deleteMovie(id);
+
+        mockMvc.perform(get("/movie/delete/" + id))
+            .andExpect(status().isConflict());
+    }
+
+    /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
      */
     @Test
     public void test_likeMovie_notFound() throws Exception {
@@ -269,15 +282,27 @@ public class MovieControllerTest {
         final String user = "test_user";
         final String url = String.format("/movie/like/%s/%s", movieId, user);
 
-        when(movieService.likeMovie(movieId, user)).thenThrow(new MovieNotFoundException());
+        doThrow(new MovieNotFoundException()).when(movieService).likeMovie(movieId, user);
 
         mockMvc.perform(get(url)).andExpect(status().isNotFound());
     }
 
     /**
+     * Tests the scenario in which there is an update conflict
+     */
+    @Test
+    public void test_likeMovie_conflict() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String user = "test_user";
+        final String url = String.format("/movie/like/%s/%s", movieId, user);
+
+        doThrow(new MovieConditionalException()).when(movieService).likeMovie(movieId, user);
+
+        mockMvc.perform(get(url)).andExpect(status().isConflict());
+    }
+
+    /**
      * Tests if the movie like is added successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_likeMovie_success() throws Exception {
@@ -285,17 +310,13 @@ public class MovieControllerTest {
         final String user = "test_user";
         final String url = String.format("/movie/like/%s/%s", movieDto.getId(), user);
 
-        when(movieService.likeMovie(movieDto.getId(), user)).thenReturn(movieDto);
+        mockMvc.perform(get(url)).andExpect(status().isOk());
 
-        final ResultActions resultActions = mockMvc.perform(get(url))
-            .andExpect(status().isOk());
-        expectMovieValues(resultActions, movieDto.getId(), Optional.empty());
+        verify(movieService).likeMovie(movieDto.getId(), user);
     }
 
     /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
      */
     @Test
     public void test_unlikeMovie_notFound() throws Exception {
@@ -303,15 +324,27 @@ public class MovieControllerTest {
         final String user = "test_user";
         final String url = String.format("/movie/unlike/%s/%s", movieId, user);
 
-        when(movieService.unlikeMovie(movieId, user)).thenThrow(new MovieNotFoundException());
+        doThrow(new MovieNotFoundException()).when(movieService).unlikeMovie(movieId, user);
 
         mockMvc.perform(get(url)).andExpect(status().isNotFound());
     }
 
     /**
+     * Tests the scenario in which there is an update conflict
+     */
+    @Test
+    public void test_unlikeMovie_conflict() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String user = "test_user";
+        final String url = String.format("/movie/unlike/%s/%s", movieId, user);
+
+        doThrow(new MovieConditionalException()).when(movieService).unlikeMovie(movieId, user);
+
+        mockMvc.perform(get(url)).andExpect(status().isConflict());
+    }
+
+    /**
      * Tests if the movie like is removed successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_unlikeMovie_success() throws Exception {
@@ -319,11 +352,9 @@ public class MovieControllerTest {
         final String user = "test_user";
         final String url = String.format("/movie/unlike/%s/%s", movieDto.getId(), user);
 
-        when(movieService.unlikeMovie(movieDto.getId(), user)).thenReturn(movieDto);
+        mockMvc.perform(get(url)).andExpect(status().isOk());
 
-        final ResultActions resultActions = mockMvc.perform(get(url))
-            .andExpect(status().isOk());
-        expectMovieValues(resultActions, movieDto.getId(), Optional.empty());
+        verify(movieService).unlikeMovie(movieDto.getId(), user);
     }
 
     /**

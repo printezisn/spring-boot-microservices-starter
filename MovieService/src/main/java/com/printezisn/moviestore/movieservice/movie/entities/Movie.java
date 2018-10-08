@@ -1,6 +1,10 @@
 package com.printezisn.moviestore.movieservice.movie.entities;
 
+import java.util.Set;
+
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -25,11 +29,18 @@ public class Movie {
 
     private int releaseYear;
 
-    private long totalLikes;
-
     private String creationTimestamp;
 
     private String updateTimestamp;
 
     private String creator;
+
+    private Set<String> pendingLikes;
+
+    private Set<String> pendingUnlikes;
+
+    @Indexed(direction = IndexDirection.DESCENDING)
+    private boolean updated;
+
+    private boolean deleted;
 }

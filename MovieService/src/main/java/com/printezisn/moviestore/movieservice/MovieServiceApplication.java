@@ -2,12 +2,14 @@ package com.printezisn.moviestore.movieservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * The main class of the application
  */
 @SpringBootApplication(scanBasePackages = { "com.printezisn.moviestore.movieservice",
     "com.printezisn.moviestore.common" })
+@EnableScheduling
 public class MovieServiceApplication {
 
     /**

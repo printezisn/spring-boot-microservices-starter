@@ -1,6 +1,8 @@
 package com.printezisn.moviestore.movieservice.movie.services;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
 import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
+import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;
 import com.printezisn.moviestore.movieservice.movie.mappers.MovieMapper;
 import com.printezisn.moviestore.movieservice.movie.repositories.MovieLikeRepository;
 import com.printezisn.moviestore.movieservice.movie.repositories.MovieRepository;
@@ -27,19 +30,22 @@ import com.printezisn.moviestore.movieservice.movie.repositories.MovieSearchRepo
 import com.printezisn.moviestore.movieservice.movie.services.MovieServiceImpl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
 
 /**
  * Class that contains unit tests for the MovieServiceImpl class
  */
 public class MovieServiceImplTest {
 
-    private static final long TOTAL_LIKES = 5;
     private static final String SEARCH_TEXT = "test";
     private static final int PAGE_NUMBER = 1;
     private static final int DEFAULT_PAGE_NUMBER = 0;
@@ -202,9 +208,24 @@ public class MovieServiceImplTest {
     }
 
     /**
+     * Tests the scenario in which the search operation throws a runtime exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_searchMovies_exception() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        final SearchedMovie searchedMovie = new SearchedMovie();
+        final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        when(movieMapper.searchedMovieToMovieDto(searchedMovie)).thenReturn(movieDto);
+        when(movieSearchRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
+            .thenThrow(new RuntimeException());
+
+        movieService.searchMovies(Optional.of(SEARCH_TEXT), Optional.of(PAGE_NUMBER), Optional.of(SORT_FIELD),
+            IS_ASCENDING);
+    }
+
+    /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
      */
     @Test(expected = MovieNotFoundException.class)
     public void test_getMovie_notFound() throws Exception {
@@ -215,9 +236,21 @@ public class MovieServiceImplTest {
     }
 
     /**
+     * Tests the scenario in which the movie is deleted
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_getMovie_deleted() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final Movie movie = new Movie();
+        movie.setDeleted(true);
+
+        when(movieRepository.findById(id.toString())).thenReturn(Optional.of(movie));
+
+        movieService.getMovie(id);
+    }
+
+    /**
      * Tests the scenario in which the movie is found
-     * 
-     * @throws Exception
      */
     @Test
     public void test_getMovie_found() throws Exception {
@@ -234,88 +267,250 @@ public class MovieServiceImplTest {
     }
 
     /**
+     * Tests the scenario in which the get operation throws a runtime exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_getMovie_exception() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        when(movieRepository.findById(id.toString())).thenThrow(new RuntimeException());
+
+        movieService.getMovie(id);
+    }
+
+    /**
      * Tests if movie creation works correctly
-     * 
-     * @throws Exception
      */
     @Test
     public void test_createMovie_success() throws Exception {
         final MovieDto movieDto = new MovieDto();
         final Movie movie = new Movie();
-        final SearchedMovie searchedMovie = new SearchedMovie();
 
         when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(movie);
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
 
         final MovieDto result = movieService.createMovie(movieDto);
 
         verify(movieRepository).save(movie);
-        verify(movieSearchRepository).save(searchedMovie);
 
         assertEquals(movieDto, result);
         assertNotNull(result.getCreationTimestamp());
         assertNotNull(result.getUpdateTimestamp());
         assertNotNull(result.getId());
-        assertEquals(0, result.getTotalLikes());
+
+        assertNotNull(movie.getRevision());
+        assertTrue(movie.isUpdated());
+        assertFalse(movie.isDeleted());
+        assertNotNull(movie.getPendingLikes());
+        assertEquals(0, movie.getPendingLikes().size());
+        assertNotNull(movie.getPendingUnlikes().size());
     }
 
     /**
-     * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
+     * Tests the scenario in which the create operation throws a runtime exception
      */
-    @Test(expected = MovieNotFoundException.class)
-    public void test_updateMovie_notFound() throws Exception {
+    @Test(expected = MoviePersistenceException.class)
+    public void test_createMovie_exception() throws Exception {
         final MovieDto movieDto = new MovieDto();
         final Movie movie = new Movie();
 
         when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(movie);
-        when(movieRepository.updateMovie(movie)).thenReturn(0L);
+        when(movieRepository.save(movie)).thenThrow(new RuntimeException());
+
+        movieService.createMovie(movieDto);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_updateMovie_notFound() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+
+        when(movieRepository.findById(movieDto.getId().toString())).thenReturn(Optional.empty());
+
+        movieService.updateMovie(movieDto);
+    }
+
+    /**
+     * Tests the scenario in which the movie is deleted
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_updateMovie_deleted() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+
+        final Movie movie = new Movie();
+        movie.setDeleted(true);
+
+        when(movieRepository.findById(movieDto.getId().toString())).thenReturn(Optional.of(movie));
 
         movieService.updateMovie(movieDto);
     }
 
     /**
      * Tests the scenario in which the movie is updated successfully
-     * 
-     * @throws Exception
      */
     @Test
     public void test_updateMovie_success() throws Exception {
         final MovieDto movieDto = new MovieDto();
-        final Movie movie = new Movie();
-        final SearchedMovie searchedMovie = new SearchedMovie();
+        movieDto.setId(UUID.randomUUID());
 
-        when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(movie);
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
-        when(movieRepository.updateMovie(movie)).thenReturn(1L);
+        final String currentRevision = UUID.randomUUID().toString();
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+        movie.setPendingLikes(Collections.singleton("account1"));
+        movie.setPendingUnlikes(Collections.singleton("account2"));
+
+        final Movie updatedMovie = new Movie();
+
+        when(movieRepository.findById(movieDto.getId().toString())).thenReturn(Optional.of(movie));
+        when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(updatedMovie);
+        when(movieRepository.updateMovie(updatedMovie, currentRevision)).thenReturn(1L);
 
         final MovieDto result = movieService.updateMovie(movieDto);
 
-        verify(movieSearchRepository).save(searchedMovie);
         assertEquals(movieDto, result);
+        assertTrue(updatedMovie.isUpdated());
+        assertFalse(updatedMovie.isDeleted());
+        assertNotNull(updatedMovie.getPendingLikes());
+        assertEquals(1, updatedMovie.getPendingLikes().size());
+        assertTrue(updatedMovie.getPendingLikes().contains("account1"));
+        assertNotNull(updatedMovie.getPendingUnlikes());
+        assertEquals(1, updatedMovie.getPendingUnlikes().size());
+        assertTrue(updatedMovie.getPendingUnlikes().contains("account2"));
     }
 
     /**
-     * Tests if movie deletion works correctly
-     * 
-     * @throws Exception
+     * Tests the scenario in which the update operation throws a conditional
+     * exception
      */
-    @Test
-    public void test_deleteMovie_success() throws Exception {
-        final UUID id = UUID.randomUUID();
+    @Test(expected = MovieConditionalException.class)
+    public void test_updateMovie_conditionalException() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
 
-        movieService.deleteMovie(id);
+        final String currentRevision = UUID.randomUUID().toString();
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
 
-        verify(movieRepository).deleteById(id.toString());
-        verify(movieLikeRepository).deleteByMovieId(id.toString());
-        verify(movieSearchRepository).deleteById(id.toString());
+        final Movie updatedMovie = new Movie();
+
+        when(movieRepository.findById(movieDto.getId().toString())).thenReturn(Optional.of(movie));
+        when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(updatedMovie);
+        when(movieRepository.updateMovie(updatedMovie, currentRevision)).thenReturn(0L);
+
+        movieService.updateMovie(movieDto);
+    }
+
+    /**
+     * Tests the scenario in which the update operation throws a runtime exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_updateMovie_exception() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+
+        final String currentRevision = UUID.randomUUID().toString();
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+
+        final Movie updatedMovie = new Movie();
+
+        when(movieRepository.findById(movieDto.getId().toString())).thenReturn(Optional.of(movie));
+        when(movieMapper.movieDtoToMovie(movieDto)).thenReturn(updatedMovie);
+        when(movieRepository.updateMovie(updatedMovie, currentRevision)).thenThrow(new RuntimeException());
+
+        movieService.updateMovie(movieDto);
     }
 
     /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
+     */
+    @Test
+    public void test_deleteMovie_notFound() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        when(movieRepository.findById(id.toString())).thenReturn(Optional.empty());
+
+        movieService.deleteMovie(id);
+
+        verify(movieRepository, never()).updateMovie(any(Movie.class), anyString());
+    }
+
+    /**
+     * Tests the scenario in which the movie is deleted
+     */
+    @Test
+    public void test_deleteMovie_deleted() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final Movie movie = new Movie();
+        movie.setDeleted(true);
+
+        when(movieRepository.findById(id.toString())).thenReturn(Optional.of(movie));
+
+        movieService.deleteMovie(id);
+
+        verify(movieRepository, never()).updateMovie(any(Movie.class), anyString());
+    }
+
+    /**
+     * Tests if the operation completes successfully
+     */
+    @Test
+    public void test_deleteMovie_success() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final String currentRevision = UUID.randomUUID().toString();
+
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+
+        when(movieRepository.findById(id.toString())).thenReturn(Optional.of(movie));
+        when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(1L);
+
+        movieService.deleteMovie(id);
+
+        assertTrue(movie.isUpdated());
+        assertTrue(movie.isDeleted());
+    }
+
+    /**
+     * Tests the scenario in which the delete operation throws a conditional
+     * exception
+     */
+    @Test(expected = MovieConditionalException.class)
+    public void test_deleteMovie_conditionalException() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final String currentRevision = UUID.randomUUID().toString();
+
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+
+        when(movieRepository.findById(id.toString())).thenReturn(Optional.of(movie));
+        when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(0L);
+
+        movieService.deleteMovie(id);
+    }
+
+    /**
+     * Tests the scenario in which the delete operation throws a runtime exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_deleteMovie_exception() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final String currentRevision = UUID.randomUUID().toString();
+
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+
+        when(movieRepository.findById(id.toString())).thenReturn(Optional.of(movie));
+        when(movieRepository.updateMovie(movie, currentRevision)).thenThrow(new RuntimeException());
+
+        movieService.deleteMovie(id);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
      */
     @Test(expected = MovieNotFoundException.class)
     public void test_likeMovie_movieNotFound() throws Exception {
@@ -327,110 +522,85 @@ public class MovieServiceImplTest {
     }
 
     /**
-     * Tests if the update is successful
-     * 
-     * @throws Exception
+     * Tests the scenario in which the movie is deleted
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_likeMovie_deleted() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final Movie movie = new Movie();
+        movie.setDeleted(true);
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+
+        movieService.likeMovie(movieId, "test_user");
+    }
+
+    /**
+     * Tests if the movie is liked successfully
      */
     @Test
     public void test_likeMovie_success() throws Exception {
         final UUID movieId = UUID.randomUUID();
         final String user = "test_user";
 
-        final MovieLike movieLike = new MovieLike();
-        movieLike.setId(movieId + "-" + user);
-        movieLike.setMovieId(movieId.toString());
-        movieLike.setUser(user);
-
+        final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
-        final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
+        movie.setRevision(currentRevision);
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>(Arrays.asList(user)));
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.countByMovieId(movieId.toString())).thenReturn(TOTAL_LIKES);
-        when(movieRepository.updateTotalLikes(eq(movie), anyString())).thenReturn(1L);
-        when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
+        when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(1L);
 
-        final MovieDto result = movieService.likeMovie(movieId, user);
+        movieService.likeMovie(movieId, user);
 
-        verify(movieLikeRepository).save(movieLike);
-        verify(movieSearchRepository).save(searchedMovie);
-        assertEquals(movieDto, result);
-        assertEquals(TOTAL_LIKES, movie.getTotalLikes());
+        assertEquals(1, movie.getPendingLikes().size());
+        assertTrue(movie.getPendingLikes().contains(user));
+        assertEquals(0, movie.getPendingUnlikes().size());
     }
 
     /**
-     * Tests if the update is successful even with a single conditional exception
-     * 
-     * @throws Exception
+     * Tests the scenario in which the like operation throws a conditional exception
      */
-    @Test
-    public void test_likeMovie_successWithConditionalException() throws Exception {
-        final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
-
-        final MovieLike movieLike = new MovieLike();
-        movieLike.setId(movieId + "-" + user);
-        movieLike.setMovieId(movieId.toString());
-        movieLike.setUser(user);
-
-        final Movie movie = new Movie();
-        final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.countByMovieId(movieId.toString())).thenReturn(TOTAL_LIKES);
-        when(movieRepository.updateTotalLikes(eq(movie), anyString()))
-            .thenReturn(0L)
-            .thenReturn(1L);
-        when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
-
-        final MovieDto result = movieService.likeMovie(movieId, user);
-
-        verify(movieLikeRepository).save(movieLike);
-        verify(movieSearchRepository).save(searchedMovie);
-        assertEquals(movieDto, result);
-        assertEquals(TOTAL_LIKES, movie.getTotalLikes());
-    }
-
-    /**
-     * Tests if the update completes with errors after a series of conditional
-     * exceptions
-     * 
-     * @throws Exception
-     */
-    @Test
+    @Test(expected = MovieConditionalException.class)
     public void test_likeMovie_conditionalException() throws Exception {
         final UUID movieId = UUID.randomUUID();
         final String user = "test_user";
 
-        final MovieLike movieLike = new MovieLike();
-        movieLike.setId(movieId + "-" + user);
-        movieLike.setMovieId(movieId.toString());
-        movieLike.setUser(user);
-
+        final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>());
+
+        final Movie updatedMovie = new Movie();
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.countByMovieId(movieId.toString())).thenReturn(TOTAL_LIKES);
-        when(movieRepository.updateTotalLikes(eq(movie), anyString())).thenReturn(0L);
+        when(movieRepository.updateMovie(updatedMovie, currentRevision)).thenReturn(0L);
 
-        try {
-            movieService.likeMovie(movieId, user);
-            fail();
-        }
-        catch (final MovieConditionalException ex) {
+        movieService.likeMovie(movieId, user);
+    }
 
-        }
+    /**
+     * Tests the scenario in which the like operation throws a runtime exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_likeMovie_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String user = "test_user";
 
-        verify(movieLikeRepository).save(movieLike);
+        final String currentRevision = UUID.randomUUID().toString();
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+        when(movieRepository.updateMovie(movie, currentRevision)).thenThrow(new RuntimeException());
+
+        movieService.likeMovie(movieId, user);
     }
 
     /**
      * Tests the scenario in which the movie is not found
-     * 
-     * @throws Exception
      */
     @Test(expected = MovieNotFoundException.class)
     public void test_unlikeMovie_movieNotFound() throws Exception {
@@ -442,88 +612,165 @@ public class MovieServiceImplTest {
     }
 
     /**
-     * Tests if the update is successful
-     * 
-     * @throws Exception
+     * Tests the scenario in which the movie is deleted
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_unlikeMovie_deleted() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final Movie movie = new Movie();
+        movie.setDeleted(true);
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+
+        movieService.unlikeMovie(movieId, "test_user");
+    }
+
+    /**
+     * Tests if the movie is unliked successfully
      */
     @Test
     public void test_unlikeMovie_success() throws Exception {
         final UUID movieId = UUID.randomUUID();
         final String user = "test_user";
 
+        final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
-        final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
+        movie.setRevision(currentRevision);
+        movie.setPendingLikes(new HashSet<>(Arrays.asList(user)));
+        movie.setPendingUnlikes(new HashSet<>());
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.countByMovieId(movieId.toString())).thenReturn(TOTAL_LIKES);
-        when(movieRepository.updateTotalLikes(eq(movie), anyString())).thenReturn(1L);
-        when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
+        when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(1L);
 
-        final MovieDto result = movieService.unlikeMovie(movieId, user);
+        movieService.unlikeMovie(movieId, user);
 
-        verify(movieLikeRepository).deleteById(movieId + "-" + user);
-        verify(movieSearchRepository).save(searchedMovie);
-        assertEquals(movieDto, result);
-        assertEquals(TOTAL_LIKES, movie.getTotalLikes());
+        assertEquals(0, movie.getPendingLikes().size());
+        assertEquals(1, movie.getPendingUnlikes().size());
+        assertTrue(movie.getPendingUnlikes().contains(user));
     }
 
     /**
-     * Tests if the update is successful even with a single conditional exception
-     * 
-     * @throws Exception
+     * Tests the scenario in which the unlike operation throws a conditional
+     * exception
      */
-    @Test
-    public void test_unlikeMovie_successWithConditionalException() throws Exception {
-        final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
-
-        final Movie movie = new Movie();
-        final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.countByMovieId(movieId.toString())).thenReturn(TOTAL_LIKES);
-        when(movieRepository.updateTotalLikes(eq(movie), anyString()))
-            .thenReturn(0L)
-            .thenReturn(1L);
-        when(movieMapper.movieToMovieDto(movie)).thenReturn(movieDto);
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
-
-        final MovieDto result = movieService.unlikeMovie(movieId, user);
-
-        verify(movieLikeRepository).deleteById(movieId + "-" + user);
-        verify(movieSearchRepository).save(searchedMovie);
-        assertEquals(movieDto, result);
-        assertEquals(TOTAL_LIKES, movie.getTotalLikes());
-    }
-
-    /**
-     * Tests if the update completes with errors after a series of conditional
-     * exceptions
-     * 
-     * @throws Exception
-     */
-    @Test
+    @Test(expected = MovieConditionalException.class)
     public void test_unlikeMovie_conditionalException() throws Exception {
         final UUID movieId = UUID.randomUUID();
         final String user = "test_user";
 
+        final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>());
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.countByMovieId(movieId.toString())).thenReturn(TOTAL_LIKES);
-        when(movieRepository.updateTotalLikes(eq(movie), anyString())).thenReturn(0L);
+        when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(0L);
 
-        try {
-            movieService.unlikeMovie(movieId, user);
-            fail();
-        }
-        catch (final MovieConditionalException ex) {
+        movieService.unlikeMovie(movieId, user);
+    }
 
-        }
+    /**
+     * Tests the scenario in which the unlike operation throws a runtime exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_unlikeMovie_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String user = "test_user";
 
-        verify(movieLikeRepository).deleteById(movieId + "-" + user);
+        final String currentRevision = UUID.randomUUID().toString();
+        final Movie movie = new Movie();
+        movie.setRevision(currentRevision);
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+        when(movieRepository.updateMovie(movie, currentRevision)).thenThrow(new RuntimeException());
+
+        movieService.unlikeMovie(movieId, user);
+    }
+
+    /**
+     * Tests the scenario in which a movie is deleted
+     */
+    @Test
+    public void test_updateSearchIndex_deleteMovie() {
+        final Movie movie = new Movie();
+        movie.setId(UUID.randomUUID().toString());
+        movie.setDeleted(true);
+
+        when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
+
+        movieService.updateSearchIndex();
+
+        verify(movieRepository).deleteById(movie.getId());
+        verify(movieSearchRepository).deleteById(movie.getId());
+        verify(movieLikeRepository).deleteByMovieId(movie.getId());
+    }
+
+    /**
+     * Tests the scenario in which a movie is updated
+     */
+    @Test
+    public void test_updateSearchIndex_updateMovie() {
+        final String currentRevision = UUID.randomUUID().toString();
+        final Movie movie = new Movie();
+        movie.setId(UUID.randomUUID().toString());
+        movie.setRevision(currentRevision);
+        movie.setPendingLikes(new HashSet<>(Arrays.asList("account1")));
+        movie.setPendingUnlikes(new HashSet<>(Arrays.asList("account2")));
+
+        final SearchedMovie searchedMovie = new SearchedMovie();
+
+        final MovieLike movieLike = new MovieLike();
+        movieLike.setId(movie.getId() + "-account1");
+        movieLike.setMovieId(movie.getId());
+        movieLike.setUser("account1");
+
+        when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
+        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
+        when(movieLikeRepository.countByMovieId(movie.getId())).thenReturn(5L);
+
+        movieService.updateSearchIndex();
+
+        verify(movieLikeRepository).save(movieLike);
+        verify(movieLikeRepository).deleteById(movie.getId() + "-account2");
+        verify(movieSearchRepository).save(searchedMovie);
+        verify(movieRepository).updateMovie(movie, currentRevision);
+
+        assertTrue(movie.getPendingLikes().isEmpty());
+        assertTrue(movie.getPendingUnlikes().isEmpty());
+        assertFalse(movie.isUpdated());
+    }
+
+    /**
+     * Tests the scenario in which an exception is thrown while loading movies
+     */
+    @Test
+    public void test_updateSearchIndex_loadException() {
+        final Movie movie = new Movie();
+        movie.setId(UUID.randomUUID().toString());
+        movie.setDeleted(true);
+
+        when(movieRepository.findByUpdated(true)).thenThrow(new RuntimeException());
+
+        movieService.updateSearchIndex();
+
+        verify(movieRepository, never()).deleteById(movie.getId());
+    }
+
+    /**
+     * Tests the scenario in which an exception is thrown while processing a movie
+     */
+    @Test
+    public void test_updateSearchIndex_processException() {
+        final Movie movie = new Movie();
+        movie.setId(UUID.randomUUID().toString());
+        movie.setDeleted(true);
+
+        when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
+        doThrow(new RuntimeException()).when(movieLikeRepository).deleteByMovieId(movie.getId());
+
+        movieService.updateSearchIndex();
+
+        verify(movieRepository, never()).deleteById(movie.getId());
     }
 }

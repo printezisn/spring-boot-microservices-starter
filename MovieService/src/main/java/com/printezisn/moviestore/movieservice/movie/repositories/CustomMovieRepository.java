@@ -12,18 +12,9 @@ public interface CustomMovieRepository {
      * 
      * @param movie
      *            The movie
+     * @param currentRevision
+     *            The current revision of the movie
      * @return The number of documents affected
      */
-    long updateMovie(final Movie movie);
-
-    /**
-     * Updates the total likes of a movie
-     * 
-     * @param movie
-     *            The movie
-     * @param newRevision
-     *            The new revision of the movie
-     * @return The number of documents affected
-     */
-    long updateTotalLikes(final Movie movie, final String newRevision);
+    long updateMovie(final Movie movie, final String currentRevision);
 }
