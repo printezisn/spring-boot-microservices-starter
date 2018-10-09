@@ -163,19 +163,19 @@ public class MovieController {
      * 
      * @param movieId
      *            The id of the movie to like
-     * @param user
-     *            The user who likes the movie
-     * @return The updated movie
+     * @param account
+     *            The account that likes the movie
+     * @return The result of the operation
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      */
-    @GetMapping("/movie/like/{movieId}/{user}")
+    @GetMapping("/movie/like/{movieId}/{account}")
     public ResponseEntity<?> likeMovie(
         @PathVariable("movieId") final UUID movieId,
-        @PathVariable("user") final String user) {
+        @PathVariable("account") final String account) {
 
         try {
-            movieService.likeMovie(movieId, user);
+            movieService.likeMovie(movieId, account);
 
             return ResponseEntity.ok().build();
         }
@@ -192,19 +192,19 @@ public class MovieController {
      * 
      * @param movieId
      *            The id of the movie to unlike
-     * @param user
-     *            The user whose like is removed from the movie
-     * @return The updated movie
+     * @param account
+     *            The account whose like is removed from the movie
+     * @return The result of the operation
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      */
-    @GetMapping("/movie/unlike/{movieId}/{user}")
+    @GetMapping("/movie/unlike/{movieId}/{account}")
     public ResponseEntity<?> unlikeMovie(
         @PathVariable("movieId") final UUID movieId,
-        @PathVariable("user") final String user) {
+        @PathVariable("account") final String account) {
 
         try {
-            movieService.unlikeMovie(movieId, user);
+            movieService.unlikeMovie(movieId, account);
 
             return ResponseEntity.ok().build();
         }
@@ -214,5 +214,24 @@ public class MovieController {
         catch (final MovieConditionalException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+    }
+
+    /**
+     * Checks if an account has liked a movie
+     * 
+     * @param movieId
+     *            The id of the movie
+     * @param account
+     *            The account to check
+     * @return True if the account has liked the movie, otherwise false
+     */
+    @GetMapping("/movie/hasliked/{movieId}/{account}")
+    public ResponseEntity<?> hasLiked(
+        @PathVariable("movieId") final UUID movieId,
+        @PathVariable("account") final String account) {
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        return ResponseEntity.ok(result);
     }
 }

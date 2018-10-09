@@ -279,10 +279,10 @@ public class MovieControllerTest {
     @Test
     public void test_likeMovie_notFound() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
-        final String url = String.format("/movie/like/%s/%s", movieId, user);
+        final String account = "test_account";
+        final String url = String.format("/movie/like/%s/%s", movieId, account);
 
-        doThrow(new MovieNotFoundException()).when(movieService).likeMovie(movieId, user);
+        doThrow(new MovieNotFoundException()).when(movieService).likeMovie(movieId, account);
 
         mockMvc.perform(get(url)).andExpect(status().isNotFound());
     }
@@ -293,10 +293,10 @@ public class MovieControllerTest {
     @Test
     public void test_likeMovie_conflict() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
-        final String url = String.format("/movie/like/%s/%s", movieId, user);
+        final String account = "test_account";
+        final String url = String.format("/movie/like/%s/%s", movieId, account);
 
-        doThrow(new MovieConditionalException()).when(movieService).likeMovie(movieId, user);
+        doThrow(new MovieConditionalException()).when(movieService).likeMovie(movieId, account);
 
         mockMvc.perform(get(url)).andExpect(status().isConflict());
     }
@@ -307,12 +307,12 @@ public class MovieControllerTest {
     @Test
     public void test_likeMovie_success() throws Exception {
         final MovieDto movieDto = createMovie();
-        final String user = "test_user";
-        final String url = String.format("/movie/like/%s/%s", movieDto.getId(), user);
+        final String account = "test_account";
+        final String url = String.format("/movie/like/%s/%s", movieDto.getId(), account);
 
         mockMvc.perform(get(url)).andExpect(status().isOk());
 
-        verify(movieService).likeMovie(movieDto.getId(), user);
+        verify(movieService).likeMovie(movieDto.getId(), account);
     }
 
     /**
@@ -321,10 +321,10 @@ public class MovieControllerTest {
     @Test
     public void test_unlikeMovie_notFound() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
-        final String url = String.format("/movie/unlike/%s/%s", movieId, user);
+        final String account = "test_account";
+        final String url = String.format("/movie/unlike/%s/%s", movieId, account);
 
-        doThrow(new MovieNotFoundException()).when(movieService).unlikeMovie(movieId, user);
+        doThrow(new MovieNotFoundException()).when(movieService).unlikeMovie(movieId, account);
 
         mockMvc.perform(get(url)).andExpect(status().isNotFound());
     }
@@ -335,10 +335,10 @@ public class MovieControllerTest {
     @Test
     public void test_unlikeMovie_conflict() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
-        final String url = String.format("/movie/unlike/%s/%s", movieId, user);
+        final String account = "test_account";
+        final String url = String.format("/movie/unlike/%s/%s", movieId, account);
 
-        doThrow(new MovieConditionalException()).when(movieService).unlikeMovie(movieId, user);
+        doThrow(new MovieConditionalException()).when(movieService).unlikeMovie(movieId, account);
 
         mockMvc.perform(get(url)).andExpect(status().isConflict());
     }
@@ -349,12 +349,44 @@ public class MovieControllerTest {
     @Test
     public void test_unlikeMovie_success() throws Exception {
         final MovieDto movieDto = createMovie();
-        final String user = "test_user";
-        final String url = String.format("/movie/unlike/%s/%s", movieDto.getId(), user);
+        final String account = "test_account";
+        final String url = String.format("/movie/unlike/%s/%s", movieDto.getId(), account);
 
         mockMvc.perform(get(url)).andExpect(status().isOk());
 
-        verify(movieService).unlikeMovie(movieDto.getId(), user);
+        verify(movieService).unlikeMovie(movieDto.getId(), account);
+    }
+
+    /**
+     * Tests the scenario in which the account has liked the movie
+     */
+    @Test
+    public void test_hasLiked_true() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+        final String url = String.format("/movie/hasliked/%s/%s", movieId, account);
+
+        when(movieService.hasLiked(movieId, account)).thenReturn(true);
+
+        mockMvc.perform(get(url))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(true));
+    }
+
+    /**
+     * Tests the scenario in which the account hasn't liked the movie
+     */
+    @Test
+    public void test_hasLiked_false() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+        final String url = String.format("/movie/hasliked/%s/%s", movieId, account);
+
+        when(movieService.hasLiked(movieId, account)).thenReturn(false);
+
+        mockMvc.perform(get(url))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(false));
     }
 
     /**

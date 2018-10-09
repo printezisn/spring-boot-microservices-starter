@@ -79,27 +79,38 @@ public interface MovieService {
      * 
      * @param movieId
      *            The id of the movie to like
-     * @param user
-     *            The user who likes the movie
+     * @param account
+     *            The account that likes the movie
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      * @throws MovieNotFoundException
      *             Exception thrown if the movie is not found
      */
-    void likeMovie(final UUID movieId, final String user) throws MovieConditionalException, MovieNotFoundException;
+    void likeMovie(final UUID movieId, final String account) throws MovieConditionalException, MovieNotFoundException;
+
+    /**
+     * Checks if an account has liked a movie
+     * 
+     * @param movieId
+     *            The id of the movie
+     * @param account
+     *            The account
+     * @return True if the account has liked the movie, otherwise false
+     */
+    boolean hasLiked(final UUID movieId, final String account);
 
     /**
      * Removes a like from a movie
      * 
      * @param movieId
      *            The id of the movie to unlike
-     * @param user
-     *            The user who removes the like from the movie
+     * @param account
+     *            The account that removes the like from the movie
      * @throws MovieConditionalException
      *             Exception thrown in case of conditional update failure
      * @throws MovieNotFoundException
      *             Exception thrown if the movie is not found
      */
-    void unlikeMovie(final UUID movieId, final String user)
+    void unlikeMovie(final UUID movieId, final String account)
         throws MovieConditionalException, MovieNotFoundException;
 }

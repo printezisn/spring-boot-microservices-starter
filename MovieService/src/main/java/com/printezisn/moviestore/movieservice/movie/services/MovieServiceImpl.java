@@ -222,7 +222,7 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public void likeMovie(final UUID movieId, final String user)
+    public void likeMovie(final UUID movieId, final String account)
         throws MovieConditionalException, MovieNotFoundException {
 
         final long affectedDocuments;
@@ -236,8 +236,8 @@ public class MovieServiceImpl implements MovieService {
             final String currentRevision = movie.get().getRevision();
             movie.get().setRevision(UUID.randomUUID().toString());
             movie.get().setUpdated(true);
-            movie.get().getPendingLikes().add(user);
-            movie.get().getPendingUnlikes().remove(user);
+            movie.get().getPendingLikes().add(account);
+            movie.get().getPendingUnlikes().remove(account);
 
             affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
         }
@@ -261,7 +261,7 @@ public class MovieServiceImpl implements MovieService {
      * {@inheritDoc}
      */
     @Override
-    public void unlikeMovie(final UUID movieId, final String user)
+    public void unlikeMovie(final UUID movieId, final String account)
         throws MovieConditionalException, MovieNotFoundException {
 
         final long affectedDocuments;
@@ -275,8 +275,8 @@ public class MovieServiceImpl implements MovieService {
             final String currentRevision = movie.get().getRevision();
             movie.get().setRevision(UUID.randomUUID().toString());
             movie.get().setUpdated(true);
-            movie.get().getPendingLikes().remove(user);
-            movie.get().getPendingUnlikes().add(user);
+            movie.get().getPendingLikes().remove(account);
+            movie.get().getPendingUnlikes().add(account);
 
             affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
         }
@@ -293,6 +293,34 @@ public class MovieServiceImpl implements MovieService {
 
         if (affectedDocuments == 0) {
             throw new MovieConditionalException();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasLiked(final UUID movieId, final String account) {
+        try {
+            final Optional<Movie> movie = movieRepository.findById(movieId.toString());
+            if (!movie.isPresent() || movie.get().isDeleted()) {
+                return false;
+            }
+
+            if (movie.get().getPendingLikes().contains(account)) {
+                return true;
+            }
+            if (movie.get().getPendingUnlikes().contains(account)) {
+                return false;
+            }
+
+            return movieLikeRepository.findById(movieId + "-" + account).isPresent();
+        }
+        catch (final Exception ex) {
+            final String errorMessage = String.format("An error occured while loading movie %s: %s", movieId,
+                ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
         }
     }
 
@@ -324,18 +352,19 @@ public class MovieServiceImpl implements MovieService {
                 }
 
                 // Saves the pending likes
-                movie.getPendingLikes().forEach(user -> {
+                movie.getPendingLikes().forEach(account -> {
                     final MovieLike movieLike = new MovieLike();
-                    movieLike.setId(movie.getId() + "-" + user);
+                    movieLike.setId(movie.getId() + "-" + account);
                     movieLike.setMovieId(movie.getId());
-                    movieLike.setUser(user);
+                    movieLike.setAccount(account);
 
                     movieLikeRepository.save(movieLike);
                 });
                 movie.setPendingLikes(new HashSet<>());
 
                 // Removes the pending unlikes
-                movie.getPendingUnlikes().forEach(user -> movieLikeRepository.deleteById(movie.getId() + "-" + user));
+                movie.getPendingUnlikes()
+                    .forEach(account -> movieLikeRepository.deleteById(movie.getId() + "-" + account));
                 movie.setPendingUnlikes(new HashSet<>());
 
                 // Indexes the movie

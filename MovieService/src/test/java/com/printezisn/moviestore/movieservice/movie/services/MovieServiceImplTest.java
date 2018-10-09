@@ -518,7 +518,7 @@ public class MovieServiceImplTest {
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
 
-        movieService.likeMovie(movieId, "test_user");
+        movieService.likeMovie(movieId, "test_account");
     }
 
     /**
@@ -532,7 +532,7 @@ public class MovieServiceImplTest {
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
 
-        movieService.likeMovie(movieId, "test_user");
+        movieService.likeMovie(movieId, "test_account");
     }
 
     /**
@@ -541,21 +541,21 @@ public class MovieServiceImplTest {
     @Test
     public void test_likeMovie_success() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
+        final String account = "test_account";
 
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
         movie.setRevision(currentRevision);
         movie.setPendingLikes(new HashSet<>());
-        movie.setPendingUnlikes(new HashSet<>(Arrays.asList(user)));
+        movie.setPendingUnlikes(new HashSet<>(Arrays.asList(account)));
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(1L);
 
-        movieService.likeMovie(movieId, user);
+        movieService.likeMovie(movieId, account);
 
         assertEquals(1, movie.getPendingLikes().size());
-        assertTrue(movie.getPendingLikes().contains(user));
+        assertTrue(movie.getPendingLikes().contains(account));
         assertEquals(0, movie.getPendingUnlikes().size());
     }
 
@@ -565,7 +565,7 @@ public class MovieServiceImplTest {
     @Test(expected = MovieConditionalException.class)
     public void test_likeMovie_conditionalException() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
+        final String account = "test_account";
 
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
@@ -578,7 +578,7 @@ public class MovieServiceImplTest {
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieRepository.updateMovie(updatedMovie, currentRevision)).thenReturn(0L);
 
-        movieService.likeMovie(movieId, user);
+        movieService.likeMovie(movieId, account);
     }
 
     /**
@@ -587,7 +587,7 @@ public class MovieServiceImplTest {
     @Test(expected = MoviePersistenceException.class)
     public void test_likeMovie_exception() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
+        final String account = "test_account";
 
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
@@ -596,7 +596,7 @@ public class MovieServiceImplTest {
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieRepository.updateMovie(movie, currentRevision)).thenThrow(new RuntimeException());
 
-        movieService.likeMovie(movieId, user);
+        movieService.likeMovie(movieId, account);
     }
 
     /**
@@ -608,7 +608,7 @@ public class MovieServiceImplTest {
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
 
-        movieService.unlikeMovie(movieId, "test_user");
+        movieService.unlikeMovie(movieId, "test_account");
     }
 
     /**
@@ -622,7 +622,7 @@ public class MovieServiceImplTest {
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
 
-        movieService.unlikeMovie(movieId, "test_user");
+        movieService.unlikeMovie(movieId, "test_account");
     }
 
     /**
@@ -631,22 +631,22 @@ public class MovieServiceImplTest {
     @Test
     public void test_unlikeMovie_success() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
+        final String account = "test_account";
 
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
         movie.setRevision(currentRevision);
-        movie.setPendingLikes(new HashSet<>(Arrays.asList(user)));
+        movie.setPendingLikes(new HashSet<>(Arrays.asList(account)));
         movie.setPendingUnlikes(new HashSet<>());
 
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(1L);
 
-        movieService.unlikeMovie(movieId, user);
+        movieService.unlikeMovie(movieId, account);
 
         assertEquals(0, movie.getPendingLikes().size());
         assertEquals(1, movie.getPendingUnlikes().size());
-        assertTrue(movie.getPendingUnlikes().contains(user));
+        assertTrue(movie.getPendingUnlikes().contains(account));
     }
 
     /**
@@ -656,7 +656,7 @@ public class MovieServiceImplTest {
     @Test(expected = MovieConditionalException.class)
     public void test_unlikeMovie_conditionalException() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
+        final String account = "test_account";
 
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
@@ -667,7 +667,7 @@ public class MovieServiceImplTest {
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieRepository.updateMovie(movie, currentRevision)).thenReturn(0L);
 
-        movieService.unlikeMovie(movieId, user);
+        movieService.unlikeMovie(movieId, account);
     }
 
     /**
@@ -676,7 +676,7 @@ public class MovieServiceImplTest {
     @Test(expected = MoviePersistenceException.class)
     public void test_unlikeMovie_exception() throws Exception {
         final UUID movieId = UUID.randomUUID();
-        final String user = "test_user";
+        final String account = "test_account";
 
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
@@ -685,7 +685,7 @@ public class MovieServiceImplTest {
         when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieRepository.updateMovie(movie, currentRevision)).thenThrow(new RuntimeException());
 
-        movieService.unlikeMovie(movieId, user);
+        movieService.unlikeMovie(movieId, account);
     }
 
     /**
@@ -723,7 +723,7 @@ public class MovieServiceImplTest {
         final MovieLike movieLike = new MovieLike();
         movieLike.setId(movie.getId() + "-account1");
         movieLike.setMovieId(movie.getId());
-        movieLike.setUser("account1");
+        movieLike.setAccount("account1");
 
         when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
         when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
@@ -772,5 +772,140 @@ public class MovieServiceImplTest {
         movieService.updateSearchIndex();
 
         verify(movieRepository, never()).deleteById(movie.getId());
+    }
+
+    /**
+     * Tests the scenario in which the movie doesn't exist
+     */
+    @Test
+    public void test_hasLiked_notFound() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the movie is deleted
+     */
+    @Test
+    public void test_hasLiked_deleted() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        final Movie movie = new Movie();
+        movie.setId(movieId.toString());
+        movie.setDeleted(true);
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the account is stored in the pending likes
+     */
+    @Test
+    public void test_hasLiked_inPendingLikes() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        final Movie movie = new Movie();
+        movie.setId(movieId.toString());
+        movie.setPendingLikes(new HashSet<>(Arrays.asList(account)));
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        assertTrue(result);
+    }
+
+    /**
+     * Tests the scenario in which the account is stored in the pending unlikes
+     */
+    @Test
+    public void test_hasLiked_inPendingUnlikes() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        final Movie movie = new Movie();
+        movie.setId(movieId.toString());
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>(Arrays.asList(account)));
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the account has not liked the movie
+     */
+    @Test
+    public void test_hasLiked_notLiked() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        final Movie movie = new Movie();
+        movie.setId(movieId.toString());
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>());
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+        when(movieLikeRepository.findById(movieId + "-" + account)).thenReturn(Optional.empty());
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the account has liked the movie
+     */
+    @Test
+    public void test_hasLiked_liked() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        final Movie movie = new Movie();
+        movie.setId(movieId.toString());
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>());
+
+        final MovieLike movieLike = new MovieLike();
+
+        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
+        when(movieLikeRepository.findById(movieId + "-" + account)).thenReturn(Optional.of(movieLike));
+
+        final boolean result = movieService.hasLiked(movieId, account);
+
+        assertTrue(result);
+    }
+
+    /**
+     * Tests the scenario in which the operations throws an exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_hasLiked_exception() {
+        final UUID movieId = UUID.randomUUID();
+        final String account = "test_account";
+
+        final Movie movie = new Movie();
+        movie.setId(movieId.toString());
+        movie.setPendingLikes(new HashSet<>());
+        movie.setPendingUnlikes(new HashSet<>());
+
+        when(movieRepository.findById(movieId.toString())).thenThrow(new RuntimeException());
+
+        movieService.hasLiked(movieId, account);
     }
 }
