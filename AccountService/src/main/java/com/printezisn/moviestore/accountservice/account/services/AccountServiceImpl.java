@@ -127,7 +127,7 @@ public class AccountServiceImpl implements AccountService {
 
         account.setPasswordSalt(BCrypt.gensalt());
         account.setPassword(BCrypt.hashpw(accountDto.getPassword(), account.getPasswordSalt()));
-        account.setUpdateTimestamp(Instant.now().toString());
+        account.setUpdateTimestamp(Instant.now().toEpochMilli());
 
         try {
             accountRepository.save(account);

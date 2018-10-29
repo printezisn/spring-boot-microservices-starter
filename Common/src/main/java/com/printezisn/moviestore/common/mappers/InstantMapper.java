@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component;
 public class InstantMapper {
 
     /**
-     * Converts an Instant object to string
+     * Converts an Instant object to long
      * 
      * @param instant
      *            The Instant object
-     * @return The converted string
+     * @return The converted long
      */
-    public String toString(final Instant instant) {
-        return (instant != null) ? instant.toString() : null;
+    public long toLong(final Instant instant) {
+        return (instant != null) ? instant.toEpochMilli() : 0;
     }
 
     /**
-     * Converts a string object to Instant
+     * Converts a long object to Instant
      * 
-     * @param str
-     *            The string object
+     * @param epochMilli
+     *            The long object
      * @return The converted Instant
      */
-    public Instant toInstant(final String str) {
-        return (str != null) ? Instant.parse(str) : null;
+    public Instant toInstant(final long epochMilli) {
+        return Instant.ofEpochMilli(epochMilli);
     }
 }

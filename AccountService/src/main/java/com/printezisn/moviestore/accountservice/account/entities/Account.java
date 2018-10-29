@@ -22,7 +22,7 @@ public class Account {
 	
 	private String passwordSalt;
 	
-	private String creationTimestamp;
+	private long creationTimestamp;
 	
-	private String updateTimestamp;
+	private long updateTimestamp;
 }

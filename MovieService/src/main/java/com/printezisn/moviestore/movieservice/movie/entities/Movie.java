@@ -29,9 +29,9 @@ public class Movie {
 
     private int releaseYear;
 
-    private String creationTimestamp;
+    private long creationTimestamp;
 
-    private String updateTimestamp;
+    private long updateTimestamp;
 
     private String creator;
 

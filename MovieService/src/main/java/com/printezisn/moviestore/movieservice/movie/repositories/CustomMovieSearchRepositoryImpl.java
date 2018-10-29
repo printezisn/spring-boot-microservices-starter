@@ -1,5 +1,6 @@
 package com.printezisn.moviestore.movieservice.movie.repositories;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,9 @@ public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchReposit
     private static final String TITLE_FIELD = "title";
     private static final String DESCRIPTION_FIELD = "description";
 
+    @Value("${elasticsearch.indexName}")
+    private final String indexName;
+
     private final ElasticsearchTemplate elasticsearchTemplate;
 
     /**
@@ -44,6 +48,7 @@ public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchReposit
         SearchQuery searchQuery;
         if (text.isPresent()) {
             searchQuery = new NativeSearchQueryBuilder()
+                .withIndices(indexName)
                 .withQuery(multiMatchQuery("*" + text.get() + "*", TITLE_FIELD, DESCRIPTION_FIELD)
                     .type(MultiMatchQueryBuilder.Type.BEST_FIELDS)
                     .operator(Operator.AND)
