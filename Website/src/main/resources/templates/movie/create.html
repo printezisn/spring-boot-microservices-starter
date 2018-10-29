@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+<title th:text="#{page.newMovie}"></title>
+</head>
+<body>
+    <div class="box big-form" layout:fragment="main">
+        <div class="notification is-danger" th:if="${errors.size() > 0}">
+            <button type="button" class="delete"></button>
+            <ul class="error-list">
+                <li th:each="error : ${errors}" th:text="${error}"></li>
+            </ul>
+        </div>
+        <form th:action="@{/movie/new}" th:object="${movie}"
+            method="post" class="validate-form" id="registerForm"
+            name="registerForm">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label required-field" for="title"
+                        th:text="#{label.movie.title}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="text" class="input" id="title"
+                                name="title" th:field="*{title}"
+                                th:attr="required-field=#{message.movie.error.titleRequired}" />
+                            <span class="has-text-danger"
+                                id="title-message" style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label required-field"
+                        for="description"
+                        th:text="#{label.movie.description}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <textarea class="textarea" id="description"
+                                name="description" rows="10"
+                                th:field="*{description}"
+                                th:attr="required-field=#{message.movie.error.descriptionRequired}"></textarea>
+                            <span class="has-text-danger"
+                                id="description-message"
+                                style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label required-field" for="rating"
+                        th:text="#{label.movie.rating}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input type="text" class="input" id="rating"
+                                name="rating" th:field="*{rating}"
+                                th:attr="required-field=#{message.movie.error.ratingRequired}" />
+                            <span class="has-text-danger"
+                                id="rating-message"
+                                style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label required-field"
+                        for="releaseYear"
+                        th:text="#{label.movie.releaseYear}"></label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <div class="select">
+                                <select id="releaseYear"
+                                    name="releaseYear"
+                                    th:field="*{releaseYear}"
+                                    th:attr="required-field=#{message.movie.error.releaseYearRequired}">
+                                    <option th:each="year : ${years}"
+                                        th:value="${year}"
+                                        th:text="${year}"></option>
+                                </select>
+                            </div>
+                            <span class="has-text-danger"
+                                id="releaseYear-message"
+                                style="display: none"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal"></div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit"
+                                class="button is-primary"
+                                th:text="#{label.movie.submit}"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

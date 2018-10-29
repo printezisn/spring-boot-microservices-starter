@@ -12,12 +12,12 @@ let showError = (element, rule) => {
 
     const messageElement = document.getElementById(element.id + '-message');
     switch (rule) {
-    case 'required':
-        messageElement.innerHTML = element.getAttribute('required-field');
-        break;
-    case 'matches':
-        messageElement.innerHTML = element.getAttribute('matches-field-error');
-        break;
+        case 'required':
+            messageElement.innerHTML = element.getAttribute('required-field');
+            break;
+        case 'matches':
+            messageElement.innerHTML = element.getAttribute('matches-field-error');
+            break;
     }
 
     messageElement.style.display = '';
@@ -27,7 +27,7 @@ export let initValidate = () => {
     const forms = Array.prototype.slice.call(document.querySelectorAll('.validate-form'));
     forms.forEach(form => {
         let fields = [];
-        const elements = Array.prototype.slice.call(form.querySelectorAll('.input'));
+        const elements = Array.prototype.slice.call(form.querySelectorAll('.input,.textarea'));
 
         elements.forEach(element => {
             let rules = [];

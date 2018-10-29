@@ -127,7 +127,7 @@ public class AccountController {
      * @param model
      *            The register page model view
      * @return A redirect to the home page if the operation is successful, otherwise
-     *         the register page view
+     *         the change password page view
      */
     @PostMapping("/account/changePassword")
     public String changePassword(
