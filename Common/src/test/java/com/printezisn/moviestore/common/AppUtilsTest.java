@@ -77,8 +77,8 @@ public class AppUtilsTest {
     @Test
     public void test_getModelErrors_fieldErrors() {
         final List<ObjectError> fieldErrors = Arrays.asList(
-            new FieldError("", "field1", "message1"),
-            new FieldError("", "field2", "message2"));
+            new FieldError("", "field1", "test", true, new String[] { "code" }, new Object[0], "message1"),
+            new FieldError("", "field2", "test", true, new String[] { "code" }, new Object[0], "message2"));
 
         when(bindingResult.getAllErrors()).thenReturn(fieldErrors);
         fieldErrors
@@ -97,8 +97,8 @@ public class AppUtilsTest {
     @Test
     public void test_getModelErrors_excludedField() {
         final List<ObjectError> fieldErrors = Arrays.asList(
-            new FieldError("", "field1", "message1"),
-            new FieldError("", "field2", "message2"));
+            new FieldError("", "field1", "test", true, new String[] { "code" }, new Object[0], "message1"),
+            new FieldError("", "field2", "test", true, new String[] { "code" }, new Object[0], "message2"));
 
         when(bindingResult.getAllErrors()).thenReturn(fieldErrors);
         fieldErrors
@@ -109,6 +109,30 @@ public class AppUtilsTest {
 
         assertEquals(1, errors.size());
         assertTrue(errors.contains("message2"));
+    }
+
+    /**
+     * Tests that error messages for type mismatch are returned correctly
+     */
+    @Test
+    public void test_getModelErrors_typeMismatch() {
+        final List<ObjectError> fieldErrors = Arrays.asList(
+            new FieldError("", "field1", "test", true, new String[] { "typeMismatch" }, new Object[0], "message1"),
+            new FieldError("", "field2", "test", true, new String[] { "typeMismatch" }, new Object[0], "message2"));
+
+        when(bindingResult.getAllErrors()).thenReturn(fieldErrors);
+        fieldErrors.forEach(error -> {
+            final FieldError fieldError = (FieldError) error;
+            final String messageKey = "message.error.typeMismatch." + fieldError.getField();
+
+            when(messageSource.getMessage(messageKey, null, Locale.ENGLISH)).thenReturn(messageKey);
+        });
+
+        final List<String> errors = appUtils.getModelErrors(bindingResult);
+
+        assertEquals(2, errors.size());
+        assertTrue(errors.contains("message.error.typeMismatch.field1"));
+        assertTrue(errors.contains("message.error.typeMismatch.field2"));
     }
 
     /**

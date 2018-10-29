@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
@@ -30,6 +31,22 @@ public class AppUtils {
     private final MessageSource messageSource;
 
     /**
+     * Returns a localized message with a fallback
+     * 
+     * @param messageKey
+     *            The key identifier of the message
+     * @return The localized message or its fallback if it doesn't exist
+     */
+    private String getMessageWithDefault(final String messageKey) {
+        try {
+            return messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale());
+        }
+        catch (final NoSuchMessageException ex) {
+            return messageKey;
+        }
+    }
+
+    /**
      * Returns a list of errors from the binding result
      * 
      * @param bindingResult
@@ -52,7 +69,16 @@ public class AppUtils {
 
                 return !excludedFieldsList.contains(fieldError.getField());
             })
-            .map(error -> messageSource.getMessage(error.getDefaultMessage(), null, LocaleContextHolder.getLocale()))
+            .map(error -> {
+                final FieldError fieldError = (FieldError) error;
+                switch (fieldError.getCode()) {
+                    case "typeMismatch":
+                        return "message.error.typeMismatch." + fieldError.getField();
+                    default:
+                        return fieldError.getDefaultMessage();
+                }
+            })
+            .map(this::getMessageWithDefault)
             .collect(Collectors.toList());
     }
 
