@@ -58,6 +58,7 @@ public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchReposit
         }
         else {
             searchQuery = new NativeSearchQueryBuilder()
+                .withIndices(indexName)
                 .withQuery(matchAllQuery())
                 .withPageable(pageable)
                 .build();
