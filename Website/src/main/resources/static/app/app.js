@@ -1,10 +1,5 @@
 import 'bulma/bulma.sass';
-import 'toastr/toastr.scss';
 import './sass/app.scss';
-
-import toastr from 'toastr';
-
-import { initValidate } from './js/validate';
 
 const initNavbar = () => {
     const burgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'));
@@ -36,27 +31,35 @@ const initToastrNotifications = () => {
     toastrNotifications.forEach(toastrNotification => {
         const title = toastrNotification.getAttribute("notification-title");
         const message = toastrNotification.innerHTML;
-
-        switch (toastrNotification.getAttribute('notification-type')) {
-            case "success":
-                toastr.success(message, title);
-                break;
-            case "warning":
-                toastr.warning(message, title);
-                break;
-            case "error":
-                toastr.error(message, title);
-                break;
-            default:
-                toastr.info(message, title);
-                break;
-        }
+        const type = toastrNotification.getAttribute('notification-type');
+        
+        import(/* webpackChunkName: 'toastr' */ './js/toastr.js').then(({ showToastrNotification }) => {
+            showToastrNotification(type, title, message);
+        });
     });
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+const initFormValidate = () => {
+    const forms = Array.prototype.slice.call(document.querySelectorAll('.validate-form'));
+    forms.forEach(form => {
+        import(/* webpackChunkName: 'validate' */ './js/validate').then(({ initValidate }) => {
+            initValidate(form);
+        });
+    });
+};
+
+const init = () => {
     initNavbar();
     initNotifications();
     initToastrNotifications();
-    initValidate();
-});
+    initFormValidate();
+};
+
+if(document.readyState !== 'loading') {
+    init();
+}
+else {
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+    });
+}

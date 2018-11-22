@@ -5,7 +5,6 @@
     Store</title>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<th:block th:replace="assets :: css"></th:block>
 </head>
 <body>
     <nav class="navbar is-dark" role="navigation"
@@ -61,12 +60,12 @@
         th:action="@{/auth/logout}"></form>
 
     <th:block layout:fragment="main"></th:block>
+    
+    <div class="box small-form" style="display: none"></div>
 
     <span th:each="notification : ${notifications}"
         th:attr="notification-title=${notification.title},notification-type=${notification.type.name}"
         th:text="${notification.message}" style="display: none"
         class="toastr-notification"></span>
-
-    <th:block th:replace="assets :: js"></th:block>
 </body>
 </html>

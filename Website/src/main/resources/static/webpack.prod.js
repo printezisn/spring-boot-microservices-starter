@@ -6,6 +6,8 @@ const glob = require('glob-all');
 const webpack = require('webpack');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const Critters = require('critters-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = merge(common, {
     devtool : 'source-map',
@@ -18,6 +20,14 @@ module.exports = merge(common, {
             sourceMap : true,
             extractComments : true,
             parallel : true
+        }),
+        new CompressionPlugin(),
+        new Critters({
+            preload : 'swap',
+            preloadFonts : true,
+            noscriptFallback : false,
+            pruneSource : false,
+            mergeStylesheets: false
         }),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV' : JSON.stringify('production')

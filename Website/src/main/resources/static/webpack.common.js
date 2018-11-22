@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
@@ -7,9 +8,11 @@ const webpack = require('webpack');
 module.exports = {
     cache : true,
     entry : {
+        polyfills : path.resolve(__dirname, 'app/js/polyfills.js'),
         app : path.resolve(__dirname, 'app/app.js')
     },
     output : {
+        publicPath : '/',
         path : path.resolve(__dirname, 'dist/'),
         filename : '[name]-[chunkhash].min.js'
     },
@@ -23,7 +26,8 @@ module.exports = {
                 use : {
                     loader : 'babel-loader',
                     options : {
-                        presets : 'es2015'
+                        presets : [ '@babel/preset-env' ],
+                        plugins : [ '@babel/syntax-dynamic-import' ]
                     }
                 },
                 exclude : [ path.resolve(__dirname, 'node_modules') ]
@@ -62,20 +66,19 @@ module.exports = {
             filename : '[name]-[chunkhash].min.css'
         }),
         new HtmlWebpackPlugin({
-            inject : false,
-            template : '../templates/assets-template.html',
-            filename : '../../templates/assets.html'
+            inject : true,
+            template : '!!html-loader!../templates/layout-template.html',
+            filename : '../../templates/layout.html'
+        }),
+        new ScriptExtHtmlWebpackPlugin({
+            defer : /\.+/,
         }),
         new webpack.HashedModuleIdsPlugin()
     ],
     optimization : {
         splitChunks : {
             cacheGroups : {
-                commons : {
-                    test : /[\\/]node_modules[\\/]/,
-                    name : 'vendor',
-                    chunks : 'all'
-                }
+                vendors : false
             }
         },
         runtimeChunk : {

@@ -5,7 +5,9 @@ bin
 logs
 src/main/resources/static/dist
 src/main/resources/static/node_modules
-src/main/resources/templates/assets.html
+src/main/resources/static/webpack-stats.json
+src/main/resources/templates/layout.html
+src/main/resources/templates/layout.html.gz
 
 ### STS ###
 .apt_generated
