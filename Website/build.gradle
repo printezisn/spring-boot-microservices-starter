@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.2.RELEASE'
+		springBootVersion = '2.1.0.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -11,8 +11,7 @@ buildscript {
 }
 
 plugins {
-	id 'net.ltgt.apt' version '0.10'
-	id 'io.franzbecker.gradle-lombok' version '1.11'
+	id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 apply plugin: 'java'
@@ -22,34 +21,35 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'com.printezisn.moviestore'
 version = '1.0.0'
-sourceCompatibility = 1.8
+sourceCompatibility = 10
 
 repositories {
 	mavenCentral()
 }
 
 lombok {
-	version = '1.16.20' 
+	version = '1.18.4' 
 	sha256 = ''
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-security')
-	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
-	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
-	compile('org.thymeleaf.extras:thymeleaf-extras-springsecurity4')
+	implementation('javax.xml.bind:jaxb-api:2.3.0')
+	implementation('org.springframework.boot:spring-boot-starter-security')
+	implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+	implementation('org.springframework.boot:spring-boot-starter-web')
+	implementation('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
+	implementation('org.thymeleaf.extras:thymeleaf-extras-springsecurity4:3.0.4.RELEASE')
 	
 	compileOnly('org.springframework.boot:spring-boot-configuration-processor')
 	
-	compile project(':Common')
+	implementation project(':Common')
 	
-	apt('org.projectlombok:lombok:1.16.20')
+	annotationProcessor('org.projectlombok:lombok:1.18.4')
 	
-	runtime('org.springframework.boot:spring-boot-devtools')
+	runtimeOnly('org.springframework.boot:spring-boot-devtools')
 	
-	testCompile('org.springframework.boot:spring-boot-starter-test')
-	testCompile('org.springframework.security:spring-security-test')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testImplementation('org.springframework.security:spring-security-test')
 }
 
 test {

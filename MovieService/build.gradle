@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.0.RELEASE'
+		springBootVersion = '2.1.0.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -11,8 +11,7 @@ buildscript {
 }
 
 plugins {
-	id 'net.ltgt.apt' version '0.10'
-	id 'io.franzbecker.gradle-lombok' version '1.11'
+	id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 apply plugin: 'java'
@@ -22,33 +21,32 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'com.printezisn.moviestore'
 version = '1.0.0'
-sourceCompatibility = 1.8
+sourceCompatibility = 10
 
 repositories {
 	mavenCentral()
 }
 
 lombok {
-	version = '1.16.20' 
+	version = '1.18.4' 
 	sha256 = ''
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-data-elasticsearch')
-	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
-	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('org.mapstruct:mapstruct-jdk8:1.2.0.Final')
-	compile('io.springfox:springfox-swagger2:2.8.0')
-	compile('io.springfox:springfox-swagger-ui:2.8.0')
+	implementation('javax.xml.bind:jaxb-api:2.3.0')
+	implementation('org.springframework.boot:spring-boot-starter-data-elasticsearch')
+	implementation('org.springframework.boot:spring-boot-starter-data-mongodb')
+	implementation('org.springframework.boot:spring-boot-starter-web')
+	implementation('org.mapstruct:mapstruct-jdk8:1.2.0.Final')
 	
-	compile project(':Common')
+	implementation project(':Common')
 	
-	apt('org.projectlombok:lombok:1.16.20')
-	apt('org.mapstruct:mapstruct-processor:1.2.0.Final')
+	annotationProcessor('org.projectlombok:lombok:1.18.4')
+	annotationProcessor('org.mapstruct:mapstruct-processor:1.2.0.Final')
 	
-	runtime('org.springframework.boot:spring-boot-devtools')
+	runtimeOnly('org.springframework.boot:spring-boot-devtools')
 	
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 
 test {
