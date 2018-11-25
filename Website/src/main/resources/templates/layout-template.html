@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
 <head>
 <title layout:title-pattern="$CONTENT_TITLE | Movie Store">Movie
     Store</title>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta layout:fragment="meta" th:remove="tag" />
 </head>
 <body>
     <nav class="navbar is-dark" role="navigation"
@@ -61,7 +62,7 @@
 
     <th:block layout:fragment="main"></th:block>
     
-    <div class="box small-form" style="display: none"></div>
+    <div class="box small-form has-text-centered title subtitle" style="display: none"></div>
 
     <span th:each="notification : ${notifications}"
         th:attr="notification-title=${notification.title},notification-type=${notification.type.name}"

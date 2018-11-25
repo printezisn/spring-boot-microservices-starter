@@ -15,12 +15,13 @@
     margin-left: 10px;
 }
 
-.required-field {
+.required-field span {
     padding-right: 5px;
+    display: inline-block;
     position: relative;
 }
 
-.required-field:after {
+.required-field span:after {
     content: '*';
     color: $moviestore-red;
     position: absolute;

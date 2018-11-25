@@ -2,8 +2,14 @@
 <html layout:decorate="~{layout}">
 <head>
 <title th:text="#{page.home}"></title>
+<th:block layout:fragment="meta">
+    <meta name="description" content="The list of movies in Movie Store." />
+</th:block>
 </head>
 <body>
-    <div layout:fragment="main"></div>
+    <th:block layout:fragment="main">
+        <h1 class="title has-text-centered" th:text="#{page.home.title}"></h1>
+        <h2 class="subtitle has-text-centered" th:text="#{page.home.subtitle}"></h2>
+    </th:block>
 </body>
 </html>
