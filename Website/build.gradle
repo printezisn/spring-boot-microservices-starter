@@ -38,7 +38,7 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
 	implementation('org.springframework.boot:spring-boot-starter-web')
 	implementation('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
-	implementation('org.thymeleaf.extras:thymeleaf-extras-springsecurity4:3.0.4.RELEASE')
+	implementation('org.thymeleaf.extras:thymeleaf-extras-springsecurity5')
 	
 	compileOnly('org.springframework.boot:spring-boot-configuration-processor')
 	
