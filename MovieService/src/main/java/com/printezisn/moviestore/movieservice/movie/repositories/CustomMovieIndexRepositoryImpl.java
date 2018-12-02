@@ -9,7 +9,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
+import com.printezisn.moviestore.movieservice.movie.entities.MovieIndex;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,11 +26,11 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.search.SearchHit;
 
 /**
- * Implementation of the interface with extra repository methods for searching
+ * Implementation of the interface with extra repository methods for indexing
  * movies
  */
 @RequiredArgsConstructor
-public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchRepository {
+public class CustomMovieIndexRepositoryImpl implements CustomMovieIndexRepository {
 
     private static final String TITLE_FIELD = "title";
     private static final String DESCRIPTION_FIELD = "description";
@@ -44,8 +44,9 @@ public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchReposit
      * {@inheritDoc}
      */
     @Override
-    public Page<SearchedMovie> search(final Optional<String> text, final Pageable pageable) {
-        SearchQuery searchQuery;
+    public Page<MovieIndex> search(final Optional<String> text, final Pageable pageable) {
+        final SearchQuery searchQuery;
+
         if (text.isPresent()) {
             searchQuery = new NativeSearchQueryBuilder()
                 .withIndices(indexName)
@@ -64,21 +65,21 @@ public class CustomMovieSearchRepositoryImpl implements CustomMovieSearchReposit
                 .build();
         }
 
-        elasticsearchTemplate.putMapping(SearchedMovie.class);
+        elasticsearchTemplate.putMapping(MovieIndex.class);
 
         return elasticsearchTemplate.query(searchQuery, searchResponse -> {
             try {
                 final ObjectMapper objectMapper = new ObjectMapper();
                 final long totalHits = searchResponse.getHits().getTotalHits();
 
-                final List<SearchedMovie> results = new LinkedList<>();
-                for (SearchHit hit : searchResponse.getHits().getHits()) {
-                    final SearchedMovie searchMovie = objectMapper.readValue(hit.getSourceAsString(),
-                        SearchedMovie.class);
+                final List<MovieIndex> results = new LinkedList<>();
+                for (final SearchHit hit : searchResponse.getHits().getHits()) {
+                    final MovieIndex searchMovie = objectMapper.readValue(hit.getSourceAsString(),
+                        MovieIndex.class);
                     results.add(searchMovie);
                 }
 
-                return new PageImpl<SearchedMovie>(results, pageable, totalHits);
+                return new PageImpl<MovieIndex>(results, pageable, totalHits);
             }
             catch (final Exception ex) {
                 throw new RuntimeException(ex);

@@ -2,7 +2,6 @@ package com.printezisn.moviestore.movieservice.movie.services;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -19,15 +18,15 @@ import org.springframework.stereotype.Service;
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
-import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
-import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
+import com.printezisn.moviestore.movieservice.movie.entities.MovieIndex;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;
+import com.printezisn.moviestore.movieservice.movie.helpers.MovieIndexHelper;
 import com.printezisn.moviestore.movieservice.movie.mappers.MovieMapper;
 import com.printezisn.moviestore.movieservice.movie.repositories.MovieLikeRepository;
 import com.printezisn.moviestore.movieservice.movie.repositories.MovieRepository;
-import com.printezisn.moviestore.movieservice.movie.repositories.MovieSearchRepository;
+import com.printezisn.moviestore.movieservice.movie.repositories.MovieIndexRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +44,8 @@ public class MovieServiceImpl implements MovieService {
 
     private final MovieRepository movieRepository;
     private final MovieLikeRepository movieLikeRepository;
-    private final MovieSearchRepository movieSearchRepository;
+    private final MovieIndexRepository movieIndexRepository;
+    private final MovieIndexHelper movieIndexHelper;
     private final MovieMapper movieMapper;
 
     /**
@@ -66,10 +66,10 @@ public class MovieServiceImpl implements MovieService {
                 isAscending ? Direction.ASC : Direction.DESC,
                 requiredSortField);
 
-            final Page<SearchedMovie> page = movieSearchRepository.search(text, pageable);
+            final Page<MovieIndex> page = movieIndexRepository.search(text, pageable);
             final List<MovieDto> results = page.getContent()
                 .stream()
-                .map(searchedMovie -> movieMapper.searchedMovieToMovieDto(searchedMovie))
+                .map(movieMapper::movieIndexToMovieDto)
                 .collect(Collectors.toList());
 
             return MoviePagedResultModel.builder()
@@ -93,9 +93,16 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public MovieDto getMovie(final UUID id) throws MovieNotFoundException {
-        final Optional<Movie> movie;
         try {
-            movie = movieRepository.findById(id.toString());
+            final Movie movie = movieRepository.findById(id.toString()).orElseThrow(() -> new MovieNotFoundException());
+            if (movie.isDeleted()) {
+                throw new MovieNotFoundException();
+            }
+
+            return movieMapper.movieToMovieDto(movie);
+        }
+        catch (final MovieNotFoundException ex) {
+            throw ex;
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while reading movie %s: %s", id,
@@ -104,12 +111,6 @@ public class MovieServiceImpl implements MovieService {
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);
         }
-
-        if (!movie.isPresent() || movie.get().isDeleted()) {
-            throw new MovieNotFoundException();
-        }
-
-        return movieMapper.movieToMovieDto(movie.get());
     }
 
     /**
@@ -139,6 +140,8 @@ public class MovieServiceImpl implements MovieService {
             throw new MoviePersistenceException(errorMessage, ex);
         }
 
+        movieIndexHelper.indexMovie(movie);
+
         return movieDto;
     }
 
@@ -147,11 +150,10 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public MovieDto updateMovie(final MovieDto movieDto) throws MovieNotFoundException, MovieConditionalException {
-        final long affectedDocuments;
-
         try {
-            final Optional<Movie> movie = movieRepository.findById(movieDto.getId().toString());
-            if (!movie.isPresent() || movie.get().isDeleted()) {
+            final Movie movie = movieRepository.findById(movieDto.getId().toString())
+                .orElseThrow(() -> new MovieNotFoundException());
+            if (movie.isDeleted()) {
                 throw new MovieNotFoundException();
             }
 
@@ -160,13 +162,18 @@ public class MovieServiceImpl implements MovieService {
             final Movie updatedMovie = movieMapper.movieDtoToMovie(movieDto);
             updatedMovie.setRevision(UUID.randomUUID().toString());
             updatedMovie.setUpdated(true);
-            updatedMovie.setDeleted(movie.get().isDeleted());
-            updatedMovie.setPendingLikes(movie.get().getPendingLikes());
-            updatedMovie.setPendingUnlikes(movie.get().getPendingUnlikes());
+            updatedMovie.setDeleted(movie.isDeleted());
+            updatedMovie.setPendingLikes(movie.getPendingLikes());
+            updatedMovie.setPendingUnlikes(movie.getPendingUnlikes());
 
-            affectedDocuments = movieRepository.updateMovie(updatedMovie, movie.get().getRevision());
+            final long affectedDocuments = movieRepository.updateMovie(updatedMovie, movie.getRevision());
+            if (affectedDocuments == 0) {
+                throw new MovieConditionalException();
+            }
+
+            movieIndexHelper.indexMovie(movie);
         }
-        catch (final MovieNotFoundException ex) {
+        catch (final MovieNotFoundException | MovieConditionalException ex) {
             throw ex;
         }
         catch (final Exception ex) {
@@ -177,10 +184,6 @@ public class MovieServiceImpl implements MovieService {
             throw new MoviePersistenceException(errorMessage, ex);
         }
 
-        if (affectedDocuments == 0) {
-            throw new MovieConditionalException();
-        }
-
         return movieDto;
     }
 
@@ -189,8 +192,6 @@ public class MovieServiceImpl implements MovieService {
      */
     @Override
     public void deleteMovie(final UUID id) throws MovieConditionalException {
-        final long affectedDocuments;
-
         try {
             final Optional<Movie> movie = movieRepository.findById(id.toString());
             if (!movie.isPresent() || movie.get().isDeleted()) {
@@ -203,7 +204,15 @@ public class MovieServiceImpl implements MovieService {
             movie.get().setUpdated(true);
             movie.get().setDeleted(true);
 
-            affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
+            final long affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
+            if (affectedDocuments == 0) {
+                throw new MovieConditionalException();
+            }
+
+            movieIndexHelper.indexMovie(movie.get());
+        }
+        catch (final MovieConditionalException ex) {
+            throw ex;
         }
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while deleting movie %s: %s", id,
@@ -211,10 +220,6 @@ public class MovieServiceImpl implements MovieService {
 
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);
-        }
-
-        if (affectedDocuments == 0) {
-            throw new MovieConditionalException();
         }
     }
 
@@ -225,23 +230,27 @@ public class MovieServiceImpl implements MovieService {
     public void likeMovie(final UUID movieId, final String account)
         throws MovieConditionalException, MovieNotFoundException {
 
-        final long affectedDocuments;
-
         try {
-            final Optional<Movie> movie = movieRepository.findById(movieId.toString());
-            if (!movie.isPresent() || movie.get().isDeleted()) {
+            final Movie movie = movieRepository.findById(movieId.toString())
+                .orElseThrow(() -> new MovieNotFoundException());
+            if (movie.isDeleted()) {
                 throw new MovieNotFoundException();
             }
 
-            final String currentRevision = movie.get().getRevision();
-            movie.get().setRevision(UUID.randomUUID().toString());
-            movie.get().setUpdated(true);
-            movie.get().getPendingLikes().add(account);
-            movie.get().getPendingUnlikes().remove(account);
+            final String currentRevision = movie.getRevision();
+            movie.setRevision(UUID.randomUUID().toString());
+            movie.setUpdated(true);
+            movie.getPendingLikes().add(account);
+            movie.getPendingUnlikes().remove(account);
 
-            affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
+            final long affectedDocuments = movieRepository.updateMovie(movie, currentRevision);
+            if (affectedDocuments == 0) {
+                throw new MovieConditionalException();
+            }
+
+            movieIndexHelper.indexMovie(movie);
         }
-        catch (final MovieNotFoundException ex) {
+        catch (final MovieNotFoundException | MovieConditionalException ex) {
             throw ex;
         }
         catch (final Exception ex) {
@@ -250,10 +259,6 @@ public class MovieServiceImpl implements MovieService {
 
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);
-        }
-
-        if (affectedDocuments == 0) {
-            throw new MovieConditionalException();
         }
     }
 
@@ -264,23 +269,27 @@ public class MovieServiceImpl implements MovieService {
     public void unlikeMovie(final UUID movieId, final String account)
         throws MovieConditionalException, MovieNotFoundException {
 
-        final long affectedDocuments;
-
         try {
-            final Optional<Movie> movie = movieRepository.findById(movieId.toString());
-            if (!movie.isPresent() || movie.get().isDeleted()) {
+            final Movie movie = movieRepository.findById(movieId.toString())
+                .orElseThrow(() -> new MovieNotFoundException());
+            if (movie.isDeleted()) {
                 throw new MovieNotFoundException();
             }
 
-            final String currentRevision = movie.get().getRevision();
-            movie.get().setRevision(UUID.randomUUID().toString());
-            movie.get().setUpdated(true);
-            movie.get().getPendingLikes().remove(account);
-            movie.get().getPendingUnlikes().add(account);
+            final String currentRevision = movie.getRevision();
+            movie.setRevision(UUID.randomUUID().toString());
+            movie.setUpdated(true);
+            movie.getPendingLikes().remove(account);
+            movie.getPendingUnlikes().add(account);
 
-            affectedDocuments = movieRepository.updateMovie(movie.get(), currentRevision);
+            final long affectedDocuments = movieRepository.updateMovie(movie, currentRevision);
+            if (affectedDocuments == 0) {
+                throw new MovieConditionalException();
+            }
+
+            movieIndexHelper.indexMovie(movie);
         }
-        catch (final MovieNotFoundException ex) {
+        catch (final MovieNotFoundException | MovieConditionalException ex) {
             throw ex;
         }
         catch (final Exception ex) {
@@ -290,10 +299,6 @@ public class MovieServiceImpl implements MovieService {
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);
         }
-
-        if (affectedDocuments == 0) {
-            throw new MovieConditionalException();
-        }
     }
 
     /**
@@ -301,22 +306,10 @@ public class MovieServiceImpl implements MovieService {
      */
     public boolean hasLiked(final UUID movieId, final String account) {
         try {
-            final Optional<Movie> movie = movieRepository.findById(movieId.toString());
-            if (!movie.isPresent() || movie.get().isDeleted()) {
-                return false;
-            }
-
-            if (movie.get().getPendingLikes().contains(account)) {
-                return true;
-            }
-            if (movie.get().getPendingUnlikes().contains(account)) {
-                return false;
-            }
-
             return movieLikeRepository.findById(movieId + "-" + account).isPresent();
         }
         catch (final Exception ex) {
-            final String errorMessage = String.format("An error occured while loading movie %s: %s", movieId,
+            final String errorMessage = String.format("An error occured while checking like for movie %s: %s", movieId,
                 ex.getMessage());
 
             log.error(errorMessage, ex);
@@ -329,59 +322,12 @@ public class MovieServiceImpl implements MovieService {
      */
     @Scheduled(fixedRateString = "${searchIndex.fixedRate}")
     public void updateSearchIndex() {
-        final Collection<Movie> movies;
-
         try {
-            // Loads the recently updated movies
-            movies = movieRepository.findByUpdated(true);
+            // Loads the recently updated movies and indexes them
+            movieRepository.findByUpdated(true).forEach(movieIndexHelper::indexMovie);
         }
         catch (final Exception ex) {
             log.error("An error occured while loading movies to index: " + ex.getMessage(), ex);
-            return;
         }
-
-        movies.forEach(movie -> {
-            try {
-                // Deletes the movie if it's indicated as deleted
-                if (movie.isDeleted()) {
-                    movieSearchRepository.deleteById(movie.getId());
-                    movieLikeRepository.deleteByMovieId(movie.getId());
-                    movieRepository.deleteById(movie.getId());
-
-                    return;
-                }
-
-                // Saves the pending likes
-                movie.getPendingLikes().forEach(account -> {
-                    final MovieLike movieLike = new MovieLike();
-                    movieLike.setId(movie.getId() + "-" + account);
-                    movieLike.setMovieId(movie.getId());
-                    movieLike.setAccount(account);
-
-                    movieLikeRepository.save(movieLike);
-                });
-                movie.setPendingLikes(new HashSet<>());
-
-                // Removes the pending unlikes
-                movie.getPendingUnlikes()
-                    .forEach(account -> movieLikeRepository.deleteById(movie.getId() + "-" + account));
-                movie.setPendingUnlikes(new HashSet<>());
-
-                // Indexes the movie
-                final SearchedMovie searchedMovie = movieMapper.movieToSearchedMovie(movie);
-                searchedMovie.setTotalLikes(movieLikeRepository.countByMovieId(movie.getId()));
-                movieSearchRepository.save(searchedMovie);
-
-                // Updates the movie in the database
-                final String currentRevision = movie.getRevision();
-                movie.setRevision(UUID.randomUUID().toString());
-                movie.setUpdated(false);
-                movieRepository.updateMovie(movie, currentRevision);
-            }
-            catch (final Exception ex) {
-                log.error(String.format("An error occured while indexing movie %s: %s", movie.getId(), ex.getMessage()),
-                    ex);
-            }
-        });
     }
 }

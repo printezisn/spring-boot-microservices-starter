@@ -8,7 +8,7 @@ import com.printezisn.moviestore.common.mappers.InstantMapper;
 import com.printezisn.moviestore.common.mappers.UUIDMapper;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
-import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
+import com.printezisn.moviestore.movieservice.movie.entities.MovieIndex;
 
 /**
  * The mapper class for the Movie entity
@@ -45,27 +45,27 @@ public interface MovieMapper {
     Movie movieDtoToMovie(final MovieDto movieDto);
 
     /**
-     * Converts a Movie object to SearchedMovie
+     * Converts a Movie object to MovieIndex
      * 
      * @param movie
      *            The Movie object to convert
-     * @return The converted SearchedMovie object
+     * @return The converted MovieIndex object
      */
     @Mappings({
         @Mapping(target = "totalLikes", ignore = true)
     })
-    SearchedMovie movieToSearchedMovie(final Movie movie);
+    MovieIndex movieToMovieIndex(final Movie movie);
 
     /**
-     * Converts a SearchedMovie object to MovieDto
+     * Converts a MovieIndex object to MovieDto
      * 
-     * @param searchedMovie
-     *            The SearchedMovie object to convert
+     * @param movieIndex
+     *            The MovieIndex object to convert
      * @return The converted MovieDto object
      */
     @Mappings({
         @Mapping(target = "creationTimestamp", ignore = true),
         @Mapping(target = "updateTimestamp", ignore = true)
     })
-    MovieDto searchedMovieToMovieDto(final SearchedMovie searchedMovie);
+    MovieDto movieIndexToMovieDto(final MovieIndex movieIndex);
 }

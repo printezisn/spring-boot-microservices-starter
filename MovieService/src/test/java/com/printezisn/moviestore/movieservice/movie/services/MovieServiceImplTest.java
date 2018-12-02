@@ -19,14 +19,15 @@ import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.movieservice.movie.entities.Movie;
 import com.printezisn.moviestore.movieservice.movie.entities.MovieLike;
-import com.printezisn.moviestore.movieservice.movie.entities.SearchedMovie;
+import com.printezisn.moviestore.movieservice.movie.entities.MovieIndex;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieConditionalException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.movieservice.movie.exceptions.MoviePersistenceException;
+import com.printezisn.moviestore.movieservice.movie.helpers.MovieIndexHelper;
 import com.printezisn.moviestore.movieservice.movie.mappers.MovieMapper;
 import com.printezisn.moviestore.movieservice.movie.repositories.MovieLikeRepository;
 import com.printezisn.moviestore.movieservice.movie.repositories.MovieRepository;
-import com.printezisn.moviestore.movieservice.movie.repositories.MovieSearchRepository;
+import com.printezisn.moviestore.movieservice.movie.repositories.MovieIndexRepository;
 import com.printezisn.moviestore.movieservice.movie.services.MovieServiceImpl;
 
 import static org.junit.Assert.assertEquals;
@@ -39,7 +40,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doThrow;
 
 /**
  * Class that contains unit tests for the MovieServiceImpl class
@@ -61,13 +61,16 @@ public class MovieServiceImplTest {
     private MovieLikeRepository movieLikeRepository;
 
     @Mock
-    private MovieSearchRepository movieSearchRepository;
+    private MovieIndexRepository movieIndexRepository;
+
+    @Mock
+    private MovieIndexHelper movieIndexHelper;
 
     @Mock
     private MovieMapper movieMapper;
 
     @Mock
-    private Page<SearchedMovie> pagedResult;
+    private Page<MovieIndex> pagedResult;
 
     private MovieServiceImpl movieService;
 
@@ -79,7 +82,7 @@ public class MovieServiceImplTest {
         MockitoAnnotations.initMocks(this);
 
         this.movieService = new MovieServiceImpl(movieRepository, movieLikeRepository,
-            movieSearchRepository, movieMapper);
+            movieIndexRepository, movieIndexHelper, movieMapper);
     }
 
     /**
@@ -88,12 +91,12 @@ public class MovieServiceImplTest {
     @Test
     public void test_searchMovies_success() throws Exception {
         final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
-        final List<SearchedMovie> contentList = Arrays.asList(searchedMovie);
+        final MovieIndex movieIndex = new MovieIndex();
+        final List<MovieIndex> contentList = Arrays.asList(movieIndex);
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        when(movieMapper.searchedMovieToMovieDto(searchedMovie)).thenReturn(movieDto);
-        when(movieSearchRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
+        when(movieMapper.movieIndexToMovieDto(movieIndex)).thenReturn(movieDto);
+        when(movieIndexRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
             .thenReturn(pagedResult);
         when(pagedResult.getContent()).thenReturn(contentList);
         when(pagedResult.getNumber()).thenReturn(PAGE_NUMBER);
@@ -119,12 +122,12 @@ public class MovieServiceImplTest {
     @Test
     public void test_searchMovies_defaultValue() throws Exception {
         final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
-        final List<SearchedMovie> contentList = Arrays.asList(searchedMovie);
+        final MovieIndex movieIndex = new MovieIndex();
+        final List<MovieIndex> contentList = Arrays.asList(movieIndex);
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        when(movieMapper.searchedMovieToMovieDto(searchedMovie)).thenReturn(movieDto);
-        when(movieSearchRepository.search(eq(Optional.empty()), pageableCaptor.capture()))
+        when(movieMapper.movieIndexToMovieDto(movieIndex)).thenReturn(movieDto);
+        when(movieIndexRepository.search(eq(Optional.empty()), pageableCaptor.capture()))
             .thenReturn(pagedResult);
         when(pagedResult.getContent()).thenReturn(contentList);
         when(pagedResult.getNumber()).thenReturn(DEFAULT_PAGE_NUMBER);
@@ -151,12 +154,12 @@ public class MovieServiceImplTest {
     @Test
     public void test_searchMovies_invalidSortField() throws Exception {
         final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
-        final List<SearchedMovie> contentList = Arrays.asList(searchedMovie);
+        final MovieIndex movieIndex = new MovieIndex();
+        final List<MovieIndex> contentList = Arrays.asList(movieIndex);
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        when(movieMapper.searchedMovieToMovieDto(searchedMovie)).thenReturn(movieDto);
-        when(movieSearchRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
+        when(movieMapper.movieIndexToMovieDto(movieIndex)).thenReturn(movieDto);
+        when(movieIndexRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
             .thenReturn(pagedResult);
         when(pagedResult.getContent()).thenReturn(contentList);
         when(pagedResult.getNumber()).thenReturn(PAGE_NUMBER);
@@ -182,12 +185,12 @@ public class MovieServiceImplTest {
     @Test
     public void test_searchMovies_invalidPageNumber() throws Exception {
         final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
-        final List<SearchedMovie> contentList = Arrays.asList(searchedMovie);
+        final MovieIndex movieIndex = new MovieIndex();
+        final List<MovieIndex> contentList = Arrays.asList(movieIndex);
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        when(movieMapper.searchedMovieToMovieDto(searchedMovie)).thenReturn(movieDto);
-        when(movieSearchRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
+        when(movieMapper.movieIndexToMovieDto(movieIndex)).thenReturn(movieDto);
+        when(movieIndexRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
             .thenReturn(pagedResult);
         when(pagedResult.getContent()).thenReturn(contentList);
         when(pagedResult.getNumber()).thenReturn(DEFAULT_PAGE_NUMBER);
@@ -213,11 +216,11 @@ public class MovieServiceImplTest {
     @Test(expected = MoviePersistenceException.class)
     public void test_searchMovies_exception() throws Exception {
         final MovieDto movieDto = new MovieDto();
-        final SearchedMovie searchedMovie = new SearchedMovie();
+        final MovieIndex movieIndex = new MovieIndex();
         final ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        when(movieMapper.searchedMovieToMovieDto(searchedMovie)).thenReturn(movieDto);
-        when(movieSearchRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
+        when(movieMapper.movieIndexToMovieDto(movieIndex)).thenReturn(movieDto);
+        when(movieIndexRepository.search(eq(Optional.of(SEARCH_TEXT)), pageableCaptor.capture()))
             .thenThrow(new RuntimeException());
 
         movieService.searchMovies(Optional.of(SEARCH_TEXT), Optional.of(PAGE_NUMBER), Optional.of(SORT_FIELD),
@@ -291,6 +294,7 @@ public class MovieServiceImplTest {
         final MovieDto result = movieService.createMovie(movieDto);
 
         verify(movieRepository).save(movie);
+        verify(movieIndexHelper).indexMovie(movie);
 
         assertEquals(movieDto, result);
         assertNotNull(result.getCreationTimestamp());
@@ -379,6 +383,8 @@ public class MovieServiceImplTest {
         assertNotNull(updatedMovie.getPendingUnlikes());
         assertEquals(1, updatedMovie.getPendingUnlikes().size());
         assertTrue(updatedMovie.getPendingUnlikes().contains("account2"));
+
+        verify(movieIndexHelper).indexMovie(movie);
     }
 
     /**
@@ -472,6 +478,8 @@ public class MovieServiceImplTest {
 
         assertTrue(movie.isUpdated());
         assertTrue(movie.isDeleted());
+
+        verify(movieIndexHelper).indexMovie(movie);
     }
 
     /**
@@ -557,6 +565,8 @@ public class MovieServiceImplTest {
         assertEquals(1, movie.getPendingLikes().size());
         assertTrue(movie.getPendingLikes().contains(account));
         assertEquals(0, movie.getPendingUnlikes().size());
+
+        verify(movieIndexHelper).indexMovie(movie);
     }
 
     /**
@@ -647,6 +657,8 @@ public class MovieServiceImplTest {
         assertEquals(0, movie.getPendingLikes().size());
         assertEquals(1, movie.getPendingUnlikes().size());
         assertTrue(movie.getPendingUnlikes().contains(account));
+
+        verify(movieIndexHelper).indexMovie(movie);
     }
 
     /**
@@ -689,56 +701,17 @@ public class MovieServiceImplTest {
     }
 
     /**
-     * Tests the scenario in which a movie is deleted
+     * Tests the scenario in which the search index is updated successfully
      */
     @Test
-    public void test_updateSearchIndex_deleteMovie() {
+    public void test_updateSearchIndex_success() {
         final Movie movie = new Movie();
-        movie.setId(UUID.randomUUID().toString());
-        movie.setDeleted(true);
 
         when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
 
         movieService.updateSearchIndex();
 
-        verify(movieRepository).deleteById(movie.getId());
-        verify(movieSearchRepository).deleteById(movie.getId());
-        verify(movieLikeRepository).deleteByMovieId(movie.getId());
-    }
-
-    /**
-     * Tests the scenario in which a movie is updated
-     */
-    @Test
-    public void test_updateSearchIndex_updateMovie() {
-        final String currentRevision = UUID.randomUUID().toString();
-        final Movie movie = new Movie();
-        movie.setId(UUID.randomUUID().toString());
-        movie.setRevision(currentRevision);
-        movie.setPendingLikes(new HashSet<>(Arrays.asList("account1")));
-        movie.setPendingUnlikes(new HashSet<>(Arrays.asList("account2")));
-
-        final SearchedMovie searchedMovie = new SearchedMovie();
-
-        final MovieLike movieLike = new MovieLike();
-        movieLike.setId(movie.getId() + "-account1");
-        movieLike.setMovieId(movie.getId());
-        movieLike.setAccount("account1");
-
-        when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
-        when(movieMapper.movieToSearchedMovie(movie)).thenReturn(searchedMovie);
-        when(movieLikeRepository.countByMovieId(movie.getId())).thenReturn(5L);
-
-        movieService.updateSearchIndex();
-
-        verify(movieLikeRepository).save(movieLike);
-        verify(movieLikeRepository).deleteById(movie.getId() + "-account2");
-        verify(movieSearchRepository).save(searchedMovie);
-        verify(movieRepository).updateMovie(movie, currentRevision);
-
-        assertTrue(movie.getPendingLikes().isEmpty());
-        assertTrue(movie.getPendingUnlikes().isEmpty());
-        assertFalse(movie.isUpdated());
+        verify(movieIndexHelper).indexMovie(movie);
     }
 
     /**
@@ -746,105 +719,9 @@ public class MovieServiceImplTest {
      */
     @Test
     public void test_updateSearchIndex_loadException() {
-        final Movie movie = new Movie();
-        movie.setId(UUID.randomUUID().toString());
-        movie.setDeleted(true);
-
         when(movieRepository.findByUpdated(true)).thenThrow(new RuntimeException());
 
         movieService.updateSearchIndex();
-
-        verify(movieRepository, never()).deleteById(movie.getId());
-    }
-
-    /**
-     * Tests the scenario in which an exception is thrown while processing a movie
-     */
-    @Test
-    public void test_updateSearchIndex_processException() {
-        final Movie movie = new Movie();
-        movie.setId(UUID.randomUUID().toString());
-        movie.setDeleted(true);
-
-        when(movieRepository.findByUpdated(true)).thenReturn(Arrays.asList(movie));
-        doThrow(new RuntimeException()).when(movieLikeRepository).deleteByMovieId(movie.getId());
-
-        movieService.updateSearchIndex();
-
-        verify(movieRepository, never()).deleteById(movie.getId());
-    }
-
-    /**
-     * Tests the scenario in which the movie doesn't exist
-     */
-    @Test
-    public void test_hasLiked_notFound() {
-        final UUID movieId = UUID.randomUUID();
-        final String account = "test_account";
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.empty());
-
-        final boolean result = movieService.hasLiked(movieId, account);
-
-        assertFalse(result);
-    }
-
-    /**
-     * Tests the scenario in which the movie is deleted
-     */
-    @Test
-    public void test_hasLiked_deleted() {
-        final UUID movieId = UUID.randomUUID();
-        final String account = "test_account";
-
-        final Movie movie = new Movie();
-        movie.setId(movieId.toString());
-        movie.setDeleted(true);
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-
-        final boolean result = movieService.hasLiked(movieId, account);
-
-        assertFalse(result);
-    }
-
-    /**
-     * Tests the scenario in which the account is stored in the pending likes
-     */
-    @Test
-    public void test_hasLiked_inPendingLikes() {
-        final UUID movieId = UUID.randomUUID();
-        final String account = "test_account";
-
-        final Movie movie = new Movie();
-        movie.setId(movieId.toString());
-        movie.setPendingLikes(new HashSet<>(Arrays.asList(account)));
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-
-        final boolean result = movieService.hasLiked(movieId, account);
-
-        assertTrue(result);
-    }
-
-    /**
-     * Tests the scenario in which the account is stored in the pending unlikes
-     */
-    @Test
-    public void test_hasLiked_inPendingUnlikes() {
-        final UUID movieId = UUID.randomUUID();
-        final String account = "test_account";
-
-        final Movie movie = new Movie();
-        movie.setId(movieId.toString());
-        movie.setPendingLikes(new HashSet<>());
-        movie.setPendingUnlikes(new HashSet<>(Arrays.asList(account)));
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-
-        final boolean result = movieService.hasLiked(movieId, account);
-
-        assertFalse(result);
     }
 
     /**
@@ -855,12 +732,6 @@ public class MovieServiceImplTest {
         final UUID movieId = UUID.randomUUID();
         final String account = "test_account";
 
-        final Movie movie = new Movie();
-        movie.setId(movieId.toString());
-        movie.setPendingLikes(new HashSet<>());
-        movie.setPendingUnlikes(new HashSet<>());
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
         when(movieLikeRepository.findById(movieId + "-" + account)).thenReturn(Optional.empty());
 
         final boolean result = movieService.hasLiked(movieId, account);
@@ -876,15 +747,7 @@ public class MovieServiceImplTest {
         final UUID movieId = UUID.randomUUID();
         final String account = "test_account";
 
-        final Movie movie = new Movie();
-        movie.setId(movieId.toString());
-        movie.setPendingLikes(new HashSet<>());
-        movie.setPendingUnlikes(new HashSet<>());
-
-        final MovieLike movieLike = new MovieLike();
-
-        when(movieRepository.findById(movieId.toString())).thenReturn(Optional.of(movie));
-        when(movieLikeRepository.findById(movieId + "-" + account)).thenReturn(Optional.of(movieLike));
+        when(movieLikeRepository.findById(movieId + "-" + account)).thenReturn(Optional.of(new MovieLike()));
 
         final boolean result = movieService.hasLiked(movieId, account);
 
@@ -892,19 +755,14 @@ public class MovieServiceImplTest {
     }
 
     /**
-     * Tests the scenario in which the operations throws an exception
+     * Tests the scenario in which the operation throws an exception
      */
     @Test(expected = MoviePersistenceException.class)
     public void test_hasLiked_exception() {
         final UUID movieId = UUID.randomUUID();
         final String account = "test_account";
 
-        final Movie movie = new Movie();
-        movie.setId(movieId.toString());
-        movie.setPendingLikes(new HashSet<>());
-        movie.setPendingUnlikes(new HashSet<>());
-
-        when(movieRepository.findById(movieId.toString())).thenThrow(new RuntimeException());
+        when(movieLikeRepository.findById(movieId + "-" + account)).thenThrow(new RuntimeException());
 
         movieService.hasLiked(movieId, account);
     }

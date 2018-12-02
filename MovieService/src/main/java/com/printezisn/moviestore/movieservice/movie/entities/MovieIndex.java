@@ -8,11 +8,11 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import lombok.Data;
 
 /**
- * Searched movie entity
+ * Movie index entity
  */
 @Document(indexName = "#{@elasticSearchIndexName}", type = "movies")
 @Data
-public class SearchedMovie {
+public class MovieIndex {
 
     @Id
     private String id;
