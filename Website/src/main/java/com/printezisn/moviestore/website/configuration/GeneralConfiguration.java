@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.resource.GzipResourceResolver;
+import org.springframework.web.servlet.resource.EncodedResourceResolver;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
 import com.printezisn.moviestore.website.Constants.PageConstants;
@@ -58,7 +58,7 @@ public class GeneralConfiguration implements WebMvcConfigurer {
             .addResourceLocations("classpath:/static/dist/")
             .setCachePeriod(ASSETS_CACHE_SECONDS)
             .resourceChain(true)
-            .addResolver(new GzipResourceResolver())
+            .addResolver(new EncodedResourceResolver())
             .addResolver(new PathResourceResolver());
     }
 }

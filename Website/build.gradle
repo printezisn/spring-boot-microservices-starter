@@ -21,7 +21,7 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'com.printezisn.moviestore'
 version = '1.0.0'
-sourceCompatibility = 10
+sourceCompatibility = 11
 
 repositories {
 	mavenCentral()

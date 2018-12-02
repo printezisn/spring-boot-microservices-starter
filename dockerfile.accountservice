@@ -1,4 +1,4 @@
-FROM openjdk:10
+FROM openjdk:11
 WORKDIR /usr/src/java-code
 COPY . /usr/src/java-code/
 RUN ./gradlew dependencies
