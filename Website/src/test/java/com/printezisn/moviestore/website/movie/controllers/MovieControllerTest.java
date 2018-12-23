@@ -19,7 +19,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +38,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
 import com.printezisn.moviestore.website.movie.services.MovieService;
 
@@ -93,9 +96,27 @@ public class MovieControllerTest {
      */
     @Test
     public void test_index_success() throws Exception {
-        mockMvc.perform(get("/"))
+        final String url = "/?text=test_text&page=2&sort=rating&asc=true";
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+
+        final MoviePagedResultModel result = MoviePagedResultModel.builder()
+            .entries(List.of(movieDto))
+            .pageNumber(2)
+            .totalPages(5)
+            .sortField("rating")
+            .build();
+
+        when(movieService.searchMovies("test_text", 2, "rating", true)).thenReturn(result);
+
+        mockMvc.perform(get(url))
             .andExpect(status().isOk())
-            .andExpect(view().name("movie/index"));
+            .andExpect(view().name("movie/index"))
+            .andExpect(model().attribute("entries", hasItem(movieDto)))
+            .andExpect(model().attribute("page", result.getPageNumber()))
+            .andExpect(model().attribute("totalPages", result.getTotalPages()))
+            .andExpect(model().attribute("sortField", result.getSortField()));
     }
 
     /**

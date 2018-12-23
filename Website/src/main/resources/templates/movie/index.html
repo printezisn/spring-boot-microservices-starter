@@ -10,6 +10,27 @@
     <th:block layout:fragment="main">
         <h1 class="title has-text-centered" th:text="#{page.home.title}"></h1>
         <h2 class="subtitle has-text-centered" th:text="#{page.home.subtitle}"></h2>
+        
+        <div class="container">
+            <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Release Year</th>
+                        <th>Rating</th>
+                        <th>Total Likes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${entries}">
+                        <td th:text="${entry.title}"></td>
+                        <td th:text="${entry.releaseYear}"></td>
+                        <td th:text="${entry.rating}"></td>
+                        <td th:text="${entry.totalLikes}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </th:block>
 </body>
 </html>

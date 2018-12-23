@@ -47,7 +47,7 @@ public class CustomMovieIndexRepositoryImpl implements CustomMovieIndexRepositor
     public Page<MovieIndex> search(final Optional<String> text, final Pageable pageable) {
         final SearchQuery searchQuery;
 
-        if (text.isPresent()) {
+        if (text.isPresent() && !text.get().isBlank()) {
             searchQuery = new NativeSearchQueryBuilder()
                 .withIndices(indexName)
                 .withQuery(multiMatchQuery("*" + text.get() + "*", TITLE_FIELD, DESCRIPTION_FIELD)

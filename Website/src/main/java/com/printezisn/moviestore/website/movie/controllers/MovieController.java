@@ -15,12 +15,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.common.models.Notification;
 import com.printezisn.moviestore.common.models.Notification.NotificationType;
+import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
 import com.printezisn.moviestore.website.Constants.PageConstants;
 import com.printezisn.moviestore.website.movie.services.MovieService;
@@ -40,13 +42,34 @@ public class MovieController {
     /**
      * Renders the home page
      * 
+     * @param text
+     *            The text used to search movies
+     * @param pageNumber
+     *            The page number of the results to view
+     * @param sortField
+     *            The sorting field for the displayed movies
+     * @param isAscending
+     *            Indicates if the sorting is ascending or descending
      * @param model
      *            The page model
      * @return The home page view
      */
     @GetMapping("/")
-    public String index(final Model model) {
+    public String index(
+        @RequestParam(value = "text", defaultValue = "") final String text,
+        @RequestParam(value = "page", defaultValue = "0") final int pageNumber,
+        @RequestParam(value = "sort", defaultValue = "") final String sortField,
+        @RequestParam(value = "asc", defaultValue = "true") final boolean isAscending,
+        final Model model) {
+
         appUtils.setCurrentPage(model, PageConstants.HOME_PAGE);
+
+        final MoviePagedResultModel result = movieService.searchMovies(text, pageNumber, sortField, isAscending);
+
+        model.addAttribute("entries", result.getEntries());
+        model.addAttribute("page", result.getPageNumber());
+        model.addAttribute("totalPages", result.getTotalPages());
+        model.addAttribute("sortField", result.getSortField());
 
         return "movie/index";
     }
@@ -124,7 +147,7 @@ public class MovieController {
 
         final int currentYear = LocalDate.now().getYear();
         final List<Integer> years = IntStream
-            .range(currentYear - 100, currentYear)
+            .range(currentYear - 100, currentYear + 1)
             .boxed()
             .sorted(Collections.reverseOrder())
             .collect(Collectors.toList());
