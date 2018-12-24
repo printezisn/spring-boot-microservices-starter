@@ -116,7 +116,8 @@ public class MovieControllerTest {
             .andExpect(model().attribute("entries", hasItem(movieDto)))
             .andExpect(model().attribute("page", result.getPageNumber()))
             .andExpect(model().attribute("totalPages", result.getTotalPages()))
-            .andExpect(model().attribute("sortField", result.getSortField()));
+            .andExpect(model().attribute("sortField", result.getSortField()))
+            .andExpect(model().attribute("isAscending", result.isAscending()));
     }
 
     /**

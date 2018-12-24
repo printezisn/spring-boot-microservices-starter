@@ -59,7 +59,7 @@ public class MovieController {
         @RequestParam(value = "text", defaultValue = "") final String text,
         @RequestParam(value = "page", defaultValue = "0") final int pageNumber,
         @RequestParam(value = "sort", defaultValue = "") final String sortField,
-        @RequestParam(value = "asc", defaultValue = "true") final boolean isAscending,
+        @RequestParam(value = "asc", defaultValue = "false") final boolean isAscending,
         final Model model) {
 
         appUtils.setCurrentPage(model, PageConstants.HOME_PAGE);
@@ -67,9 +67,11 @@ public class MovieController {
         final MoviePagedResultModel result = movieService.searchMovies(text, pageNumber, sortField, isAscending);
 
         model.addAttribute("entries", result.getEntries());
+        model.addAttribute("text", text);
         model.addAttribute("page", result.getPageNumber());
         model.addAttribute("totalPages", result.getTotalPages());
         model.addAttribute("sortField", result.getSortField());
+        model.addAttribute("isAscending", result.isAscending());
 
         return "movie/index";
     }

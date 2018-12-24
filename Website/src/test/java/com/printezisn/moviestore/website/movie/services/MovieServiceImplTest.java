@@ -28,7 +28,7 @@ import com.printezisn.moviestore.website.movie.exceptions.MoviePersistenceExcept
 public class MovieServiceImplTest {
 
     private static final String MOVIE_SERVICE_URL = "http://localhost";
-    private static final String MOVIE_SEARCH_URL = "/movie/search?text=test_text&pageNumber=2&sortField=rating&isAscending=true&lang=en";
+    private static final String MOVIE_SEARCH_URL = "/movie/search?text=test_text&page=2&sort=rating&asc=true&lang=en";
     private static final String MOVIE_CREATE_PATH = "/movie/new?lang=en";
 
     @Mock

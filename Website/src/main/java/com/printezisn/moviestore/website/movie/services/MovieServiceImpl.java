@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MovieServiceImpl implements MovieService {
 
-    private static final String SEARCH_URL = "%s/movie/search?text=%s&pageNumber=%d&sortField=%s&isAscending=%b&lang=%s";
+    private static final String SEARCH_URL = "%s/movie/search?text=%s&page=%d&sort=%s&asc=%b&lang=%s";
     private static final String CREATE_URL = "%s/movie/new?lang=%s";
 
     private final ServiceProperties serviceProperties;

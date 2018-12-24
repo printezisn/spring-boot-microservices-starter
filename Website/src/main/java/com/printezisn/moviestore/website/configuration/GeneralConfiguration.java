@@ -60,5 +60,21 @@ public class GeneralConfiguration implements WebMvcConfigurer {
             .resourceChain(true)
             .addResolver(new EncodedResourceResolver())
             .addResolver(new PathResourceResolver());
+
+        registry
+            .addResourceHandler("/fonts/**")
+            .addResourceLocations("classpath:/static/dist/fonts/")
+            .setCachePeriod(ASSETS_CACHE_SECONDS)
+            .resourceChain(true)
+            .addResolver(new EncodedResourceResolver())
+            .addResolver(new PathResourceResolver());
+
+        registry
+            .addResourceHandler("/img/**")
+            .addResourceLocations("classpath:/static/dist/img/")
+            .setCachePeriod(ASSETS_CACHE_SECONDS)
+            .resourceChain(true)
+            .addResolver(new EncodedResourceResolver())
+            .addResolver(new PathResourceResolver());
     }
 }

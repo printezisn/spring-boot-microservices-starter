@@ -3,33 +3,130 @@
 <head>
 <title th:text="#{page.home}"></title>
 <th:block layout:fragment="meta">
-    <meta name="description" content="The list of movies in Movie Store." />
+    <meta name="description"
+        content="The list of movies in Movie Store." />
 </th:block>
 </head>
 <body>
     <th:block layout:fragment="main">
         <h1 class="title has-text-centered" th:text="#{page.home.title}"></h1>
-        <h2 class="subtitle has-text-centered" th:text="#{page.home.subtitle}"></h2>
-        
+        <h2 class="subtitle has-text-centered"
+            th:text="#{page.home.subtitle}"></h2>
+
         <div class="container">
-            <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+            <form th:action="@{/}" method="get">
+                <div class="columns">
+                    <div class="column is-half-tablet is-full-mobile">
+                        <div class="field">
+                            <p class="control has-icons-left">
+                                <input class="input is-medium"
+                                    type="text" name="text"
+                                    id="searchText" th:value="${text}"
+                                    th:attr="placeholder=#{label.search}" />
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="column is-half-tablet is-full-mobile">
+                        <div class="field">
+                            <div class="control">
+                                <button type="submit"
+                                    class="button is-link is-hidden-mobile is-medium">
+                                    <i class="fas fa-search"></i> &nbsp;
+                                    <th:block th:text="#{label.search}"></th:block>
+                                </button>
+                                <button type="submit"
+                                    class="button is-link is-hidden-tablet is-medium is-fullwidth">
+                                    <i class="fas fa-search"></i> &nbsp;
+                                    <th:block th:text="#{label.search}"></th:block>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br />
+            <table
+                class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
                 <thead>
                     <tr>
-                        <th>Title</th>
-                        <th>Release Year</th>
-                        <th>Rating</th>
-                        <th>Total Likes</th>
+                        <th th:text="#{label.movie.title}"></th>
+                        <th><a
+                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=releaseYear&asc=true'}}"
+                            th:if="${sortField != 'releaseYear' || !isAscending}">
+                                <span
+                                th:text="#{label.movie.releaseYear}"></span>
+                                &nbsp; <i class="fas fa-sort"
+                                th:if="${sortField != 'releaseYear'}"></i>
+                                <i class="fas fa-sort-down"
+                                th:if="${sortField == 'releaseYear'}"></i>
+                        </a> <a
+                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=releaseYear&asc=false'}}"
+                            th:unless="${sortField != 'releaseYear' || !isAscending}">
+                                <span
+                                th:text="#{label.movie.releaseYear}"></span>
+                                &nbsp; <i class="fas fa-sort-up"></i>
+                        </a></th>
+                        <th><a
+                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=rating&asc=true'}}"
+                            th:if="${sortField != 'rating' || !isAscending}">
+                                <span
+                                th:text="#{label.movie.rating.minimal}"></span>
+                                &nbsp; <i class="fas fa-sort"
+                                th:if="${sortField != 'rating'}"></i> <i
+                                class="fas fa-sort-down"
+                                th:if="${sortField == 'rating'}"></i>
+                        </a> <a
+                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=rating&asc=false'}}"
+                            th:unless="${sortField != 'rating' || !isAscending}">
+                                <span
+                                th:text="#{label.movie.rating.minimal}"></span>
+                                &nbsp; <i class="fas fa-sort-up"></i>
+                        </a></th>
+                        <th><a
+                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=totalLikes&asc=true'}}"
+                            th:if="${sortField != 'totalLikes' || !isAscending}">
+                                <span
+                                th:text="#{label.movie.totalLikes}"></span>
+                                &nbsp; <i class="fas fa-sort"
+                                th:if="${sortField != 'totalLikes'}"></i>
+                                <i class="fas fa-sort-down"
+                                th:if="${sortField == 'totalLikes'}"></i>
+                        </a> <a
+                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=totalLikes&asc=false'}}"
+                            th:unless="${sortField != 'totalLikes' || !isAscending}">
+                                <span
+                                th:text="#{label.movie.totalLikes}"></span>
+                                &nbsp; <i class="fas fa-sort-up"></i>
+                        </a></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="entry : ${entries}">
                         <td th:text="${entry.title}"></td>
                         <td th:text="${entry.releaseYear}"></td>
-                        <td th:text="${entry.rating}"></td>
+                        <td th:text="${entry.rating + '/10'}"></td>
                         <td th:text="${entry.totalLikes}"></td>
                     </tr>
                 </tbody>
             </table>
+            <nav class="pagination" role="navigation"
+                aria-label="pagination">
+                <a class="pagination-previous" th:if="${page > 0}"
+                    th:href="@{${'/?text=' + text + '&page=' + (page - 1) + '&sort=' + sortField + '&asc=' + isAscending}}"
+                    th:text="#{label.previous}"></a> <a
+                    class="pagination-previous" th:unless="${page > 0}"
+                    th:text="#{label.previous}" disabled></a> <a
+                    class="pagination-next"
+                    th:if="${page < totalPages - 1}"
+                    th:href="@{${'/?text=' + text + '&page=' + (page + 1) + '&sort=' + sortField + '&asc=' + isAscending}}"
+                    th:text="#{label.next}"></a> <a
+                    class="pagination-next"
+                    th:unless="${page < totalPages - 1}"
+                    th:text="#{label.next}" disabled></a>
+            </nav>
         </div>
     </th:block>
 </body>
