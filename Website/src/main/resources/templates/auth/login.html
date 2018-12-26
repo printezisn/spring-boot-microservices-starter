@@ -22,8 +22,8 @@
                 <div class="field is-horizontal">
                     <div class="field-label is-normal">
                         <label class="label required-field"
-                            for="username"> <span
-                            th:text="#{label.login.username}"></span>
+                            for="username">
+                            <span th:text="#{label.login.username}"></span>
                         </label>
                     </div>
                     <div class="field-body">
@@ -42,8 +42,8 @@
                 <div class="field is-horizontal">
                     <div class="field-label is-normal">
                         <label class="label required-field"
-                            for="password"> <span
-                            th:text="#{label.login.password}"></span>
+                            for="password">
+                            <span th:text="#{label.login.password}"></span>
                         </label>
                     </div>
                     <div class="field-body">
@@ -64,9 +64,11 @@
                     <div class="field-body">
                         <div class="field is-narrow">
                             <div class="control">
-                                <label class="checkbox"> <input
-                                    type="checkbox" id="remember-me"
-                                    name="rememberMe" /> <th:block
+                                <label class="checkbox">
+                                    <input type="checkbox"
+                                        id="remember-me"
+                                        name="rememberMe" />
+                                    <th:block
                                         th:text="#{label.login.rememberMe}"></th:block>
                                 </label>
                             </div>

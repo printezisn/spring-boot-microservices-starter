@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    lang="en">
 <head>
 <title layout:title-pattern="$CONTENT_TITLE | Movie Store">Movie
     Store</title>
@@ -14,24 +15,25 @@
             <a class="navbar-item" th:href="@{/}">Movie Store</a>
             <div role="button" class="navbar-burger" aria-label="menu"
                 aria-expanded="false" data-target="main-menu">
-                <span aria-hidden="true"></span> <span
-                    aria-hidden="true"></span> <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
             </div>
         </div>
         <div class="navbar-menu" id="main-menu">
             <div class="navbar-start">
                 <a class="navbar-item" th:href="@{/}"
                     th:classappend="${currentPage} == ${@pageConstants.HOME_PAGE} ? 'is-active' : ''"
-                    th:text="#{page.home}"></a> <a class="navbar-item"
-                    th:href="@{/auth/login}"
+                    th:text="#{page.home}"></a>
+                <a class="navbar-item" th:href="@{/auth/login}"
                     sec:authorize="!isAuthenticated()"
                     th:classappend="${currentPage} == ${@pageConstants.LOGIN_PAGE} ? 'is-active' : ''"
-                    th:text="#{page.login}"></a> <a class="navbar-item"
-                    th:href="@{/account/register}"
+                    th:text="#{page.login}"></a>
+                <a class="navbar-item" th:href="@{/account/register}"
                     sec:authorize="!isAuthenticated()"
                     th:classappend="${currentPage} == ${@pageConstants.REGISTER_PAGE} ? 'is-active' : ''"
-                    th:text="#{page.register}"></a> <a
-                    class="navbar-item" th:href="@{/movie/new}"
+                    th:text="#{page.register}"></a>
+                <a class="navbar-item" th:href="@{/movie/new}"
                     sec:authorize="isAuthenticated()"
                     th:classappend="${currentPage} == ${@pageConstants.NEW_MOVIE_PAGE} ? 'is-active' : ''"
                     th:text="#{page.newMovie}"></a>
@@ -45,9 +47,7 @@
                             th:href="@{/account/changePassword}"
                             th:classappend="${currentPage} == ${@pageConstants.CHANGE_PASSWORD_PAGE} ? 'is-active' : ''"
                             th:text="#{page.changePassword}"></a>
-                        <a
-                            class="navbar-item"
-                            href="javascript:void(0)"
+                        <a class="navbar-item" href="javascript:void(0)"
                             th:text="#{message.logout}"
                             onclick="document.getElementById('logout-form').submit()"></a>
                     </div>
@@ -61,8 +61,9 @@
         th:action="@{/auth/logout}"></form>
 
     <th:block layout:fragment="main"></th:block>
-    
-    <div class="box small-form has-text-centered title subtitle" style="display: none"></div>
+
+    <div class="box small-form has-text-centered title subtitle"
+        style="display: none"></div>
 
     <span th:each="notification : ${notifications}"
         th:attr="notification-title=${notification.title},notification-type=${notification.type.name}"

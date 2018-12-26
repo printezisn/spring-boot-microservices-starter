@@ -34,12 +34,14 @@
                             <div class="control">
                                 <button type="submit"
                                     class="button is-link is-hidden-mobile is-medium">
-                                    <i class="fas fa-search"></i> &nbsp;
+                                    <i class="fas fa-search"></i>
+                                    &nbsp;
                                     <th:block th:text="#{label.search}"></th:block>
                                 </button>
                                 <button type="submit"
                                     class="button is-link is-hidden-tablet is-medium is-fullwidth">
-                                    <i class="fas fa-search"></i> &nbsp;
+                                    <i class="fas fa-search"></i>
+                                    &nbsp;
                                     <th:block th:text="#{label.search}"></th:block>
                                 </button>
                             </div>
@@ -53,61 +55,78 @@
                 <thead>
                     <tr>
                         <th th:text="#{label.movie.title}"></th>
-                        <th><a
-                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=releaseYear&asc=true'}}"
-                            th:if="${sortField != 'releaseYear' || !isAscending}">
+                        <th>
+                            <a
+                                th:href="@{${'/?text=' + text + '&page=' + page + '&sort=releaseYear&asc=true'}}"
+                                th:if="${sortField != 'releaseYear' || !isAscending}">
                                 <span
-                                th:text="#{label.movie.releaseYear}"></span>
-                                &nbsp; <i class="fas fa-sort"
-                                th:if="${sortField != 'releaseYear'}"></i>
+                                    th:text="#{label.movie.releaseYear}"></span>
+                                &nbsp;
+                                <i class="fas fa-sort"
+                                    th:if="${sortField != 'releaseYear'}"></i>
                                 <i class="fas fa-sort-down"
-                                th:if="${sortField == 'releaseYear'}"></i>
-                        </a> <a
-                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=releaseYear&asc=false'}}"
-                            th:unless="${sortField != 'releaseYear' || !isAscending}">
+                                    th:if="${sortField == 'releaseYear'}"></i>
+                            </a>
+                            <a
+                                th:href="@{${'/?text=' + text + '&page=' + page + '&sort=releaseYear&asc=false'}}"
+                                th:unless="${sortField != 'releaseYear' || !isAscending}">
                                 <span
-                                th:text="#{label.movie.releaseYear}"></span>
-                                &nbsp; <i class="fas fa-sort-up"></i>
-                        </a></th>
-                        <th><a
-                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=rating&asc=true'}}"
-                            th:if="${sortField != 'rating' || !isAscending}">
+                                    th:text="#{label.movie.releaseYear}"></span>
+                                &nbsp;
+                                <i class="fas fa-sort-up"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a
+                                th:href="@{${'/?text=' + text + '&page=' + page + '&sort=rating&asc=true'}}"
+                                th:if="${sortField != 'rating' || !isAscending}">
                                 <span
-                                th:text="#{label.movie.rating.minimal}"></span>
-                                &nbsp; <i class="fas fa-sort"
-                                th:if="${sortField != 'rating'}"></i> <i
-                                class="fas fa-sort-down"
-                                th:if="${sortField == 'rating'}"></i>
-                        </a> <a
-                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=rating&asc=false'}}"
-                            th:unless="${sortField != 'rating' || !isAscending}">
-                                <span
-                                th:text="#{label.movie.rating.minimal}"></span>
-                                &nbsp; <i class="fas fa-sort-up"></i>
-                        </a></th>
-                        <th><a
-                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=totalLikes&asc=true'}}"
-                            th:if="${sortField != 'totalLikes' || !isAscending}">
-                                <span
-                                th:text="#{label.movie.totalLikes}"></span>
-                                &nbsp; <i class="fas fa-sort"
-                                th:if="${sortField != 'totalLikes'}"></i>
+                                    th:text="#{label.movie.rating.minimal}"></span>
+                                &nbsp;
+                                <i class="fas fa-sort"
+                                    th:if="${sortField != 'rating'}"></i>
                                 <i class="fas fa-sort-down"
-                                th:if="${sortField == 'totalLikes'}"></i>
-                        </a> <a
-                            th:href="@{${'/?text=' + text + '&page=' + page + '&sort=totalLikes&asc=false'}}"
-                            th:unless="${sortField != 'totalLikes' || !isAscending}">
+                                    th:if="${sortField == 'rating'}"></i>
+                            </a>
+                            <a
+                                th:href="@{${'/?text=' + text + '&page=' + page + '&sort=rating&asc=false'}}"
+                                th:unless="${sortField != 'rating' || !isAscending}">
                                 <span
-                                th:text="#{label.movie.totalLikes}"></span>
-                                &nbsp; <i class="fas fa-sort-up"></i>
-                        </a></th>
+                                    th:text="#{label.movie.rating.minimal}"></span>
+                                &nbsp;
+                                <i class="fas fa-sort-up"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a
+                                th:href="@{${'/?text=' + text + '&page=' + page + '&sort=totalLikes&asc=true'}}"
+                                th:if="${sortField != 'totalLikes' || !isAscending}">
+                                <span
+                                    th:text="#{label.movie.totalLikes}"></span>
+                                &nbsp;
+                                <i class="fas fa-sort"
+                                    th:if="${sortField != 'totalLikes'}"></i>
+                                <i class="fas fa-sort-down"
+                                    th:if="${sortField == 'totalLikes'}"></i>
+                            </a>
+                            <a
+                                th:href="@{${'/?text=' + text + '&page=' + page + '&sort=totalLikes&asc=false'}}"
+                                th:unless="${sortField != 'totalLikes' || !isAscending}">
+                                <span
+                                    th:text="#{label.movie.totalLikes}"></span>
+                                &nbsp;
+                                <i class="fas fa-sort-up"></i>
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="entry : ${entries}">
-                        <td><a
-                            th:href="@{${'/movie/details/' + entry.id + '?returnUrl=' + currentUrl}}"
-                            th:text="${entry.title}"></a></td>
+                        <td>
+                            <a
+                                th:href="@{${'/movie/details/' + entry.id + '?returnUrl=' + currentUrl}}"
+                                th:text="${entry.title}"></a>
+                        </td>
                         <td th:text="${entry.releaseYear}"></td>
                         <td th:text="${entry.rating + '/10'}"></td>
                         <td th:text="${entry.totalLikes}"></td>
@@ -118,14 +137,14 @@
                 aria-label="pagination">
                 <a class="pagination-previous" th:if="${page > 0}"
                     th:href="@{${'/?text=' + text + '&page=' + (page - 1) + '&sort=' + sortField + '&asc=' + isAscending}}"
-                    th:text="#{label.previous}"></a> <a
-                    class="pagination-previous" th:unless="${page > 0}"
-                    th:text="#{label.previous}" disabled></a> <a
-                    class="pagination-next"
+                    th:text="#{label.previous}"></a>
+                <a class="pagination-previous" th:unless="${page > 0}"
+                    th:text="#{label.previous}" disabled></a>
+                <a class="pagination-next"
                     th:if="${page < totalPages - 1}"
                     th:href="@{${'/?text=' + text + '&page=' + (page + 1) + '&sort=' + sortField + '&asc=' + isAscending}}"
-                    th:text="#{label.next}"></a> <a
-                    class="pagination-next"
+                    th:text="#{label.next}"></a>
+                <a class="pagination-next"
                     th:unless="${page < totalPages - 1}"
                     th:text="#{label.next}" disabled></a>
             </nav>
