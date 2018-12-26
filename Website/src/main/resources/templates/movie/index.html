@@ -105,7 +105,9 @@
                 </thead>
                 <tbody>
                     <tr th:each="entry : ${entries}">
-                        <td th:text="${entry.title}"></td>
+                        <td><a
+                            th:href="@{${'/movie/details/' + entry.id + '?returnUrl=' + currentUrl}}"
+                            th:text="${entry.title}"></a></td>
                         <td th:text="${entry.releaseYear}"></td>
                         <td th:text="${entry.rating + '/10'}"></td>
                         <td th:text="${entry.totalLikes}"></td>

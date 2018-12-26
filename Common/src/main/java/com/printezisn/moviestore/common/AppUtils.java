@@ -1,9 +1,13 @@
 package com.printezisn.moviestore.common;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
@@ -125,6 +129,15 @@ public class AppUtils {
     }
 
     /**
+     * Returns a localized message for unexpected errors
+     * 
+     * @return The localized message
+     */
+    public String getUnexpectedErrorMessage() {
+        return getMessage("message.error.unexpectedError");
+    }
+
+    /**
      * Returns localized messages
      * 
      * @param messageKeys
@@ -146,5 +159,48 @@ public class AppUtils {
      */
     public String getMessage(final String messageKey) {
         return messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale());
+    }
+
+    /**
+     * Checks if a URL is appropriate for a return URL and returns it. If it's not
+     * appropriate, it return a fallback URL
+     * 
+     * @param url
+     *            The URL that is candidate for return URL
+     * @param fallback
+     *            The fallback URL
+     * @return The appropriate return URL
+     */
+    public String getReturnUrl(final String url, final String fallback) {
+        if (url == null || url.isBlank()) {
+            return fallback;
+        }
+
+        try {
+            final URI uri = new URI(url);
+            if (uri.isAbsolute()) {
+                return fallback;
+            }
+
+            return url;
+        }
+        catch (final URISyntaxException ex) {
+            return fallback;
+        }
+    }
+
+    /**
+     * Returns the URL of a request, containing only the path and query string
+     * 
+     * @param request
+     *            The HTTP servlet request
+     * @return The request URL
+     */
+    public String getLocalUrl(final HttpServletRequest request) {
+        if (request.getQueryString() == null || request.getQueryString().isBlank()) {
+            return request.getRequestURI();
+        }
+
+        return request.getRequestURI() + "?" + request.getQueryString();
     }
 }

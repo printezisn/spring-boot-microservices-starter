@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -48,6 +50,9 @@ public class AppUtilsTest {
 
     @Mock
     private RedirectAttributes redirectAttributes;
+
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @Captor
     private ArgumentCaptor<List<Notification>> notificationListCaptor;
@@ -220,5 +225,106 @@ public class AppUtilsTest {
 
         assertEquals(1, result.size());
         assertTrue(result.contains("error message"));
+    }
+
+    /**
+     * Tests that the correct unexpected error message is returned
+     */
+    @Test
+    public void test_getUnexpectedErrorMessage_success() {
+        when(messageSource.getMessage("message.error.unexpectedError", null, Locale.ENGLISH))
+            .thenReturn("error message");
+
+        final String result = appUtils.getUnexpectedErrorMessage();
+
+        assertEquals("error message", result);
+    }
+
+    /**
+     * Tests the scenario in which the input URL is null
+     */
+    @Test
+    public void test_getReturnURL_nullURL() {
+        final String result = appUtils.getReturnUrl(null, "fallback");
+
+        assertEquals("fallback", result);
+    }
+
+    /**
+     * Tests the scenario in which the input URL is blank
+     */
+    @Test
+    public void test_getReturnURL_blankURL() {
+        final String result = appUtils.getReturnUrl(" ", "fallback");
+
+        assertEquals("fallback", result);
+    }
+
+    /**
+     * Tests the scenario in which the input URL is invalid
+     */
+    @Test
+    public void test_getReturnURL_invalidURL() {
+        final String result = appUtils.getReturnUrl("http:////////", "fallback");
+
+        assertEquals("fallback", result);
+    }
+
+    /**
+     * Tests the scenario in which the input URL is absolute
+     */
+    @Test
+    public void test_getReturnURL_absoluteURL() {
+        final String result = appUtils.getReturnUrl("http://www.absolute.com/", "fallback");
+
+        assertEquals("fallback", result);
+    }
+
+    /**
+     * Tests the scenario in which the input URL is relative
+     */
+    @Test
+    public void test_getReturnURL_relativeURL() {
+        final String result = appUtils.getReturnUrl("/movie/name", "fallback");
+
+        assertEquals("/movie/name", result);
+    }
+
+    /**
+     * Tests the scenario in which the query string is null
+     */
+    @Test
+    public void test_getLocalUrl_nullQueryString() {
+        when(httpServletRequest.getRequestURI()).thenReturn("/path");
+
+        final String result = appUtils.getLocalUrl(httpServletRequest);
+
+        assertEquals("/path", result);
+    }
+
+    /**
+     * Tests the scenario in which the query string is blank
+     */
+    @Test
+    public void test_getLocalUrl_blankQueryString() {
+        when(httpServletRequest.getRequestURI()).thenReturn("/path");
+        when(httpServletRequest.getQueryString()).thenReturn("  ");
+
+        final String result = appUtils.getLocalUrl(httpServletRequest);
+
+        assertEquals("/path", result);
+    }
+
+    /**
+     * Tests the scenario in which the request URL contains a query string too
+     */
+    @Test
+    public void test_getLocalUrl_withQueryString() {
+        when(httpServletRequest.getRequestURI()).thenReturn("/path");
+        when(httpServletRequest.getQueryString()).thenReturn("param=true");
+
+        final String result = appUtils.getLocalUrl(httpServletRequest);
+
+        assertEquals("/path?param=true", result);
     }
 }

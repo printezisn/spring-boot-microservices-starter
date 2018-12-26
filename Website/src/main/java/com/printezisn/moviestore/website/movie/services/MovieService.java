@@ -1,8 +1,11 @@
 package com.printezisn.moviestore.website.movie.services;
 
+import java.util.UUID;
+
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
+import com.printezisn.moviestore.website.movie.exceptions.MovieNotFoundException;
 
 /**
  * The interface of the movie service
@@ -33,4 +36,15 @@ public interface MovieService {
      * @return The created movie
      */
     MovieResultModel createMovie(final MovieDto movieDto);
+
+    /**
+     * Fetches a movie
+     * 
+     * @param id
+     *            The id of the movie
+     * @return The movie found
+     * @throws MovieNotFoundException
+     *             Exception thrown when the movie is not found
+     */
+    MovieDto getMovie(final UUID id) throws MovieNotFoundException;
 }

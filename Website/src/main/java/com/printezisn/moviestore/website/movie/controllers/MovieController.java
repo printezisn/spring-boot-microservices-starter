@@ -1,11 +1,15 @@
 package com.printezisn.moviestore.website.movie.controllers;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.security.core.Authentication;
@@ -14,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -25,6 +30,7 @@ import com.printezisn.moviestore.common.models.Notification.NotificationType;
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
 import com.printezisn.moviestore.website.Constants.PageConstants;
+import com.printezisn.moviestore.website.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.website.movie.services.MovieService;
 
 import lombok.RequiredArgsConstructor;
@@ -50,6 +56,8 @@ public class MovieController {
      *            The sorting field for the displayed movies
      * @param isAscending
      *            Indicates if the sorting is ascending or descending
+     * @param httpServletRequest
+     *            The HTTP servlet request
      * @param model
      *            The page model
      * @return The home page view
@@ -60,6 +68,7 @@ public class MovieController {
         @RequestParam(value = "page", defaultValue = "0") final int pageNumber,
         @RequestParam(value = "sort", defaultValue = "") final String sortField,
         @RequestParam(value = "asc", defaultValue = "false") final boolean isAscending,
+        final HttpServletRequest httpServletRequest,
         final Model model) {
 
         appUtils.setCurrentPage(model, PageConstants.HOME_PAGE);
@@ -73,7 +82,52 @@ public class MovieController {
         model.addAttribute("sortField", result.getSortField());
         model.addAttribute("isAscending", result.isAscending());
 
+        final String currentUrl = URLEncoder.encode(appUtils.getLocalUrl(httpServletRequest), StandardCharsets.UTF_8);
+        model.addAttribute("currentUrl", currentUrl);
+
         return "movie/index";
+    }
+
+    /**
+     * Renders the movie details page
+     * 
+     * @param id
+     *            The id of the movie
+     * @param returnUrl
+     *            The URL to return if the user wants to go back
+     * @param redirectAttributes
+     *            The redirect attributes
+     * @param model
+     *            The page model
+     * @return The movie details page
+     */
+    @GetMapping("/movie/details/{id}")
+    public String getMovie(
+        @PathVariable("id") final UUID id,
+        @RequestParam(value = "returnUrl", defaultValue = "") final String returnUrl,
+        final RedirectAttributes redirectAttributes,
+        final Model model) {
+
+        try {
+            final MovieDto result = movieService.getMovie(id);
+
+            model.addAttribute("movie", result);
+            model.addAttribute("returnUrl", appUtils.getReturnUrl(returnUrl, "/"));
+
+            return "movie/details";
+        }
+        catch (final MovieNotFoundException ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getMessage("message.error.movieNotFound")));
+
+            return "redirect:/";
+        }
+        catch (final Exception ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getUnexpectedErrorMessage()));
+
+            return "redirect:/";
+        }
     }
 
     /**

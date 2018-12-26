@@ -19,6 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
+
+import com.printezisn.moviestore.common.dto.movie.MovieDto;
+import com.printezisn.moviestore.common.models.movie.MovieResultModel;
+import com.printezisn.moviestore.website.configuration.properties.ServiceProperties;
 
 /**
  * Contains integration tests for the movie controller
@@ -34,6 +39,13 @@ public class MovieIntegrationTest {
     private static final String TEST_DESCRIPTION = "Test description %s";
     private static final double TEST_RATING = 8;
     private static final int TEST_RELEASE_YEAR = 2000;
+    private static final String TEST_CREATOR = "test_creator";
+
+    @Autowired
+    private ServiceProperties serviceProperties;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,6 +58,18 @@ public class MovieIntegrationTest {
         mockMvc.perform(get("/"))
             .andExpect(status().isOk())
             .andExpect(view().name("movie/index"));
+    }
+
+    /**
+     * Tests if the movie details page is rendered successfully
+     */
+    @Test
+    public void test_getMovie_success() throws Exception {
+        final MovieDto movieDto = createNewMovie();
+
+        mockMvc.perform(get("/movie/details/" + movieDto.getId()))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/details"));
     }
 
     /**
@@ -75,5 +99,38 @@ public class MovieIntegrationTest {
             .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR)))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
+    }
+
+    /**
+     * Creates and returns a new movie
+     * 
+     * @return The created movie
+     */
+    private MovieDto createNewMovie() {
+        final String randomString = UUID.randomUUID().toString();
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setTitle(String.format(TEST_TITLE, randomString));
+        movieDto.setDescription(String.format(TEST_DESCRIPTION, randomString));
+        movieDto.setRating(TEST_RATING);
+        movieDto.setReleaseYear(TEST_RELEASE_YEAR);
+        movieDto.setCreator(TEST_CREATOR);
+
+        final String url = getMovieServiceActionUrl("/movie/new");
+
+        return restTemplate.postForEntity(url, movieDto, MovieResultModel.class)
+            .getBody()
+            .getResult();
+    }
+
+    /**
+     * Returns the URL to a movie service action
+     * 
+     * @param action
+     *            The action
+     * @return The action URL
+     */
+    private String getMovieServiceActionUrl(final String action) {
+        return String.format("%s%s", serviceProperties.getMovieServiceUrl(), action);
     }
 }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+<title th:text="${movie.title}"></title>
+<th:block layout:fragment="meta">
+    <meta name="description"
+        th:attr="content=${'The complete information about the ' + movie.title + ' movie'}" />
+</th:block>
+</head>
+<body>
+    <th:block layout:fragment="main">
+        <h1 class="title has-text-centered"
+            th:text="#{page.movieDetails.title}"></h1>
+        <h2 class="subtitle has-text-centered" th:text="${movie.title}"></h2>
+        <div class="box big-form">
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label" for="title"> <span
+                        th:text="#{label.movie.title} + ':'"></span>
+                    </label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control" th:text="${movie.title}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label" for="description"> <span
+                        th:text="#{label.movie.description} + ':'"></span>
+                    </label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control"
+                            th:text="${movie.description}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label" for="rating"> <span
+                        th:text="#{label.movie.rating} + ':'"></span>
+                    </label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control"
+                            th:text="${movie.rating} + '/10'"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label" for="releaseYear"> <span
+                        th:text="#{label.movie.releaseYear} + ':'"></span>
+                    </label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control"
+                            th:text="${movie.releaseYear}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal"></div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <a th:href="@{${returnUrl}}" class="button"
+                                th:text="#{label.goBack}"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</body>
+</html>

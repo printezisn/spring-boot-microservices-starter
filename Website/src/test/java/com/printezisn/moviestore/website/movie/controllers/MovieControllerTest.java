@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -40,6 +42,7 @@ import com.printezisn.moviestore.common.AppUtils;
 import com.printezisn.moviestore.common.dto.movie.MovieDto;
 import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
+import com.printezisn.moviestore.website.movie.exceptions.MovieNotFoundException;
 import com.printezisn.moviestore.website.movie.services.MovieService;
 
 /**
@@ -118,6 +121,60 @@ public class MovieControllerTest {
             .andExpect(model().attribute("totalPages", result.getTotalPages()))
             .andExpect(model().attribute("sortField", result.getSortField()))
             .andExpect(model().attribute("isAscending", result.isAscending()));
+    }
+
+    /**
+     * Tests if the movie details page is rendered successfully
+     */
+    @Test
+    public void test_getMovie_success() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final MovieDto movieDto = mock(MovieDto.class);
+
+        when(movieService.getMovie(id)).thenReturn(movieDto);
+
+        mockMvc.perform(get("/movie/details/" + id))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/details"))
+            .andExpect(model().attribute("movie", movieDto))
+            .andExpect(model().attribute("returnUrl", "/"));
+    }
+
+    /**
+     * Tests if the correct result is returned when the movie is not found
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_getMovie_notFound() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        when(movieService.getMovie(id)).thenThrow(new MovieNotFoundException());
+
+        mockMvc.perform(get("/movie/details/" + id))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.movieNotFound"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the correct result is returned when the operation throws an
+     * exception
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_getMovie_exception() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        when(movieService.getMovie(id)).thenThrow(new RuntimeException());
+
+        mockMvc.perform(get("/movie/details/" + id))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.unexpectedError"), eq(null), any(Locale.class));
     }
 
     /**
