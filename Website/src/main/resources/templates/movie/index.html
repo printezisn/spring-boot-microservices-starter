@@ -15,37 +15,20 @@
 
         <div class="container">
             <form th:action="@{/}" method="get">
-                <div class="columns">
-                    <div class="column is-half-tablet is-full-mobile">
-                        <div class="field">
-                            <p class="control has-icons-left">
-                                <input class="input is-medium"
-                                    type="text" name="text"
-                                    id="searchText" th:value="${text}"
-                                    th:attr="placeholder=#{label.search}" />
-                                <span class="icon is-small is-left">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="column is-half-tablet is-full-mobile">
-                        <div class="field">
-                            <div class="control">
-                                <button type="submit"
-                                    class="button is-link is-hidden-mobile is-medium">
-                                    <i class="fas fa-search"></i>
-                                    &nbsp;
-                                    <th:block th:text="#{label.search}"></th:block>
-                                </button>
-                                <button type="submit"
-                                    class="button is-link is-hidden-tablet is-medium is-fullwidth">
-                                    <i class="fas fa-search"></i>
-                                    &nbsp;
-                                    <th:block th:text="#{label.search}"></th:block>
-                                </button>
-                            </div>
-                        </div>
+                <div class="field has-addons">
+                    <p class="control has-icons-left is-expanded">
+                        <input class="input is-medium" type="text"
+                            name="text" id="searchText"
+                            th:value="${text}"
+                            th:attr="placeholder=#{label.search}" />
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </p>
+                    <div class="control">
+                        <button type="submit"
+                            class="button is-link is-medium"
+                            th:text="#{label.search}"></button>
                     </div>
                 </div>
             </form>
