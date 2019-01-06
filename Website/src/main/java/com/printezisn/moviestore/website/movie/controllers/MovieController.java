@@ -139,7 +139,7 @@ public class MovieController {
      */
     @GetMapping("/movie/new")
     public String createMovie(final Model model) {
-        return getCreateMoviePage(model, new MovieDto(), Collections.emptyList());
+        return getUpdateMoviePage(model, new MovieDto(), Collections.emptyList(), PageConstants.NEW_MOVIE_PAGE, null);
     }
 
     /**
@@ -166,7 +166,7 @@ public class MovieController {
 
         final List<String> errors = appUtils.getModelErrors(bindingResult, "id", "creator");
         if (!errors.isEmpty()) {
-            return getCreateMoviePage(model, movieDto, errors);
+            return getUpdateMoviePage(model, movieDto, errors, PageConstants.NEW_MOVIE_PAGE, null);
         }
 
         try {
@@ -174,11 +174,12 @@ public class MovieController {
 
             final MovieResultModel result = movieService.createMovie(movieDto);
             if (result.hasErrors()) {
-                return getCreateMoviePage(model, movieDto, result.getErrors());
+                return getUpdateMoviePage(model, movieDto, result.getErrors(), PageConstants.NEW_MOVIE_PAGE, null);
             }
         }
         catch (final Exception ex) {
-            return getCreateMoviePage(model, movieDto, appUtils.getUnexpectedErrorMessageAsList());
+            return getUpdateMoviePage(model, movieDto, appUtils.getUnexpectedErrorMessageAsList(),
+                PageConstants.NEW_MOVIE_PAGE, null);
         }
 
         appUtils.addNotification(redirectAttributes,
@@ -188,7 +189,118 @@ public class MovieController {
     }
 
     /**
-     * Fills model values and returns the create movie page view
+     * Renders the edit movie page
+     * 
+     * @param id
+     *            The id of the movie to edit
+     * @param returnUrl
+     *            The URL to return if the user wants to go back
+     * @param redirectAttributes
+     *            The redirect attributes
+     * @param authentication
+     *            Information about the current user
+     * @param model
+     *            The page model
+     * @return The edit page view
+     */
+    @GetMapping("/movie/edit/{id}")
+    public String editMovie(
+        @PathVariable("id") final UUID id,
+        @RequestParam(value = "returnUrl", defaultValue = "") final String returnUrl,
+        final RedirectAttributes redirectAttributes,
+        final Authentication authentication,
+        final Model model) {
+
+        try {
+            final MovieDto movieDto = movieService.getMovie(id);
+            if (!movieService.isAuthorizedOnMovie(authentication.getName(), movieDto)) {
+                appUtils.addNotification(redirectAttributes,
+                    new Notification(NotificationType.ERROR,
+                        appUtils.getMessage("message.error.movieEdit.notAuthorized")));
+
+                return "redirect:/";
+            }
+
+            return getUpdateMoviePage(model, movieDto, Collections.emptyList(), PageConstants.EDIT_MOVIE_PAGE,
+                returnUrl);
+        }
+        catch (final MovieNotFoundException ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getMessage("message.error.movieNotFound")));
+
+            return "redirect:/";
+        }
+        catch (final Exception ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getUnexpectedErrorMessage()));
+
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * Updates a movie
+     * 
+     * @param request
+     *            Information about the HTTP request
+     * @param redirectAttributes
+     *            The redirect attributes
+     * @param authentication
+     *            Information about the current user
+     * @param movieDto
+     *            The model instance used for the edit movie operation
+     * @param model
+     *            The edit movie page model view
+     * @return A redirect to the home page if the operation is successful, otherwise
+     *         the edit movie page view
+     */
+    @PostMapping("/movie/edit")
+    public String editMovie(
+        final HttpServletRequest request,
+        final RedirectAttributes redirectAttributes,
+        final Authentication authentication,
+        @ModelAttribute @Valid final MovieDto movieDto,
+        final BindingResult bindingResult,
+        final Model model) {
+
+        final String returnUrl = request.getParameter("returnUrl");
+
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "creator");
+        if (!errors.isEmpty()) {
+            return getUpdateMoviePage(model, movieDto, errors, PageConstants.EDIT_MOVIE_PAGE, returnUrl);
+        }
+
+        try {
+            if (!movieService.isAuthorizedOnMovie(authentication.getName(), movieDto.getId())) {
+                return getUpdateMoviePage(model, movieDto,
+                    appUtils.getMessages("message.error.movieEdit.notAuthorized"), PageConstants.EDIT_MOVIE_PAGE,
+                    returnUrl);
+            }
+
+            final MovieResultModel result = movieService.updateMovie(movieDto);
+            if (result.hasErrors()) {
+                return getUpdateMoviePage(model, movieDto, result.getErrors(), PageConstants.EDIT_MOVIE_PAGE,
+                    returnUrl);
+            }
+        }
+        catch (final MovieNotFoundException ex) {
+            return getUpdateMoviePage(model, movieDto, appUtils.getMessages("message.error.movieNotFound"),
+                PageConstants.EDIT_MOVIE_PAGE, returnUrl);
+        }
+        catch (final Exception ex) {
+            return getUpdateMoviePage(model, movieDto, appUtils.getUnexpectedErrorMessageAsList(),
+                PageConstants.EDIT_MOVIE_PAGE, returnUrl);
+        }
+
+        appUtils.addNotification(redirectAttributes,
+            new Notification(NotificationType.SUCCESS, appUtils.getMessage("message.updateMovieSuccess")));
+
+        return String.format("redirect:/movie/details/%s?returnUrl=%s", movieDto.getId(),
+            appUtils.getReturnUrl(returnUrl, "/"));
+    }
+
+    /**
+     * Fills model values and returns the page view to create or edit a movie
      * 
      * @param model
      *            The create movie page view model
@@ -196,10 +308,16 @@ public class MovieController {
      *            The model instance associated with the create movie operation
      * @param errors
      *            The list of errors to display
+     * @param currentPage
+     *            The current page
+     * @param returnUrl
+     *            The URL to return if the user wants to go back
      * @return The create movie page view
      */
-    private String getCreateMoviePage(final Model model, final MovieDto movieDto, final List<String> errors) {
-        appUtils.setCurrentPage(model, PageConstants.NEW_MOVIE_PAGE);
+    private String getUpdateMoviePage(final Model model, final MovieDto movieDto, final List<String> errors,
+        final String currentPage, final String returnUrl) {
+
+        appUtils.setCurrentPage(model, currentPage);
 
         final int currentYear = LocalDate.now().getYear();
         final List<Integer> years = IntStream
@@ -211,7 +329,12 @@ public class MovieController {
         model.addAttribute("movie", movieDto);
         model.addAttribute("errors", errors);
         model.addAttribute("years", years);
+        model.addAttribute("returnUrl", appUtils.getReturnUrl(returnUrl, "/"));
 
-        return "movie/create";
+        if (currentPage.equals(PageConstants.NEW_MOVIE_PAGE)) {
+            return "movie/create";
+        }
+
+        return "movie/edit";
     }
 }

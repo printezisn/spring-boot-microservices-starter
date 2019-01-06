@@ -50,6 +50,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers("/account/changePassword").authenticated()
                 .antMatchers("/movie/new").authenticated()
+                .antMatchers("/movie/edit").authenticated()
+                .antMatchers("/movie/edit/*").authenticated()
+                .antMatchers("/movie/delete").authenticated()
             .and()
             .authorizeRequests()
                 .anyRequest().permitAll();

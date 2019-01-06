@@ -101,6 +101,7 @@
                                 <i class="fas fa-sort-up"></i>
                             </a>
                         </th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,6 +114,15 @@
                         <td th:text="${entry.releaseYear}"></td>
                         <td th:text="${entry.rating + '/10'}"></td>
                         <td th:text="${entry.totalLikes}"></td>
+                        <td>
+                            <a class="button is-small is-link"
+                                th:if="${#authentication.isAuthenticated() && #authentication.getName().equals(entry.creator)}"
+                                th:href="@{${'/movie/edit/' + entry.id + '?returnUrl=' + currentUrl}}">
+                                <i class="fas fa-edit"></i>
+                                &nbsp;
+                                <span th:text="#{label.edit}"></span>
+                            </a>
+                        </td>
                     </tr>
                 </tbody>
             </table>

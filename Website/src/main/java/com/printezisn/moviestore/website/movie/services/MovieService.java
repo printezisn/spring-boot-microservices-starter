@@ -47,4 +47,39 @@ public interface MovieService {
      *             Exception thrown when the movie is not found
      */
     MovieDto getMovie(final UUID id) throws MovieNotFoundException;
+
+    /**
+     * Checks if an account is authorized to update or delete a movie
+     * 
+     * @param account
+     *            The account to check
+     * @param movieId
+     *            The id of the movie to check
+     * @return True if the account is authorized, otherwise false
+     * @throws MovieNotFoundException
+     *             Exception thrown when the movie is not found
+     */
+    boolean isAuthorizedOnMovie(final String account, final UUID movieId) throws MovieNotFoundException;
+
+    /**
+     * Checks if an account is authorized to update or delete a movie
+     * 
+     * @param account
+     *            The account to check
+     * @param movieDto
+     *            The movie to check
+     * @return True if the account is authorized, otherwise false
+     */
+    boolean isAuthorizedOnMovie(final String account, final MovieDto movieDto);
+
+    /**
+     * Updates a movie
+     * 
+     * @param movieDto
+     *            The model of the movie
+     * @return The updated movie
+     * @throws MovieNotFoundException
+     *             Exception thrown when the movie is not found
+     */
+    MovieResultModel updateMovie(final MovieDto movieDto) throws MovieNotFoundException;
 }

@@ -133,11 +133,11 @@ public class MovieControllerTest {
 
         when(movieService.getMovie(id)).thenReturn(movieDto);
 
-        mockMvc.perform(get("/movie/details/" + id))
+        mockMvc.perform(get("/movie/details/" + id + "?returnUrl=/home"))
             .andExpect(status().isOk())
             .andExpect(view().name("movie/details"))
             .andExpect(model().attribute("movie", movieDto))
-            .andExpect(model().attribute("returnUrl", "/"));
+            .andExpect(model().attribute("returnUrl", "/home"));
     }
 
     /**
@@ -325,5 +325,287 @@ public class MovieControllerTest {
             .andExpect(status().is3xxRedirection())
             .andExpect(flash().attribute("notifications", hasItems()))
             .andExpect(redirectedUrl("/"));
+    }
+
+    /**
+     * Tests if the edit movie page is rendered successfully
+     */
+    @Test
+    public void test_editMovie_get_success() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final MovieDto movieDto = mock(MovieDto.class);
+
+        when(movieService.getMovie(movieId)).thenReturn(movieDto);
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto)).thenReturn(true);
+
+        mockMvc.perform(get("/movie/edit/" + movieId + "?returnUrl=/home")
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(model().attribute("movie", movieDto))
+            .andExpect(model().attributeExists("errors", "years"))
+            .andExpect(model().attribute("returnUrl", "/home"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_editMovie_get_notFound() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.getMovie(movieId)).thenThrow(new MovieNotFoundException());
+
+        mockMvc.perform(get("/movie/edit/" + movieId)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(flash().attribute("notifications", hasItems()))
+            .andExpect(redirectedUrl("/"));
+    }
+
+    /**
+     * Tests the scenario in which the account is not authorized to edit the movie
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_editMovie_get_notAuthorizedOnMovie() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final MovieDto movieDto = mock(MovieDto.class);
+
+        when(movieService.getMovie(movieId)).thenReturn(movieDto);
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto)).thenReturn(false);
+
+        mockMvc.perform(get("/movie/edit/" + movieId)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(flash().attribute("notifications", hasItems()))
+            .andExpect(redirectedUrl("/"));
+    }
+
+    /**
+     * Tests the scenario in which the service method throws an exception
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_editMovie_get_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.getMovie(movieId)).thenThrow(new RuntimeException());
+
+        mockMvc.perform(get("/movie/edit/" + movieId)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(flash().attribute("notifications", hasItems()))
+            .andExpect(redirectedUrl("/"));
+    }
+
+    /**
+     * Tests that only authorized user access is allowed
+     */
+    @Test
+    public void test_editMovie_get_unauthorized() throws Exception {
+        mockMvc.perform(get("/movie/edit/" + UUID.randomUUID()))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    /**
+     * Tests that only authorized access is allowed
+     */
+    @Test
+    public void test_editMovie_post_unauthorized() throws Exception {
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf()))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    /**
+     * Tests if the correct view is returned when there is no model set
+     */
+    @Test
+    public void test_editMovie_post_noModel() throws Exception {
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("movie"))
+            .andExpect(model().attribute("errors", hasItem(MESSAGE)))
+            .andExpect(model().attribute("returnUrl", "/"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if validation errors are returned when there there are incorrect fields
+     */
+    @Test
+    public void test_editMovie_post_validationErrors() throws Exception {
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", "test")
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR))
+            .param("returnUrl", "/home"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("movie"))
+            .andExpect(model().attribute("errors", hasItem(MESSAGE)))
+            .andExpect(model().attribute("returnUrl", "/home"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if the correct view is returned when the account is not authorized to
+     * edit the movie
+     */
+    @Test
+    public void test_editMovie_post_nonAuthorizedAccount() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieId)).thenReturn(false);
+
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString())
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", String.valueOf(TEST_RATING))
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR))
+            .param("returnUrl", "/home"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("movie"))
+            .andExpect(model().attribute("errors", hasItem(MESSAGE)))
+            .andExpect(model().attribute("returnUrl", "/home"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if validation errors are returned when the service returns errors
+     */
+    @Test
+    public void test_editMovie_post_serviceErrors() throws Exception {
+        final MovieResultModel result = new MovieResultModel();
+        result.setErrors(Arrays.asList(VALIDATION_ERROR_MESSAGE));
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+        movieDto.setTitle(TEST_TITLE);
+        movieDto.setDescription(TEST_DESCRIPTION);
+        movieDto.setRating(TEST_RATING);
+        movieDto.setReleaseYear(TEST_RELEASE_YEAR);
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto.getId())).thenReturn(true);
+        when(movieService.updateMovie(movieDto)).thenReturn(result);
+
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString())
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", String.valueOf(TEST_RATING))
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR))
+            .param("returnUrl", "/home"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("movie"))
+            .andExpect(model().attribute("errors", hasItem(VALIDATION_ERROR_MESSAGE)))
+            .andExpect(model().attribute("returnUrl", "/home"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if the user is redirected if the movie is not found
+     */
+    @Test
+    public void test_editMovie_post_movieNotFound() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+        movieDto.setTitle(TEST_TITLE);
+        movieDto.setDescription(TEST_DESCRIPTION);
+        movieDto.setRating(TEST_RATING);
+        movieDto.setReleaseYear(TEST_RELEASE_YEAR);
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto.getId())).thenReturn(true);
+        when(movieService.updateMovie(movieDto)).thenThrow(new MovieNotFoundException());
+
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString())
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", String.valueOf(TEST_RATING))
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR))
+            .param("returnUrl", "/home"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("movie"))
+            .andExpect(model().attribute("errors", hasItem(MESSAGE)))
+            .andExpect(model().attribute("returnUrl", "/home"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if the correct errors are returned when the service throws an exception
+     */
+    @Test
+    public void test_editMovie_post_exception() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+        movieDto.setTitle(TEST_TITLE);
+        movieDto.setDescription(TEST_DESCRIPTION);
+        movieDto.setRating(TEST_RATING);
+        movieDto.setReleaseYear(TEST_RELEASE_YEAR);
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto.getId())).thenReturn(true);
+        when(movieService.updateMovie(movieDto)).thenThrow(new RuntimeException());
+
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString())
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", String.valueOf(TEST_RATING))
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR))
+            .param("returnUrl", "/home"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("movie"))
+            .andExpect(model().attribute("errors", hasItem(MESSAGE)))
+            .andExpect(model().attribute("returnUrl", "/home"))
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if the user is redirected when the operation is successful
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_editMovie_post_success() throws Exception {
+        final MovieResultModel result = new MovieResultModel();
+        result.setErrors(Collections.emptyList());
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setId(UUID.randomUUID());
+        movieDto.setTitle(TEST_TITLE);
+        movieDto.setDescription(TEST_DESCRIPTION);
+        movieDto.setRating(TEST_RATING);
+        movieDto.setReleaseYear(TEST_RELEASE_YEAR);
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto.getId())).thenReturn(true);
+        when(movieService.updateMovie(movieDto)).thenReturn(result);
+
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString())
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", String.valueOf(TEST_RATING))
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR))
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(flash().attribute("notifications", hasItems()))
+            .andExpect(redirectedUrl(String.format("/movie/details/%s?returnUrl=/home", movieDto.getId())));
     }
 }

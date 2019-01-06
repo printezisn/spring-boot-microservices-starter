@@ -1,7 +1,12 @@
 package com.printezisn.moviestore.website.movie.services;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Locale;
@@ -32,6 +37,7 @@ public class MovieServiceImplTest {
     private static final String MOVIE_SERVICE_URL = "http://localhost";
     private static final String MOVIE_SEARCH_URL = "/movie/search?text=test_text&page=2&sort=rating&asc=true&lang=en";
     private static final String MOVIE_CREATE_PATH = "/movie/new?lang=en";
+    private static final String MOVIE_UPDATE_PATH = "/movie/update?lang=en";
     private static final String MOVIE_GET_PATH = "/movie/get/%s?lang=en";
 
     @Mock
@@ -58,7 +64,7 @@ public class MovieServiceImplTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        movieService = new MovieServiceImpl(serviceProperties, restTemplate);
+        movieService = spy(new MovieServiceImpl(serviceProperties, restTemplate));
 
         when(serviceProperties.getMovieServiceUrl()).thenReturn(MOVIE_SERVICE_URL);
 
@@ -173,5 +179,144 @@ public class MovieServiceImplTest {
         when(restTemplate.getForEntity(url, MovieDto.class)).thenThrow(new RuntimeException());
 
         movieService.getMovie(id);
+    }
+
+    /**
+     * Tests the scenario in which the movie is updated successfully
+     */
+    @Test
+    public void test_updateMovie_success() throws Exception {
+        final MovieResultModel expectedResult = mock(MovieResultModel.class);
+        final MovieDto movieDto = new MovieDto();
+
+        final String url = MOVIE_SERVICE_URL + MOVIE_UPDATE_PATH;
+
+        when(movieResultModelResponse.getBody()).thenReturn(expectedResult);
+        when(movieResultModelResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.postForEntity(url, movieDto, MovieResultModel.class))
+            .thenReturn(movieResultModelResponse);
+
+        final MovieResultModel result = movieService.updateMovie(movieDto);
+
+        assertEquals(expectedResult, result);
+    }
+
+    /**
+     * Tests the scenario in which the movie update throws a conflict error first
+     */
+    @Test
+    public void test_updateMovie_conflict() throws Exception {
+        final MovieResultModel expectedResult = mock(MovieResultModel.class);
+        final MovieDto movieDto = new MovieDto();
+
+        final String url = MOVIE_SERVICE_URL + MOVIE_UPDATE_PATH;
+
+        when(movieResultModelResponse.getBody()).thenReturn(expectedResult);
+        when(movieResultModelResponse.getStatusCode())
+            .thenReturn(HttpStatus.CONFLICT)
+            .thenReturn(HttpStatus.OK);
+        when(restTemplate.postForEntity(url, movieDto, MovieResultModel.class))
+            .thenReturn(movieResultModelResponse);
+
+        final MovieResultModel result = movieService.updateMovie(movieDto);
+
+        assertEquals(expectedResult, result);
+    }
+
+    /**
+     * Tests the scenario in which the movie update throws an exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_updateMovie_exception() throws Exception {
+        final MovieResultModel expectedResult = mock(MovieResultModel.class);
+        final MovieDto movieDto = new MovieDto();
+
+        final String url = MOVIE_SERVICE_URL + MOVIE_UPDATE_PATH;
+
+        when(movieResultModelResponse.getBody()).thenReturn(expectedResult);
+        when(movieResultModelResponse.getStatusCode()).thenThrow(new RuntimeException());
+        when(restTemplate.postForEntity(url, movieDto, MovieResultModel.class))
+            .thenReturn(movieResultModelResponse);
+
+        movieService.updateMovie(movieDto);
+    }
+
+    /**
+     * Tests the scenario in which the account is authorized on the movie
+     */
+    @Test
+    public void test_isAuthorizedOnMovie_withId_true() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setCreator(account);
+
+        doReturn(movieDto).when(movieService).getMovie(movieId);
+
+        final boolean result = movieService.isAuthorizedOnMovie(account, movieId);
+
+        assertTrue(result);
+    }
+
+    /**
+     * Tests the scenario in which the account is not authorized on the movie
+     */
+    @Test
+    public void test_isAuthorizedOnMovie_withId_false() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setCreator("other_account");
+
+        doReturn(movieDto).when(movieService).getMovie(movieId);
+
+        final boolean result = movieService.isAuthorizedOnMovie(account, movieId);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_isAuthorizedOnMovie_withId_notFound() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        doThrow(new MovieNotFoundException()).when(movieService).getMovie(movieId);
+
+        movieService.isAuthorizedOnMovie(account, movieId);
+    }
+
+    /**
+     * Tests the scenario in which the account is authorized on the movie
+     */
+    @Test
+    public void test_isAuthorizedOnMovie_withEntity_true() throws Exception {
+        final String account = "test_account";
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setCreator(account);
+
+        final boolean result = movieService.isAuthorizedOnMovie(account, movieDto);
+
+        assertTrue(result);
+    }
+
+    /**
+     * Tests the scenario in which the account is not authorized on the movie
+     */
+    @Test
+    public void test_isAuthorizedOnMovie_withEntity_false() throws Exception {
+        final String account = "test_account";
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setCreator("other_account");
+
+        final boolean result = movieService.isAuthorizedOnMovie(account, movieDto);
+
+        assertFalse(result);
     }
 }

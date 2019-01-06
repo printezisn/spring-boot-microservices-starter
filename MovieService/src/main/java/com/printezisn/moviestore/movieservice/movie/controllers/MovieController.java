@@ -119,7 +119,7 @@ public class MovieController {
     public ResponseEntity<?> updateMovie(@Valid @RequestBody final MovieDto movieDto,
         final BindingResult bindingResult) {
 
-        final List<String> errors = appUtils.getModelErrors(bindingResult, "creatorId");
+        final List<String> errors = appUtils.getModelErrors(bindingResult, "creator");
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(
                 MovieResultModel.builder().errors(errors).build());

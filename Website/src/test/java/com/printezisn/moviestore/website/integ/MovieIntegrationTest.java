@@ -39,7 +39,6 @@ public class MovieIntegrationTest {
     private static final String TEST_DESCRIPTION = "Test description %s";
     private static final double TEST_RATING = 8;
     private static final int TEST_RELEASE_YEAR = 2000;
-    private static final String TEST_CREATOR = "test_creator";
 
     @Autowired
     private ServiceProperties serviceProperties;
@@ -102,6 +101,55 @@ public class MovieIntegrationTest {
     }
 
     /**
+     * Tests if the edit movie page is rendered successfully
+     */
+    @Test
+    public void test_editMovie_get_success() throws Exception {
+        final MovieDto movieDto = createNewMovie();
+
+        mockMvc.perform(get("/movie/edit/" + movieDto.getId().toString())
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if the movie is updated successfully
+     */
+    @Test
+    public void test_editMovie_post_success() throws Exception {
+        final MovieDto movieDto = createNewMovie();
+
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString())
+            .param("title", movieDto.getTitle())
+            .param("description", movieDto.getDescription())
+            .param("rating", String.valueOf(movieDto.getRating()))
+            .param("releaseYear", String.valueOf(movieDto.getReleaseYear())))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test
+    public void test_editMovie_post_notFound() throws Exception {
+        mockMvc.perform(post("/movie/edit")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", UUID.randomUUID().toString())
+            .param("title", TEST_TITLE)
+            .param("description", TEST_DESCRIPTION)
+            .param("rating", String.valueOf(TEST_RATING))
+            .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR)))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/edit"));
+    }
+
+    /**
      * Creates and returns a new movie
      * 
      * @return The created movie
@@ -114,7 +162,7 @@ public class MovieIntegrationTest {
         movieDto.setDescription(String.format(TEST_DESCRIPTION, randomString));
         movieDto.setRating(TEST_RATING);
         movieDto.setReleaseYear(TEST_RELEASE_YEAR);
-        movieDto.setCreator(TEST_CREATOR);
+        movieDto.setCreator(TEST_AUTHENTICATED_USER);
 
         final String url = getMovieServiceActionUrl("/movie/new");
 
