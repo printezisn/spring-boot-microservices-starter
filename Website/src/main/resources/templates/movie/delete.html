@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html layout:decorate="~{layout}">
 <head>
-<title th:text="${movie.title}"></title>
+<title th:text="#{page.deleteMovie}"></title>
 <th:block layout:fragment="meta">
-    <meta name="description"
-        th:attr="content=${'The complete information about the ' + movie.title + ' movie'}" />
+    <meta name="description" content="Delete a movie in Movie Store." />
 </th:block>
 </head>
 <body>
     <th:block layout:fragment="main">
         <h1 class="title has-text-centered"
-            th:text="#{page.movieDetails.title}"></h1>
+            th:text="#{page.deleteMovie.title}"></h1>
         <h2 class="subtitle has-text-centered" th:text="${movie.title}"></h2>
         <div class="box big-form">
             <div class="field is-horizontal">
@@ -69,26 +68,24 @@
                 <div class="field-body">
                     <div class="field">
                         <div class="control">
-                            <a th:href="@{${returnUrl}}" class="button">
-                                <i class="fas fa-arrow-left"></i>
+                            <form th:action="@{/movie/delete}"
+                                method="post">
+                                <a th:href="@{${returnUrl}}"
+                                    class="button"
+                                    th:text="#{label.cancel}"></a>
                                 &nbsp;
-                                <span th:text="#{label.goBack}"></span>
-                            </a>
-                            &nbsp;
-                            <a class="button is-link"
-                                th:if="${#authentication.isAuthenticated() && #authentication.getName().equals(movie.creator)}"
-                                th:href="@{${'/movie/edit/' + movie.id + '?returnUrl=' + returnUrl}}">
-                                <i class="fas fa-edit"></i>
-                                &nbsp;
-                                <span th:text="#{label.edit}"></span>
-                            </a>
-                            &nbsp;
-                            <a class="button is-danger"
-                                th:href="@{${'/movie/delete/' + movie.id + '?returnUrl=' + returnUrl}}">
-                                <i class="fas fa-trash-alt"></i>
-                                &nbsp;
-                                <span th:text="#{label.delete}"></span>
-                            </a>
+                                <input type="hidden" name="id"
+                                    th:value="${movie.id}" />
+                                <input type="hidden" name="returnUrl"
+                                    th:value="${returnUrl}" />
+                                <button type="submit"
+                                    class="button is-danger">
+                                    <i class="fas fa-trash-alt"></i>
+                                    &nbsp;
+                                    <span
+                                        th:text="#{label.confirmDelete}"></span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

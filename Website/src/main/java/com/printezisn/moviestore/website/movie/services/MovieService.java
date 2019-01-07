@@ -82,4 +82,12 @@ public interface MovieService {
      *             Exception thrown when the movie is not found
      */
     MovieResultModel updateMovie(final MovieDto movieDto) throws MovieNotFoundException;
+
+    /**
+     * Deletes a movie
+     * 
+     * @param movieId
+     *            The id of the movie
+     */
+    void deleteMovie(final UUID movieId);
 }

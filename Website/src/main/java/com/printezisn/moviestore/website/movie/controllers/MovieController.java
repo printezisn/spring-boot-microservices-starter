@@ -300,6 +300,112 @@ public class MovieController {
     }
 
     /**
+     * Renders the movie delete page
+     * 
+     * @param id
+     *            The id of the movie
+     * @param returnUrl
+     *            The URL to return if the user wants to go back
+     * @param redirectAttributes
+     *            The redirect attributes
+     * @param authentication
+     *            Information about the current user
+     * @param model
+     *            The page model
+     * @return The movie details page
+     */
+    @GetMapping("/movie/delete/{id}")
+    public String deleteMovie(
+        @PathVariable("id") final UUID id,
+        @RequestParam(value = "returnUrl", defaultValue = "") final String returnUrl,
+        final RedirectAttributes redirectAttributes,
+        final Authentication authentication,
+        final Model model) {
+
+        try {
+            final MovieDto result = movieService.getMovie(id);
+            if (!movieService.isAuthorizedOnMovie(authentication.getName(), result)) {
+                appUtils.addNotification(redirectAttributes,
+                    new Notification(NotificationType.ERROR,
+                        appUtils.getMessage("message.error.movieDelete.notAuthorized")));
+
+                return "redirect:/";
+            }
+
+            model.addAttribute("movie", result);
+            model.addAttribute("returnUrl", appUtils.getReturnUrl(returnUrl, "/"));
+
+            return "movie/delete";
+        }
+        catch (final MovieNotFoundException ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getMessage("message.error.movieNotFound")));
+
+            return "redirect:/";
+        }
+        catch (final Exception ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getUnexpectedErrorMessage()));
+
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * Deletes a movie
+     * 
+     * @param redirectAttributes
+     *            The redirect attributes
+     * @param authentication
+     *            Information about the current user
+     * @param id
+     *            The id of the movie
+     * @param returnUrl
+     *            The URL to return if the user wants to go back
+     * @param model
+     *            The delete movie page model view
+     * @return A redirect to the home page if the operation is successful, otherwise
+     *         the edit movie page view
+     */
+    @PostMapping("/movie/delete")
+    public String deleteMovie(
+        final RedirectAttributes redirectAttributes,
+        final Authentication authentication,
+        @RequestParam(value = "id") final UUID id,
+        @RequestParam(value = "returnUrl", defaultValue = "") final String returnUrl,
+        final Model model) {
+
+        try {
+            if (!movieService.isAuthorizedOnMovie(authentication.getName(), id)) {
+                appUtils.addNotification(redirectAttributes,
+                    new Notification(NotificationType.ERROR,
+                        appUtils.getMessage("message.error.movieDelete.notAuthorized")));
+
+                return "redirect:/";
+            }
+
+            movieService.deleteMovie(id);
+        }
+        catch (final MovieNotFoundException ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getMessage("message.error.movieNotFound")));
+
+            return "redirect:/";
+        }
+        catch (final Exception ex) {
+            appUtils.addNotification(redirectAttributes,
+                new Notification(NotificationType.ERROR, appUtils.getUnexpectedErrorMessage()));
+
+            return "redirect:/";
+        }
+
+        appUtils.addNotification(redirectAttributes,
+            new Notification(NotificationType.SUCCESS, appUtils.getMessage("message.deleteMovieSuccess")));
+
+        return "redirect:" + appUtils.getReturnUrl(returnUrl, "/");
+    }
+
+    /**
      * Fills model values and returns the page view to create or edit a movie
      * 
      * @param model

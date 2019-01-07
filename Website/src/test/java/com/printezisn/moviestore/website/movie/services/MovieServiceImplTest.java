@@ -38,6 +38,7 @@ public class MovieServiceImplTest {
     private static final String MOVIE_SEARCH_URL = "/movie/search?text=test_text&page=2&sort=rating&asc=true&lang=en";
     private static final String MOVIE_CREATE_PATH = "/movie/new?lang=en";
     private static final String MOVIE_UPDATE_PATH = "/movie/update?lang=en";
+    private static final String MOVIE_DELETE_PATH = "/movie/delete/%s?lang=en";
     private static final String MOVIE_GET_PATH = "/movie/get/%s?lang=en";
 
     @Mock
@@ -54,6 +55,9 @@ public class MovieServiceImplTest {
 
     @Mock
     private ResponseEntity<MoviePagedResultModel> searchResponse;
+
+    @Mock
+    private ResponseEntity<Void> voidResponse;
 
     private MovieServiceImpl movieService;
 
@@ -318,5 +322,49 @@ public class MovieServiceImplTest {
         final boolean result = movieService.isAuthorizedOnMovie(account, movieDto);
 
         assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the movie is deleted successfully
+     */
+    @Test
+    public void test_deleteMovie_success() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_DELETE_PATH, movieId);
+
+        when(voidResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.deleteMovie(movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie deletion throws a conflict error first
+     */
+    @Test
+    public void test_deleteMovie_conflict() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_DELETE_PATH, movieId);
+
+        when(voidResponse.getStatusCode())
+            .thenReturn(HttpStatus.CONFLICT)
+            .thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.deleteMovie(movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie deletion throws an exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_deleteMovie_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_DELETE_PATH, movieId);
+
+        when(voidResponse.getStatusCode()).thenThrow(new RuntimeException());
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.deleteMovie(movieId);
     }
 }

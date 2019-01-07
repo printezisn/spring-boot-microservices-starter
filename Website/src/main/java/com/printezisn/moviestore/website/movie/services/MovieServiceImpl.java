@@ -32,6 +32,7 @@ public class MovieServiceImpl implements MovieService {
     private static final String CREATE_URL = "%s/movie/new?lang=%s";
     private static final String GET_URL = "%s/movie/get/%s?lang=%s";
     private static final String UPDATE_URL = "%s/movie/update?lang=%s";
+    private static final String DELETE_URL = "%s/movie/delete/%s?lang=%s";
 
     private final ServiceProperties serviceProperties;
 
@@ -159,6 +160,35 @@ public class MovieServiceImpl implements MovieService {
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while updating movie %s: %s",
                 movieDto.getId(), ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteMovie(final UUID movieId) {
+        final String url = String.format(DELETE_URL, serviceProperties.getMovieServiceUrl(), movieId,
+            LocaleContextHolder.getLocale().getLanguage());
+
+        try {
+            retryHandler.run(
+                () -> {
+                    final ResponseEntity<Void> response = restTemplate.getForEntity(url, Void.class);
+                    if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
+                        throw new MovieConditionalException();
+                    }
+
+                    return true;
+                },
+                ex -> ex instanceof MovieConditionalException);
+        }
+        catch (final Exception ex) {
+            final String errorMessage = String.format("An error occured while deleting movie %s: %s",
+                movieId, ex.getMessage());
 
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);

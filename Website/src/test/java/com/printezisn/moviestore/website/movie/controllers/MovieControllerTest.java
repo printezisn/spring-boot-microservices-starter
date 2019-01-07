@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -406,7 +407,8 @@ public class MovieControllerTest {
     @Test
     public void test_editMovie_get_unauthorized() throws Exception {
         mockMvc.perform(get("/movie/edit/" + UUID.randomUUID()))
-            .andExpect(status().is3xxRedirection());
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("http://localhost/auth/login"));
     }
 
     /**
@@ -416,7 +418,8 @@ public class MovieControllerTest {
     public void test_editMovie_post_unauthorized() throws Exception {
         mockMvc.perform(post("/movie/edit")
             .with(csrf()))
-            .andExpect(status().is3xxRedirection());
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("http://localhost/auth/login"));
     }
 
     /**
@@ -607,5 +610,197 @@ public class MovieControllerTest {
             .andExpect(status().is3xxRedirection())
             .andExpect(flash().attribute("notifications", hasItems()))
             .andExpect(redirectedUrl(String.format("/movie/details/%s?returnUrl=/home", movieDto.getId())));
+    }
+
+    /**
+     * Tests if the movie delete page is rendered successfully
+     */
+    @Test
+    public void test_deleteMovie_get_success() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final MovieDto movieDto = mock(MovieDto.class);
+
+        when(movieService.getMovie(id)).thenReturn(movieDto);
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto)).thenReturn(true);
+
+        mockMvc.perform(get("/movie/delete/" + id + "?returnUrl=/home")
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/delete"))
+            .andExpect(model().attribute("movie", movieDto))
+            .andExpect(model().attribute("returnUrl", "/home"));
+    }
+
+    /**
+     * Tests the scenario in which the account is not authorized to edit the movie
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_get_notAuthorizedOnMovie() throws Exception {
+        final UUID id = UUID.randomUUID();
+        final MovieDto movieDto = mock(MovieDto.class);
+
+        when(movieService.getMovie(id)).thenReturn(movieDto);
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieDto)).thenReturn(false);
+
+        mockMvc.perform(get("/movie/delete/" + id)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.movieDelete.notAuthorized"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the correct result is returned when the movie is not found
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_get_notFound() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        when(movieService.getMovie(id)).thenThrow(new MovieNotFoundException());
+
+        mockMvc.perform(get("/movie/delete/" + id)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.movieNotFound"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the correct result is returned when the operation throws an
+     * exception
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_get_exception() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        when(movieService.getMovie(id)).thenThrow(new RuntimeException());
+
+        mockMvc.perform(get("/movie/delete/" + id)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.unexpectedError"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests that only authorized user access is allowed
+     */
+    @Test
+    public void test_deleteMovie_get_unauthorized() throws Exception {
+        mockMvc.perform(get("/movie/delete/" + UUID.randomUUID()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("http://localhost/auth/login"));
+    }
+
+    /**
+     * Tests that only authorized access is allowed
+     */
+    @Test
+    public void test_deleteMovie_post_unauthorized() throws Exception {
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("http://localhost/auth/login"));
+    }
+
+    /**
+     * Tests if the correct view is returned when the account is not authorized to
+     * delete the movie
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_post_nonAuthorizedAccount() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieId)).thenReturn(false);
+
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString())
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.movieDelete.notAuthorized"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the user is redirected if the movie is not found
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_post_movieNotFound() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieId))
+            .thenThrow(new MovieNotFoundException());
+
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString())
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.movieNotFound"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the correct errors are returned when the service throws an exception
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_post_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieId)).thenReturn(true);
+        doThrow(new RuntimeException()).when(movieService).deleteMovie(movieId);
+
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString())
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(messageSource).getMessage(eq("message.error.unexpectedError"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the user is redirected when the operation is successful
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test_deleteMovie_post_success() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.isAuthorizedOnMovie(TEST_AUTHENTICATED_USER, movieId)).thenReturn(true);
+
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString())
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/home"))
+            .andExpect(flash().attribute("notifications", hasItems()));
+
+        verify(movieService).deleteMovie(movieId);
+        verify(messageSource).getMessage(eq("message.deleteMovieSuccess"), eq(null), any(Locale.class));
     }
 }

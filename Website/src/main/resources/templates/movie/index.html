@@ -122,6 +122,15 @@
                                 &nbsp;
                                 <span th:text="#{label.edit}"></span>
                             </a>
+                            <th:block
+                                th:if="${#authentication.isAuthenticated() && #authentication.getName().equals(entry.creator)}">
+                                <a class="button is-small is-danger"
+                                    th:href="@{${'/movie/delete/' + entry.id + '?returnUrl=' + currentUrl}}">
+                                    <i class="fas fa-trash-alt"></i>
+                                    &nbsp;
+                                    <span th:text="#{label.delete}"></span>
+                                </a>
+                            </th:block>
                         </td>
                     </tr>
                 </tbody>

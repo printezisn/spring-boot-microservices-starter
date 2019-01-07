@@ -127,9 +127,10 @@ public class MovieIntegrationTest {
             .param("title", movieDto.getTitle())
             .param("description", movieDto.getDescription())
             .param("rating", String.valueOf(movieDto.getRating()))
-            .param("releaseYear", String.valueOf(movieDto.getReleaseYear())))
+            .param("releaseYear", String.valueOf(movieDto.getReleaseYear()))
+            .param("returnUrl", "/home"))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/"));
+            .andExpect(redirectedUrl("/movie/details/" + movieDto.getId() + "?returnUrl=/home"));
     }
 
     /**
@@ -147,6 +148,52 @@ public class MovieIntegrationTest {
             .param("releaseYear", String.valueOf(TEST_RELEASE_YEAR)))
             .andExpect(status().isOk())
             .andExpect(view().name("movie/edit"));
+    }
+
+    /**
+     * Tests if the delete movie page is rendered successfully
+     */
+    @Test
+    public void test_deleteMovie_get_success() throws Exception {
+        final MovieDto movieDto = createNewMovie();
+
+        mockMvc.perform(get("/movie/delete/" + movieDto.getId().toString())
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(view().name("movie/delete"));
+    }
+
+    /**
+     * Tests if the movie is deleted successfully
+     */
+    @Test
+    public void test_deleteMovie_post_success() throws Exception {
+        final MovieDto movieDto = createNewMovie();
+
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString())
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/home"));
+
+        mockMvc.perform(get("/movie/" + movieDto.getId()))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test
+    public void test_deleteMovie_post_notFound() throws Exception {
+        mockMvc.perform(post("/movie/delete")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", UUID.randomUUID().toString())
+            .param("returnUrl", "/home"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
     }
 
     /**
