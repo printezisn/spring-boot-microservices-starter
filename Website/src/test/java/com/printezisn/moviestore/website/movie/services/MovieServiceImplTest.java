@@ -7,6 +7,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Locale;
@@ -40,6 +42,9 @@ public class MovieServiceImplTest {
     private static final String MOVIE_UPDATE_PATH = "/movie/update?lang=en";
     private static final String MOVIE_DELETE_PATH = "/movie/delete/%s?lang=en";
     private static final String MOVIE_GET_PATH = "/movie/get/%s?lang=en";
+    private static final String MOVIE_LIKE_PATH = "/movie/like/%s/%s?lang=en";
+    private static final String MOVIE_UNLIKE_PATH = "/movie/unlike/%s/%s?lang=en";
+    private static final String MOVIE_HAS_LIKED_PATH = "/movie/hasliked/%s/%s?lang=en";
 
     @Mock
     private ServiceProperties serviceProperties;
@@ -58,6 +63,9 @@ public class MovieServiceImplTest {
 
     @Mock
     private ResponseEntity<Void> voidResponse;
+
+    @Mock
+    private ResponseEntity<Boolean> booleanResponse;
 
     private MovieServiceImpl movieService;
 
@@ -225,6 +233,7 @@ public class MovieServiceImplTest {
         final MovieResultModel result = movieService.updateMovie(movieDto);
 
         assertEquals(expectedResult, result);
+        verify(restTemplate, times(2)).postForEntity(url, movieDto, MovieResultModel.class);
     }
 
     /**
@@ -232,13 +241,25 @@ public class MovieServiceImplTest {
      */
     @Test(expected = MoviePersistenceException.class)
     public void test_updateMovie_exception() throws Exception {
-        final MovieResultModel expectedResult = mock(MovieResultModel.class);
         final MovieDto movieDto = new MovieDto();
 
         final String url = MOVIE_SERVICE_URL + MOVIE_UPDATE_PATH;
 
-        when(movieResultModelResponse.getBody()).thenReturn(expectedResult);
-        when(movieResultModelResponse.getStatusCode()).thenThrow(new RuntimeException());
+        when(restTemplate.postForEntity(url, movieDto, MovieResultModel.class)).thenThrow(new RuntimeException());
+
+        movieService.updateMovie(movieDto);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_updateMovie_notFound() throws Exception {
+        final MovieDto movieDto = new MovieDto();
+
+        final String url = MOVIE_SERVICE_URL + MOVIE_UPDATE_PATH;
+
+        when(movieResultModelResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
         when(restTemplate.postForEntity(url, movieDto, MovieResultModel.class))
             .thenReturn(movieResultModelResponse);
 
@@ -352,6 +373,7 @@ public class MovieServiceImplTest {
         when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
 
         movieService.deleteMovie(movieId);
+        verify(restTemplate, times(2)).getForEntity(url, Void.class);
     }
 
     /**
@@ -362,9 +384,198 @@ public class MovieServiceImplTest {
         final UUID movieId = UUID.randomUUID();
         final String url = MOVIE_SERVICE_URL + String.format(MOVIE_DELETE_PATH, movieId);
 
-        when(voidResponse.getStatusCode()).thenThrow(new RuntimeException());
-        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+        when(restTemplate.getForEntity(url, Void.class)).thenThrow(new RuntimeException());
 
         movieService.deleteMovie(movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie is liked successfully
+     */
+    @Test
+    public void test_likeMovie_success() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_LIKE_PATH, movieId, account);
+
+        when(voidResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.likeMovie(account, movieId);
+
+        verify(restTemplate).getForEntity(url, Void.class);
+    }
+
+    /**
+     * Tests the scenario in which the movie like throws a conflict error first
+     */
+    @Test
+    public void test_likeMovie_conflict() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_LIKE_PATH, movieId, account);
+
+        when(voidResponse.getStatusCode())
+            .thenReturn(HttpStatus.CONFLICT)
+            .thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.likeMovie(account, movieId);
+
+        verify(restTemplate, times(2)).getForEntity(url, Void.class);
+    }
+
+    /**
+     * Tests the scenario in which the movie like throws an exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_likeMovie_exception() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_LIKE_PATH, movieId, account);
+
+        when(restTemplate.getForEntity(url, Void.class)).thenThrow(new RuntimeException());
+
+        movieService.likeMovie(account, movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_likeMovie_notFound() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_LIKE_PATH, movieId, account);
+
+        when(voidResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.likeMovie(account, movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie is unliked successfully
+     */
+    @Test
+    public void test_unlikeMovie_success() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_UNLIKE_PATH, movieId, account);
+
+        when(voidResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.unlikeMovie(account, movieId);
+
+        verify(restTemplate).getForEntity(url, Void.class);
+    }
+
+    /**
+     * Tests the scenario in which the movie unlike throws a conflict error first
+     */
+    @Test
+    public void test_unlikeMovie_conflict() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_UNLIKE_PATH, movieId, account);
+
+        when(voidResponse.getStatusCode())
+            .thenReturn(HttpStatus.CONFLICT)
+            .thenReturn(HttpStatus.OK);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.unlikeMovie(account, movieId);
+
+        verify(restTemplate, times(2)).getForEntity(url, Void.class);
+    }
+
+    /**
+     * Tests the scenario in which the movie unlike throws an exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_unlikeMovie_exception() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_UNLIKE_PATH, movieId, account);
+
+        when(restTemplate.getForEntity(url, Void.class)).thenThrow(new RuntimeException());
+
+        movieService.unlikeMovie(account, movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test(expected = MovieNotFoundException.class)
+    public void test_unlikeMovie_notFound() throws Exception {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_UNLIKE_PATH, movieId, account);
+
+        when(voidResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+        when(restTemplate.getForEntity(url, Void.class)).thenReturn(voidResponse);
+
+        movieService.unlikeMovie(account, movieId);
+    }
+
+    /**
+     * Tests if the correct result is returned when the account has liked the movie
+     */
+    @Test
+    public void test_hasLiked_true() {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_HAS_LIKED_PATH, movieId, account);
+
+        when(booleanResponse.getBody()).thenReturn(true);
+        when(restTemplate.getForEntity(url, Boolean.class)).thenReturn(booleanResponse);
+
+        final boolean result = movieService.hasLiked(account, movieId);
+
+        assertTrue(result);
+    }
+
+    /**
+     * Tests if the correct result is returned when the account hasn't liked the
+     * movie
+     */
+    @Test
+    public void test_hasLiked_false() {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_HAS_LIKED_PATH, movieId, account);
+
+        when(booleanResponse.getBody()).thenReturn(false);
+        when(restTemplate.getForEntity(url, Boolean.class)).thenReturn(booleanResponse);
+
+        final boolean result = movieService.hasLiked(account, movieId);
+
+        assertFalse(result);
+    }
+
+    /**
+     * Tests the scenario in which the operation throws an exception
+     */
+    @Test(expected = MoviePersistenceException.class)
+    public void test_hasLiked_exception() {
+        final String account = "test_account";
+        final UUID movieId = UUID.randomUUID();
+
+        final String url = MOVIE_SERVICE_URL + String.format(MOVIE_HAS_LIKED_PATH, movieId, account);
+
+        when(restTemplate.getForEntity(url, Boolean.class)).thenThrow(new RuntimeException());
+
+        movieService.hasLiked(account, movieId);
     }
 }

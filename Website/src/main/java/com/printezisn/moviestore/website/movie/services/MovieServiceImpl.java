@@ -33,6 +33,9 @@ public class MovieServiceImpl implements MovieService {
     private static final String GET_URL = "%s/movie/get/%s?lang=%s";
     private static final String UPDATE_URL = "%s/movie/update?lang=%s";
     private static final String DELETE_URL = "%s/movie/delete/%s?lang=%s";
+    private static final String LIKE_URL = "%s/movie/like/%s/%s?lang=%s";
+    private static final String UNLIKE_URL = "%s/movie/unlike/%s/%s?lang=%s";
+    private static final String HAS_LIKED_URL = "%s/movie/hasliked/%s/%s?lang=%s";
 
     private final ServiceProperties serviceProperties;
 
@@ -189,6 +192,97 @@ public class MovieServiceImpl implements MovieService {
         catch (final Exception ex) {
             final String errorMessage = String.format("An error occured while deleting movie %s: %s",
                 movieId, ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void likeMovie(final String account, final UUID movieId) throws MovieNotFoundException {
+        final String url = String.format(LIKE_URL, serviceProperties.getMovieServiceUrl(), movieId, account,
+            LocaleContextHolder.getLocale().getLanguage());
+
+        try {
+            retryHandler.run(
+                () -> {
+                    final ResponseEntity<Void> response = restTemplate.getForEntity(url, Void.class);
+                    if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
+                        throw new MovieConditionalException();
+                    }
+                    if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                        throw new MovieNotFoundException();
+                    }
+
+                    return response.getBody();
+                },
+                ex -> ex instanceof MovieConditionalException);
+        }
+        catch (final MovieNotFoundException ex) {
+            throw ex;
+        }
+        catch (final Exception ex) {
+            final String errorMessage = String.format("An error occured while liking movie %s (%s): %s",
+                movieId, account, ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unlikeMovie(final String account, final UUID movieId) throws MovieNotFoundException {
+        final String url = String.format(UNLIKE_URL, serviceProperties.getMovieServiceUrl(), movieId, account,
+            LocaleContextHolder.getLocale().getLanguage());
+
+        try {
+            retryHandler.run(
+                () -> {
+                    final ResponseEntity<Void> response = restTemplate.getForEntity(url, Void.class);
+                    if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
+                        throw new MovieConditionalException();
+                    }
+                    if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                        throw new MovieNotFoundException();
+                    }
+
+                    return response.getBody();
+                },
+                ex -> ex instanceof MovieConditionalException);
+        }
+        catch (final MovieNotFoundException ex) {
+            throw ex;
+        }
+        catch (final Exception ex) {
+            final String errorMessage = String.format("An error occured while unliking movie %s (%s): %s",
+                movieId, account, ex.getMessage());
+
+            log.error(errorMessage, ex);
+            throw new MoviePersistenceException(errorMessage, ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasLiked(final String account, final UUID movieId) {
+        final String url = String.format(HAS_LIKED_URL, serviceProperties.getMovieServiceUrl(), movieId, account,
+            LocaleContextHolder.getLocale().getLanguage());
+
+        try {
+            return restTemplate.getForEntity(url, Boolean.class).getBody();
+        }
+        catch (final Exception ex) {
+            final String errorMessage = String.format(
+                "An error occured while checking if account %s has liked movie %s: %s", account, movieId,
+                ex.getMessage());
 
             log.error(errorMessage, ex);
             throw new MoviePersistenceException(errorMessage, ex);

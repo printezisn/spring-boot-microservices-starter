@@ -15,6 +15,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -802,5 +803,194 @@ public class MovieControllerTest {
 
         verify(movieService).deleteMovie(movieId);
         verify(messageSource).getMessage(eq("message.deleteMovieSuccess"), eq(null), any(Locale.class));
+    }
+
+    /**
+     * Tests if the correct result is returned when the operation completes
+     * successfully
+     */
+    @Test
+    public void test_likeStatus_success() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setTotalLikes(2);
+
+        when(movieService.getMovie(movieId)).thenReturn(movieDto);
+        when(movieService.hasLiked(TEST_AUTHENTICATED_USER, movieId)).thenReturn(true);
+
+        mockMvc.perform(get("/movie/likestatus/" + movieId)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("totalLikes").value(movieDto.getTotalLikes()))
+            .andExpect(jsonPath("hasLiked").value(true));
+    }
+
+    /**
+     * Tests if the correct result is returned when the operation completes
+     * successfully and the user is unauthorized
+     */
+    @Test
+    public void test_likeStatus_unauthorized() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        final MovieDto movieDto = new MovieDto();
+        movieDto.setTotalLikes(2);
+
+        when(movieService.getMovie(movieId)).thenReturn(movieDto);
+
+        mockMvc.perform(get("/movie/likestatus/" + movieId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("totalLikes").value(movieDto.getTotalLikes()))
+            .andExpect(jsonPath("hasLiked").value(false));
+    }
+
+    /**
+     * Tests if the correct result is returned when the movie is not found
+     */
+    @Test
+    public void test_likeStatus_notFound() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.getMovie(movieId)).thenThrow(new MovieNotFoundException());
+        when(movieService.hasLiked(TEST_AUTHENTICATED_USER, movieId)).thenReturn(true);
+
+        mockMvc.perform(get("/movie/likestatus/" + movieId)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Tests if the correct result is returned when the operation throws an
+     * exception
+     */
+    @Test
+    public void test_likeStatus_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        when(movieService.getMovie(movieId)).thenThrow(new RuntimeException());
+        when(movieService.hasLiked(TEST_AUTHENTICATED_USER, movieId)).thenReturn(true);
+
+        mockMvc.perform(get("/movie/likestatus/" + movieId)
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * Tests if the movie is liked successfully
+     */
+    @Test
+    public void test_like_success() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        mockMvc.perform(post("/movie/like")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString()))
+            .andExpect(status().isOk());
+
+        verify(movieService).likeMovie(TEST_AUTHENTICATED_USER, movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test
+    public void test_like_notFound() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        doThrow(new MovieNotFoundException()).when(movieService).likeMovie(TEST_AUTHENTICATED_USER, movieId);
+
+        mockMvc.perform(post("/movie/like")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString()))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Tests the scenario in which the operation throws an exception
+     */
+    @Test
+    public void test_like_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        doThrow(new RuntimeException()).when(movieService).likeMovie(TEST_AUTHENTICATED_USER, movieId);
+
+        mockMvc.perform(post("/movie/like")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString()))
+            .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * Tests the scenario in which the user is not authorized to access the endpoint
+     */
+    @Test
+    public void test_like_unauthorized() throws Exception {
+        mockMvc.perform(post("/movie/like")
+            .with(csrf())
+            .param("id", UUID.randomUUID().toString()))
+            .andExpect(status().isForbidden());
+    }
+
+    /**
+     * Tests if the movie is unliked successfully
+     */
+    @Test
+    public void test_unlike_success() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        mockMvc.perform(post("/movie/unlike")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString()))
+            .andExpect(status().isOk());
+
+        verify(movieService).unlikeMovie(TEST_AUTHENTICATED_USER, movieId);
+    }
+
+    /**
+     * Tests the scenario in which the movie is not found
+     */
+    @Test
+    public void test_unlike_notFound() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        doThrow(new MovieNotFoundException()).when(movieService).unlikeMovie(TEST_AUTHENTICATED_USER, movieId);
+
+        mockMvc.perform(post("/movie/unlike")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString()))
+            .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Tests the scenario in which the operation throws an exception
+     */
+    @Test
+    public void test_unlike_exception() throws Exception {
+        final UUID movieId = UUID.randomUUID();
+
+        doThrow(new RuntimeException()).when(movieService).unlikeMovie(TEST_AUTHENTICATED_USER, movieId);
+
+        mockMvc.perform(post("/movie/unlike")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieId.toString()))
+            .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * Tests the scenario in which the user is not authorized to access the endpoint
+     */
+    @Test
+    public void test_unlike_unauthorized() throws Exception {
+        mockMvc.perform(post("/movie/unlike")
+            .with(csrf())
+            .param("id", UUID.randomUUID().toString()))
+            .andExpect(status().isForbidden());
     }
 }

@@ -90,4 +90,39 @@ public interface MovieService {
      *            The id of the movie
      */
     void deleteMovie(final UUID movieId);
+
+    /**
+     * Adds a like to a movie
+     * 
+     * @param account
+     *            The account that likes the movie
+     * @param movieId
+     *            The id of the movie
+     * @throws MovieNotFoundException
+     *             Exception thrown when the movie is not found
+     */
+    void likeMovie(final String account, final UUID movieId) throws MovieNotFoundException;
+
+    /**
+     * Removes a like from a movie
+     * 
+     * @param account
+     *            The account that unlikes the movie
+     * @param movieId
+     *            The id of the movie
+     * @throws MovieNotFoundException
+     *             Exception thrown when the movie is not found
+     */
+    void unlikeMovie(final String account, final UUID movieId) throws MovieNotFoundException;
+
+    /**
+     * Checks if an account has liked a movie
+     * 
+     * @param account
+     *            The account to check
+     * @param movieId
+     *            The id of the movie to check
+     * @return True if the account has liked the movie, otherwise false
+     */
+    boolean hasLiked(final String account, final UUID movieId);
 }

@@ -12,6 +12,8 @@ import java.util.stream.IntStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.printezisn.moviestore.common.AppUtils;
@@ -31,6 +34,7 @@ import com.printezisn.moviestore.common.models.movie.MoviePagedResultModel;
 import com.printezisn.moviestore.common.models.movie.MovieResultModel;
 import com.printezisn.moviestore.website.Constants.PageConstants;
 import com.printezisn.moviestore.website.movie.exceptions.MovieNotFoundException;
+import com.printezisn.moviestore.website.movie.models.LikeStatus;
 import com.printezisn.moviestore.website.movie.services.MovieService;
 
 import lombok.RequiredArgsConstructor;
@@ -403,6 +407,93 @@ public class MovieController {
             new Notification(NotificationType.SUCCESS, appUtils.getMessage("message.deleteMovieSuccess")));
 
         return "redirect:" + appUtils.getReturnUrl(returnUrl, "/");
+    }
+
+    /**
+     * Returns the like status of a movie
+     * 
+     * @param authentication
+     *            Information about the current user
+     * @param id
+     *            The id of the movie to check
+     * @return The like status of the movie
+     */
+    @GetMapping("/movie/likestatus/{id}")
+    @ResponseBody
+    public ResponseEntity<LikeStatus> likeStatus(
+        final Authentication authentication,
+        @PathVariable("id") final UUID id) {
+
+        try {
+            final MovieDto movie = movieService.getMovie(id);
+            final boolean hasLiked = (authentication != null && authentication.isAuthenticated())
+                ? movieService.hasLiked(authentication.getName(), id)
+                : false;
+
+            return ResponseEntity.ok(new LikeStatus(movie.getTotalLikes(), hasLiked));
+        }
+        catch (final MovieNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (final Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Adds a like to a movie for the current user
+     * 
+     * @param authentication
+     *            Information about the current user
+     * @param id
+     *            The id of the movie to check
+     * @return Response indicating if the operation was successful or not
+     */
+    @PostMapping("/movie/like")
+    @ResponseBody
+    public ResponseEntity<?> like(
+        final Authentication authentication,
+        @RequestParam("id") final UUID id) {
+
+        try {
+            movieService.likeMovie(authentication.getName(), id);
+
+            return ResponseEntity.ok().build();
+        }
+        catch (final MovieNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (final Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Removes a like from a movie for the current user
+     * 
+     * @param authentication
+     *            Information about the current user
+     * @param id
+     *            The id of the movie to check
+     * @return Response indicating if the operation was successful or not
+     */
+    @PostMapping("/movie/unlike")
+    @ResponseBody
+    public ResponseEntity<?> unlike(
+        final Authentication authentication,
+        @RequestParam("id") final UUID id) {
+
+        try {
+            movieService.unlikeMovie(authentication.getName(), id);
+
+            return ResponseEntity.ok().build();
+        }
+        catch (final MovieNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (final Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

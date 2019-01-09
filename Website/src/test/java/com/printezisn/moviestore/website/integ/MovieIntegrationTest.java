@@ -4,6 +4,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -194,6 +195,37 @@ public class MovieIntegrationTest {
             .param("returnUrl", "/home"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    public void test_like_end_to_end() throws Exception {
+        final MovieDto movieDto = createNewMovie();
+
+        mockMvc.perform(post("/movie/like")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString()))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/movie/likestatus/" + movieDto.getId())
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("totalLikes").value(0))
+            .andExpect(jsonPath("hasLiked").value(true));
+
+        mockMvc.perform(post("/movie/unlike")
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER))
+            .param("id", movieDto.getId().toString()))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/movie/likestatus/" + movieDto.getId())
+            .with(csrf())
+            .with(user(TEST_AUTHENTICATED_USER)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("totalLikes").value(0))
+            .andExpect(jsonPath("hasLiked").value(false));
     }
 
     /**

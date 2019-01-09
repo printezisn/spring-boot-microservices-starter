@@ -8,6 +8,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.printezisn.moviestore.website.account.services.AccountService;
 
@@ -47,6 +50,32 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .logoutUrl("/auth/logout")
                 .permitAll()
             .and()
+            .exceptionHandling()
+                .defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/auth/login"),
+                    new AntPathRequestMatcher("/account/changePassword"))
+                .defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/auth/login"),
+                    new AntPathRequestMatcher("/movie/new"))
+                .defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/auth/login"),
+                    new AntPathRequestMatcher("/movie/edit"))
+                .defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/auth/login"),
+                    new AntPathRequestMatcher("/movie/edit/*"))
+                .defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/auth/login"),
+                    new AntPathRequestMatcher("/movie/delete"))
+                .defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/auth/login"),
+                    new AntPathRequestMatcher("/movie/delete/*"))
+                .defaultAuthenticationEntryPointFor(
+                    new Http403ForbiddenEntryPoint(),
+                    new AntPathRequestMatcher("/movie/like/**"))
+                .defaultAuthenticationEntryPointFor(
+                    new Http403ForbiddenEntryPoint(),
+                    new AntPathRequestMatcher("/movie/unlike/**"))
+            .and()
             .authorizeRequests()
                 .antMatchers("/account/changePassword").authenticated()
                 .antMatchers("/movie/new").authenticated()
@@ -54,6 +83,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/movie/edit/*").authenticated()
                 .antMatchers("/movie/delete").authenticated()
                 .antMatchers("/movie/delete/*").authenticated()
+                .antMatchers("/movie/like/**").authenticated()
+                .antMatchers("/movie/unlike/**").authenticated()
             .and()
             .authorizeRequests()
                 .anyRequest().permitAll();
