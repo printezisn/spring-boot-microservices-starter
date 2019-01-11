@@ -126,6 +126,7 @@ public class MovieServiceImpl implements MovieService {
         movie.setRevision(UUID.randomUUID().toString());
         movie.setUpdated(true);
         movie.setDeleted(false);
+        movie.setTotalLikes(0);
         movie.setPendingLikes(new HashSet<>());
         movie.setPendingUnlikes(new HashSet<>());
 
@@ -161,6 +162,7 @@ public class MovieServiceImpl implements MovieService {
 
             final Movie updatedMovie = movieMapper.movieDtoToMovie(movieDto);
             updatedMovie.setRevision(UUID.randomUUID().toString());
+            updatedMovie.setTotalLikes(movie.getTotalLikes());
             updatedMovie.setUpdated(true);
             updatedMovie.setDeleted(movie.isDeleted());
             updatedMovie.setPendingLikes(movie.getPendingLikes());

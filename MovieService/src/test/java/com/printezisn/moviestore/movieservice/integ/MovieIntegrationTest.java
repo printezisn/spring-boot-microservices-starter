@@ -191,6 +191,10 @@ public class MovieIntegrationTest {
             .perform(get(String.format("/movie/hasliked/%s/%s", movieDto.getId().toString(), movieDto.getCreator())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").value(true));
+        mockMvc
+            .perform(get(String.format("/movie/get/%s", movieDto.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("totalLikes").value(1));
     }
 
     /**
@@ -211,6 +215,10 @@ public class MovieIntegrationTest {
             .perform(get(String.format("/movie/hasliked/%s/%s", movieDto.getId().toString(), movieDto.getCreator())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").value(false));
+        mockMvc
+            .perform(get(String.format("/movie/get/%s", movieDto.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("totalLikes").value(0));
     }
 
     /**

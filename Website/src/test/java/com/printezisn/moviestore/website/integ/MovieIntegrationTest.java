@@ -211,7 +211,7 @@ public class MovieIntegrationTest {
             .with(csrf())
             .with(user(TEST_AUTHENTICATED_USER)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("totalLikes").value(0))
+            .andExpect(jsonPath("totalLikes").value(1))
             .andExpect(jsonPath("hasLiked").value(true));
 
         mockMvc.perform(post("/movie/unlike")

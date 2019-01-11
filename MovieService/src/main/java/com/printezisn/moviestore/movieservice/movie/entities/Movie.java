@@ -29,6 +29,8 @@ public class Movie {
 
     private int releaseYear;
 
+    private long totalLikes;
+
     private long creationTimestamp;
 
     private long updateTimestamp;

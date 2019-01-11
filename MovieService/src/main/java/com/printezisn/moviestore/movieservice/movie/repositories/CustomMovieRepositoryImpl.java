@@ -23,6 +23,7 @@ public class CustomMovieRepositoryImpl implements CustomMovieRepository {
     private static final String RELEASE_YEAR_FIELD = "releaseYear";
     private static final String UPDATE_TIMESTAMP_FIELD = "updateTimestamp";
     private static final String REVISION_FIELD = "revision";
+    private static final String TOTAL_LIKES_FIELD = "totalLikes";
     private static final String PENDING_LIKES_FIELD = "pendingLikes";
     private static final String PENDING_UNLIKES_FIELD = "pendingUnlikes";
     private static final String UPDATED_FIELD = "updated";
@@ -45,6 +46,7 @@ public class CustomMovieRepositoryImpl implements CustomMovieRepository {
         update.set(DESCRIPTION_FIELD, movie.getDescription());
         update.set(RATING_FIELD, movie.getRating());
         update.set(RELEASE_YEAR_FIELD, movie.getReleaseYear());
+        update.set(TOTAL_LIKES_FIELD, movie.getTotalLikes());
         update.set(UPDATE_TIMESTAMP_FIELD, movie.getUpdateTimestamp());
         update.set(PENDING_LIKES_FIELD, movie.getPendingLikes());
         update.set(PENDING_UNLIKES_FIELD, movie.getPendingUnlikes());

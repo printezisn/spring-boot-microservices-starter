@@ -62,9 +62,11 @@ public class MovieIndexHelper {
                 .forEach(account -> movieLikeRepository.deleteById(movie.getId() + "-" + account));
             movie.setPendingUnlikes(new HashSet<>());
 
+            // Calculates the total likes
+            movie.setTotalLikes(movieLikeRepository.countByMovieId(movie.getId()));
+
             // Indexes the movie
             final MovieIndex movieIndex = movieMapper.movieToMovieIndex(movie);
-            movieIndex.setTotalLikes(movieLikeRepository.countByMovieId(movie.getId()));
             movieIndexRepository.save(movieIndex);
 
             // Updates the movie in the database

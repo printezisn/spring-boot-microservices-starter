@@ -1,5 +1,6 @@
 package com.printezisn.moviestore.movieservice.movie.helpers;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doThrow;
@@ -100,6 +101,7 @@ public class MovieIndexHelperTest {
         verify(movieIndexRepository).save(movieIndex);
         verify(movieRepository).updateMovie(movie, currentRevision);
 
+        assertEquals(5L, movie.getTotalLikes());
         assertTrue(movie.getPendingLikes().isEmpty());
         assertTrue(movie.getPendingUnlikes().isEmpty());
         assertFalse(movie.isUpdated());

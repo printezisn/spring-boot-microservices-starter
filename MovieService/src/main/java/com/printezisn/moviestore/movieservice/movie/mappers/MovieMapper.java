@@ -23,9 +23,6 @@ public interface MovieMapper {
      *            The Movie object to convert
      * @return The converted MovieDto object
      */
-    @Mappings({
-        @Mapping(target = "totalLikes", ignore = true)
-    })
     MovieDto movieToMovieDto(final Movie movie);
 
     /**
@@ -37,6 +34,7 @@ public interface MovieMapper {
      */
     @Mappings({
         @Mapping(target = "revision", ignore = true),
+        @Mapping(target = "totalLikes", ignore = true),
         @Mapping(target = "pendingLikes", ignore = true),
         @Mapping(target = "pendingUnlikes", ignore = true),
         @Mapping(target = "updated", ignore = true),
@@ -51,9 +49,6 @@ public interface MovieMapper {
      *            The Movie object to convert
      * @return The converted MovieIndex object
      */
-    @Mappings({
-        @Mapping(target = "totalLikes", ignore = true)
-    })
     MovieIndex movieToMovieIndex(final Movie movie);
 
     /**

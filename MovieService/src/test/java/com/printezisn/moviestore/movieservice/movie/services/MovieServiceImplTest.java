@@ -302,6 +302,7 @@ public class MovieServiceImplTest {
         assertNotNull(result.getId());
 
         assertNotNull(movie.getRevision());
+        assertEquals(0, movie.getTotalLikes());
         assertTrue(movie.isUpdated());
         assertFalse(movie.isDeleted());
         assertNotNull(movie.getPendingLikes());
@@ -363,6 +364,7 @@ public class MovieServiceImplTest {
         final String currentRevision = UUID.randomUUID().toString();
         final Movie movie = new Movie();
         movie.setRevision(currentRevision);
+        movie.setTotalLikes(2);
         movie.setPendingLikes(Collections.singleton("account1"));
         movie.setPendingUnlikes(Collections.singleton("account2"));
 
@@ -375,6 +377,7 @@ public class MovieServiceImplTest {
         final MovieDto result = movieService.updateMovie(movieDto);
 
         assertEquals(movieDto, result);
+        assertEquals(2, updatedMovie.getTotalLikes());
         assertTrue(updatedMovie.isUpdated());
         assertFalse(updatedMovie.isDeleted());
         assertNotNull(updatedMovie.getPendingLikes());

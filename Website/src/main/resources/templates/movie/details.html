@@ -84,6 +84,7 @@
                             </a>
                             &nbsp;
                             <a class="button is-danger"
+                                th:if="${#authentication.isAuthenticated() && #authentication.getName().equals(movie.creator)}"
                                 th:href="@{${'/movie/delete/' + movie.id + '?returnUrl=' + returnUrl}}">
                                 <i class="fas fa-trash-alt"></i>
                                 &nbsp;
