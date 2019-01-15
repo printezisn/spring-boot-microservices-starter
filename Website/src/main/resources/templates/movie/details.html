@@ -5,6 +5,8 @@
 <th:block layout:fragment="meta">
     <meta name="description"
         th:attr="content=${'The complete information about the ' + movie.title + ' movie'}" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </th:block>
 </head>
 <body>
@@ -61,6 +63,19 @@
                     <div class="field">
                         <div class="control"
                             th:text="${movie.releaseYear}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label" for="releaseYear">
+                        <span th:text="#{label.movie.totalLikes} + ':'"></span>
+                    </label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control"
+                            th:insert="~{fragments/likeStatus(${movie})}"></div>
                     </div>
                 </div>
             </div>

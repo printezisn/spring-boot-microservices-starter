@@ -23,7 +23,7 @@ module.exports = merge(common, {
         }),
         new CompressionPlugin(),
         new Critters({
-            preload : 'swap',
+            preload : 'js',
             preloadFonts : true,
             noscriptFallback : false,
             pruneSource : false,

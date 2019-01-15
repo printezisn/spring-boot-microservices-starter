@@ -5,6 +5,8 @@
 <th:block layout:fragment="meta">
     <meta name="description"
         content="The list of movies in Movie Store." />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </th:block>
 </head>
 <body>
@@ -113,7 +115,8 @@
                         </td>
                         <td th:text="${entry.releaseYear}"></td>
                         <td th:text="${entry.rating + '/10'}"></td>
-                        <td th:text="${entry.totalLikes}"></td>
+                        <td
+                            th:insert="~{fragments/likeStatus(${entry})}"></td>
                         <td>
                             <a class="button is-small is-link"
                                 th:if="${#authentication.isAuthenticated() && #authentication.getName().equals(entry.creator)}"

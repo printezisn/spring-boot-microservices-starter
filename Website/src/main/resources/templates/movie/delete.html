@@ -64,6 +64,19 @@
                 </div>
             </div>
             <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label" for="releaseYear">
+                        <span th:text="#{label.movie.totalLikes} + ':'"></span>
+                    </label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control"
+                            th:text="${movie.totalLikes}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
                 <div class="field-label is-normal"></div>
                 <div class="field-body">
                     <div class="field">

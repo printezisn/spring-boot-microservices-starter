@@ -50,11 +50,21 @@ const initFormValidate = () => {
     });
 };
 
+const initLikeStatus = () => {
+    const elements = Array.prototype.slice.call(document.querySelectorAll('.like-status'));
+    elements.forEach(element => {
+        import(/* webpackChunkName: 'likeStatus' */ './js/likeStatus').then(({ createLikeStatus }) => {
+           createLikeStatus(element);
+        });
+    });
+};
+
 const init = () => {
     initNavbar();
     initNotifications();
     initToastrNotifications();
     initFormValidate();
+    initLikeStatus();
 };
 
 if(document.readyState !== 'loading') {

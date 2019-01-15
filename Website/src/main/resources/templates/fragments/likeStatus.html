@@ -1,0 +1,12 @@
+<div th:fragment="likeStatus(movie)" class="like-status"
+    th:attr="movie-id=${movie.id}">
+    <i class="fas fa-sync fa-spin show-on-load"></i>
+    <span class="total-likes hide-on-load" th:text="${movie.totalLikes}"
+        style="display: none"></span>
+    <a sec:authorize="isAuthenticated()" href="javascript:void(0)"
+        class="like-button hide-on-like has-text-dark fas fa-thumbs-up hide-on-load"
+        th:attr="title=#{label.like}" style="display: none"></a>
+    <a sec:authorize="isAuthenticated()" href="javascript:void(0)"
+        class="unlike-button show-on-like fas fa-thumbs-up hide-on-load"
+        th:attr="title=#{label.unlike}" style="display: none"></a>
+</div>
