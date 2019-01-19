@@ -1,13 +1,14 @@
 FROM openjdk:11
-WORKDIR /usr/src/java-code
-COPY . /usr/src/java-code/
-RUN ./gradlew dependencies
-RUN ./gradlew build
+COPY ./MovieService /code/MovieService
+COPY ./Common /code/Common
+COPY ./gradle /code/gradle
+COPY ./gradlew /code/
+COPY ./settings.gradle /code/
  
-WORKDIR /usr/src/java-app
-RUN cp /usr/src/java-code/MovieService/build/libs/*.jar .
-RUN ls
-RUN mv ./MovieService-1.0.0.jar ./app.jar
-RUN ls
+WORKDIR /code
+RUN ./gradlew build
+WORKDIR /app
+RUN cp /code/MovieService/build/libs/*.jar /app/app.jar
+ 
 EXPOSE 9000
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "./app.jar"]

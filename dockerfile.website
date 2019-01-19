@@ -1,0 +1,24 @@
+FROM openjdk:11
+
+RUN apt-get update
+RUN apt-get install -y curl software-properties-common
+RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
+RUN apt-get install nodejs
+
+COPY ./Website /code/Website
+COPY ./Common /code/Common
+COPY ./gradle /code/gradle
+COPY ./gradlew /code/
+COPY ./settings.gradle /code/
+
+WORKDIR /code/Website/src/main/resources/static
+RUN npm install
+RUN npm run build-prod
+ 
+WORKDIR /code
+RUN ./gradlew build
+WORKDIR /app
+RUN cp /code/Website/build/libs/*.jar /app/app.jar
+ 
+EXPOSE 10000
+CMD ["java", "-jar", "./app.jar"]

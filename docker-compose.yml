@@ -4,8 +4,10 @@ services:
       build:
          context: .
          dockerfile: dockerfile.accountservice
-      ports:
-         - "8000:8000"
+      volumes:
+         - ./data/account-service-logs:/app/logs
+      expose:
+         - "8000"
       environment:
          - SPRING_DATA_MONGODB_HOST=mongodb
       depends_on:
@@ -14,8 +16,10 @@ services:
       build:
          context: .
          dockerfile: dockerfile.movieservice
-      ports:
-         - "9000:9000"
+      volumes:
+         - ./data/movie-service-logs:/app/logs
+      expose:
+         - "9000"
       environment:
          - SPRING_DATA_MONGODB_HOST=mongodb
          - SPRING_DATA_ELASTICSEARCH_CLUSTER-NAME=elasticsearch-docker
@@ -23,6 +27,20 @@ services:
       depends_on:
          - mongodb
          - elasticsearch
+   website:
+      build:
+         context: .
+         dockerfile: dockerfile.website
+      volumes:
+         - ./data/website-logs:/app/logs
+      expose:
+         - "10000"
+      environment:
+         - SERVICE_ACCOUNTSERVICEURL=http://account-service:8000
+         - SERVICE_MOVIESERVICEURL=http://movie-service:9000
+      depends_on:
+         - account-service
+         - movie-service
    mongodb:
       image: mongo:latest
       container_name: "mongodb"
@@ -51,3 +69,14 @@ services:
       ports:
          - 9200:9200 
          - 9300:9300 
+   nginx:
+      image: nginx:latest
+      ports:
+         - "80:80"
+         - "443:443"
+      depends_on:
+         - website
+      volumes:
+         - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+         - ./nginx/ssl.pem:/etc/ssl.pem
+         - ./nginx/ssl.key:/etc/ssl.key
