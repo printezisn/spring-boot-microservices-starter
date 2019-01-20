@@ -14,7 +14,7 @@ The **MovieStore** company has a website where users can register, search for mo
   * The **movie service**. A REST service with operations on movies.
   * The rest of the **website**, which will make HTTP requests to the account and movie services.
   
-It's obvious that can no longer use the ACID capabilities of a relational database. However, let's see how we can target each separate service.
+It's obvious that we can no longer use the ACID capabilities of a relational database. However, let's see how we can target each separate service.
   
 ### Account Service
 
