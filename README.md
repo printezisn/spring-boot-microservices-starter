@@ -71,8 +71,8 @@ The project is made in **Java** and uses the following tools:
 * [MongoDB](https://www.mongodb.com/) - NoSQL database system used as the main storage system.
 * [Elasticsearch](https://www.elastic.co/products/elasticsearch) - NoSQL system used for running search queries on movies.
 
-If you want to run the project, run tests or contribute, then you need to install the above tools.
-If you just want to run the project, then you just need Docker and Docker Compose (a docker-compose.yml configuration is included).
+If you want to run tests or contribute, then you need to install the above tools.
+If you just want to run the project, then Docker and Docker Compose are enough (a docker-compose.yml configuration is included).
 
 ### How to run the services
 
