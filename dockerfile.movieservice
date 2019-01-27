@@ -4,11 +4,14 @@ COPY ./Common /code/Common
 COPY ./gradle /code/gradle
 COPY ./gradlew /code/
 COPY ./settings.gradle /code/
+COPY ./wait-for-it.sh /code/
  
 WORKDIR /code
 RUN ./gradlew build
 WORKDIR /app
 RUN cp /code/MovieService/build/libs/*.jar /app/app.jar
- 
+RUN cp /code/wait-for-it.sh /app/ 
+RUN chmod a+x /app/wait-for-it.sh
+
 EXPOSE 9000
 CMD ["java", "-jar", "./app.jar"]

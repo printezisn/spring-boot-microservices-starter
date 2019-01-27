@@ -27,6 +27,7 @@ services:
       depends_on:
          - mongodb
          - elasticsearch
+      command: ["./wait-for-it.sh", "elasticsearch:9300", "-t", "0", "--", "java", "-jar", "./app.jar"]
    website:
       build:
          context: .
