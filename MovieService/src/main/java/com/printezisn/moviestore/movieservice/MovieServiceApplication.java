@@ -2,6 +2,7 @@ package com.printezisn.moviestore.movieservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -10,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = { "com.printezisn.moviestore.movieservice",
     "com.printezisn.moviestore.common" })
 @EnableScheduling
+@EnableElasticsearchRepositories
 public class MovieServiceApplication {
 
     /**

@@ -10,7 +10,7 @@ import lombok.Data;
 /**
  * Movie index entity
  */
-@Document(indexName = "#{@elasticSearchIndexName}", type = "movies")
+@Document(indexName = "#{@elasticSearchIndexName}", type = "movies", createIndex = true)
 @Data
 public class MovieIndex {
 
